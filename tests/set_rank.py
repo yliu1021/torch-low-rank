@@ -84,8 +84,6 @@ def main():
     ranks = [-1, 160, 60, 10, 5, 1]
     for initial_ranks in ranks:
         for new_rank in ranks:
-            if new_rank > initial_ranks:
-                continue
             if new_rank == initial_ranks:
                 epochs = [0]
             else:
