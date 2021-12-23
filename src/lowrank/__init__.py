@@ -1,1 +1,1 @@
-from .dense import LRDense
+from .impl import LRDense, LRConv2D

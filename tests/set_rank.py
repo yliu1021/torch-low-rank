@@ -22,7 +22,10 @@ class UpdateRankExperiment:
         (self.x_train, self.y_train), (self.x_test, self.y_test) = data.load_data(
             "cifar10"
         )
-        self.model = model.get_model(
+        # self.model = model.get_model(
+        #     self.x_train.shape[1:], self.y_train.shape[-1], rank=initial_rank
+        # )
+        self.model = model.get_lr_conv_model(
             self.x_train.shape[1:], self.y_train.shape[-1], rank=initial_rank
         )
         self.model.compile(
@@ -91,7 +94,7 @@ def main():
             for update_epoch in epochs:
                 print(f"Starting experiment: {initial_ranks} {new_rank} {update_epoch}")
                 name = f"{initial_ranks}_{new_rank}_{update_epoch}.json"
-                save_loc = os.path.join("set_rank_results", name)
+                save_loc = os.path.join("set_rank_results_conv_cifar10", name)
                 if os.path.exists(save_loc):
                     print("Experiment already done, skipping")
                     continue
