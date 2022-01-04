@@ -1,5 +1,8 @@
+import datetime
+import itertools
 import json
 import os
+import random
 
 import data
 import model
@@ -18,7 +21,9 @@ class UpdateRankExperiment:
         total_epochs: int,
     ):
         if total_epochs < rank_update_epoch:
-            raise ValueError("Total epochs must be greater than or equal to rank update epoch")
+            raise ValueError(
+                "Total epochs must be greater than or equal to rank update epoch"
+            )
         (self.x_train, self.y_train), (self.x_test, self.y_test) = data.load_data(
             "cifar100"
         )
@@ -81,28 +86,22 @@ class UpdateRankExperiment:
 
 
 def main():
-    ranks = [-1, 160, 60, 10, 5, 1]
-    for initial_rank in ranks:
-        for new_rank in ranks:
-            if new_rank == initial_rank:
-                epochs = [0]
-            else:
-                epochs = [0, 1, 2, 3]
-            for update_epoch in epochs:
-                print(f"Starting experiment: {initial_rank} {new_rank} {update_epoch}")
-                name = f"{initial_rank}_{new_rank}_{update_epoch}.json"
-                save_loc = os.path.join("set_rank_results_conv_cifar100", name)
-                if os.path.exists(save_loc):
-                    print("Experiment already done, skipping")
-                    continue
-                experiment = UpdateRankExperiment(
-                    initial_rank=initial_rank,
-                    new_rank=new_rank,
-                    rank_update_epoch=update_epoch,
-                    total_epochs=50,
-                )
-                with open(save_loc, "w") as result_file:
-                    json.dump(experiment.results, result_file)
+    for _ in range(100):
+        new_rank, update_epoch = random.choice(
+            list(itertools.product([160, 50, 10, 1], [1, 2, 3]))
+        )
+        print(f"Setting to rank {new_rank} on epoch {update_epoch}")
+        time_str = datetime.datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
+        name = f"{new_rank}_{update_epoch}_{time_str}.json"
+        save_loc = os.path.join("set_rank_results_conv_cifar100", name)
+        experiment = UpdateRankExperiment(
+            initial_rank=-1,
+            new_rank=new_rank,
+            rank_update_epoch=update_epoch,
+            total_epochs=50,
+        )
+        with open(save_loc, "w") as result_file:
+            json.dump(experiment.results, result_file)
 
 
 if __name__ == "__main__":
