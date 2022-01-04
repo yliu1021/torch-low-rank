@@ -102,6 +102,8 @@ def main():
         )
         with open(save_loc, "w") as result_file:
             json.dump(experiment.results, result_file)
+            result_file.flush()
+        print("Saved")
 
 
 if __name__ == "__main__":
