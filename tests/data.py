@@ -1,8 +1,10 @@
+from typing import Tuple
+
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.datasets import cifar10, cifar100
 
-Dataset = tuple[np.ndarray, np.ndarray]
+Dataset = Tuple[np.ndarray, np.ndarray]
 
 
 def _normalize_x(x: np.ndarray) -> np.ndarray:
@@ -15,7 +17,7 @@ def _one_hot_y(y: np.ndarray) -> np.ndarray:
     return tf.one_hot(y, depth=num_classes)
 
 
-def load_data(dataset: str) -> tuple[Dataset, Dataset]:
+def load_data(dataset: str) -> Tuple[Dataset, Dataset]:
     if dataset == "cifar10":
         load = cifar10.load_data
     elif dataset == "cifar100":

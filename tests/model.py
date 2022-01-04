@@ -1,3 +1,4 @@
+from typing import List
 from tensorflow.keras.layers import (
     AveragePooling2D,
     Conv2D,
@@ -11,7 +12,7 @@ from tensorflow.keras.models import Sequential
 from lowrank import LRDense, LRConv2D
 
 
-def get_model(input_shape: list[int], num_classes: int, rank: int):
+def get_model(input_shape: List[int], num_classes: int, rank: int):
     return Sequential(
         [
             InputLayer(input_shape=input_shape),
@@ -30,15 +31,15 @@ def get_model(input_shape: list[int], num_classes: int, rank: int):
     )
 
 
-def get_lr_conv_model(input_shape: list[int], num_classes: int, rank: int):
+def get_lr_conv_model(input_shape: List[int], num_classes: int, rank: int):
     return Sequential(
         [
             InputLayer(input_shape=input_shape),
             LRConv2D(64, 3, rank=32, activation="relu", padding="same"),
             MaxPool2D(),
-            LRConv2D(128, 3, rank=64, activation="relu", padding="same"),
+            LRConv2D(128, 3, rank=32, activation="relu", padding="same"),
             MaxPool2D(),
-            LRConv2D(256, 3, rank=64, activation="relu", padding="same"),
+            LRConv2D(256, 3, rank=32, activation="relu", padding="same"),
             MaxPool2D(),
             LRConv2D(512, 3, rank=32, activation="relu", padding="same"),
             AveragePooling2D(),

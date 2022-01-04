@@ -1,1 +1,1 @@
-from .impl import LRDense, LRConv2D
+from .impl import LRConv2D, LRDense

@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 
 import tensorflow as tf
 from tensorflow.keras.initializers import Zeros
@@ -34,7 +34,7 @@ class LRConv2D(LowRankLayer):
     def __init__(
         self,
         filters: int,
-        kernel_size: Union[int, tuple[int, int]],
+        kernel_size: Union[int, Tuple[int, int]],
         rank: int,
         strides: int = 1,
         activation: Optional[str] = None,

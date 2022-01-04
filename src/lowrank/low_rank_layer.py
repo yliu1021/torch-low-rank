@@ -1,10 +1,10 @@
-from typing import Optional, Union
+from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import activations
 from tensorflow.keras.initializers import GlorotUniform
-from tensorflow.keras.layers import Layer, Conv2D
+from tensorflow.keras.layers import Conv2D, Layer
 
 
 class LowRankLayer(Layer):
@@ -20,7 +20,9 @@ class LowRankLayer(Layer):
         self.activation = activations.get(activation)
 
         self.num_inputs: Optional[int] = None
-        self.kernels: dict[int, Union[tf.Variable, tuple[tf.Variable, tf.Variable]]] = {}
+        self.kernels: Dict[
+            int, Union[tf.Variable, Tuple[tf.Variable, tf.Variable]]
+        ] = {}
         self.bias: Optional[tf.Variable] = None
 
     @property
@@ -80,9 +82,11 @@ class LowRankLayer(Layer):
                 self.add_weight(
                     name=f"kernel_{rank}_u",
                     shape=(self.num_inputs, rank),
-                    initializer=GlorotUniform()),
+                    initializer=GlorotUniform(),
+                ),
                 self.add_weight(
                     name=f"kernel_{rank}_v",
                     shape=(rank, self.num_outputs),
-                    initializer=GlorotUniform()),
+                    initializer=GlorotUniform(),
+                ),
             )
