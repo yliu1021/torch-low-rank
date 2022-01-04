@@ -20,11 +20,8 @@ class UpdateRankExperiment:
         if total_epochs < rank_update_epoch:
             raise ValueError("Total epochs must be greater than or equal to rank update epoch")
         (self.x_train, self.y_train), (self.x_test, self.y_test) = data.load_data(
-            "cifar10"
+            "cifar100"
         )
-        # self.model = model.get_model(
-        #     self.x_train.shape[1:], self.y_train.shape[-1], rank=initial_rank
-        # )
         self.model = model.get_lr_conv_model(
             self.x_train.shape[1:], self.y_train.shape[-1], rank=initial_rank
         )
@@ -85,21 +82,21 @@ class UpdateRankExperiment:
 
 def main():
     ranks = [-1, 160, 60, 10, 5, 1]
-    for initial_ranks in ranks:
+    for initial_rank in ranks:
         for new_rank in ranks:
-            if new_rank == initial_ranks:
+            if new_rank == initial_rank:
                 epochs = [0]
             else:
                 epochs = [0, 1, 2, 3]
             for update_epoch in epochs:
-                print(f"Starting experiment: {initial_ranks} {new_rank} {update_epoch}")
-                name = f"{initial_ranks}_{new_rank}_{update_epoch}.json"
-                save_loc = os.path.join("set_rank_results_conv_cifar10", name)
+                print(f"Starting experiment: {initial_rank} {new_rank} {update_epoch}")
+                name = f"{initial_rank}_{new_rank}_{update_epoch}.json"
+                save_loc = os.path.join("set_rank_results_conv_cifar100", name)
                 if os.path.exists(save_loc):
                     print("Experiment already done, skipping")
                     continue
                 experiment = UpdateRankExperiment(
-                    initial_rank=-1 if initial_ranks == 256 else initial_ranks,
+                    initial_rank=initial_rank,
                     new_rank=new_rank,
                     rank_update_epoch=update_epoch,
                     total_epochs=50,
