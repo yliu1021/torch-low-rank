@@ -7,6 +7,7 @@ import random
 import data
 import model
 import numpy as np
+import tensorflow as tf
 from tensorflow.keras import losses, metrics, optimizers
 
 import lowrank
@@ -107,4 +108,12 @@ def main():
 
 
 if __name__ == "__main__":
+    gpus = tf.config.list_physical_devices("GPU")
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            tf.config.set_visible_devices(gpus[2], "GPU")
+        except RuntimeError as e:
+            print(e)
     main()
