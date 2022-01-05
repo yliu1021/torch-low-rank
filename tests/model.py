@@ -1,5 +1,6 @@
 from typing import List
 
+from lowrank import LRConv2D, LRDense
 from tensorflow.keras.layers import (
     AveragePooling2D,
     Conv2D,
@@ -9,8 +10,6 @@ from tensorflow.keras.layers import (
     MaxPool2D,
 )
 from tensorflow.keras.models import Sequential
-
-from lowrank import LRConv2D, LRDense
 
 
 def get_model(input_shape: List[int], num_classes: int, rank: int):

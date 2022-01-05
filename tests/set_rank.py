@@ -1,16 +1,17 @@
+import argparse
 import datetime
 import itertools
 import json
 import os
 import random
 
-import data
-import model
+import lowrank
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import losses, metrics, optimizers
 
-import lowrank
+import data
+import model
 
 
 class UpdateRankExperiment:
@@ -110,10 +111,23 @@ def main():
 if __name__ == "__main__":
     gpus = tf.config.list_physical_devices("GPU")
     if gpus:
+        parser = argparse.ArgumentParser(
+            description="Run multiple low rank training runs"
+        )
+        parser.add_argument(
+            "--gpu",
+            default=0,
+            type=int,
+            choices=range(len(gpus)),
+            required=True,
+            help="The GPU to use for this experiment. This should be an integer ranging from 0 to "
+            "num_gpu - 1",
+        )
+        args = parser.parse_args()
         try:
             for gpu in gpus:
                 tf.config.experimental.set_memory_growth(gpu, True)
-            tf.config.set_visible_devices(gpus[2], "GPU")
+            tf.config.set_visible_devices(gpus[args.gpu], "GPU")
         except RuntimeError as e:
             print(e)
     main()

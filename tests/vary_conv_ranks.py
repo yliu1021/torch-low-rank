@@ -5,13 +5,13 @@ import os
 import random
 from typing import List
 
-import data
-import model
+import lowrank
+import lowrank.low_rank_layer
 import numpy as np
 from tensorflow.keras import losses, metrics, optimizers
 
-import lowrank
-import lowrank.low_rank_layer
+import data
+import model
 
 
 class UpdateConvRanksExperiment:
