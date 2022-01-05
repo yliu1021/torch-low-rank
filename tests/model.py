@@ -50,7 +50,10 @@ def get_lr_conv_model(input_shape: List[int], num_classes: int, rank: int):
         ]
     )
 
-def get_vary_conv_rank_model(input_shape: List[int], num_classes: int, initial_ranks: list[int]):
+
+def get_vary_conv_rank_model(
+    input_shape: List[int], num_classes: int, initial_ranks: List[int]
+):
     return Sequential(
         [
             InputLayer(input_shape=input_shape),
