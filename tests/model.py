@@ -49,3 +49,21 @@ def get_lr_conv_model(input_shape: List[int], num_classes: int, rank: int):
             Dense(num_classes, activation="softmax"),
         ]
     )
+
+def get_vary_conv_rank_model(input_shape: List[int], num_classes: int, initial_ranks: list[int]):
+    return Sequential(
+        [
+            InputLayer(input_shape=input_shape),
+            LRConv2D(64, 3, rank=initial_ranks[0], activation="relu", padding="same"),
+            MaxPool2D(),
+            LRConv2D(128, 3, rank=initial_ranks[1], activation="relu", padding="same"),
+            MaxPool2D(),
+            LRConv2D(256, 3, rank=initial_ranks[2], activation="relu", padding="same"),
+            MaxPool2D(),
+            LRConv2D(512, 3, rank=initial_ranks[3], activation="relu", padding="same"),
+            AveragePooling2D(),
+            Flatten(),
+            LRDense(256, rank=initial_ranks[4], activation="relu"),
+            Dense(num_classes, activation="softmax"),
+        ]
+    )
