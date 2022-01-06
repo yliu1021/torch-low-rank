@@ -1,8 +1,8 @@
+import argparse
 import datetime
 import itertools
 import json
 import os
-import argparse
 from typing import List
 
 import lowrank
@@ -130,7 +130,7 @@ if __name__ == "__main__":
             choices=range(len(gpus)),
             required=True,
             help="The GPU to use for this experiment. This should be an integer ranging from 0 to "
-                 "num_gpu - 1",
+            "num_gpu - 1",
         )
         args = parser.parse_args()
         try:
