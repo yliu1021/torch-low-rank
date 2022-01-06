@@ -109,7 +109,7 @@ def main():
             initial_ranks=initial_ranks,
             new_ranks=list(new_ranks),
             rank_update_epoch=update_epoch,
-            total_epochs=2,
+            total_epochs=50,
         )
         with open(save_loc, "w") as result_file:
             json.dump(experiment.results, result_file)
