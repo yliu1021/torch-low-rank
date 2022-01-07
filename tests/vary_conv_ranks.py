@@ -3,6 +3,7 @@ import datetime
 import itertools
 import json
 import os
+import random
 from typing import List
 
 import lowrank
@@ -90,15 +91,18 @@ class UpdateConvRanksExperiment:
 
 
 def main():
-    for new_ranks in list(
-        itertools.product(
-            [-1, 3, 9, 18],
-            [-1, 16, 32, 64],
-            [-1, 32, 64, 128],
-            [-1, 64, 128, 256],
-            [10],
+    for _ in range(500):
+        new_ranks = random.choice(
+            list(
+                itertools.product(
+                    [-1, 1, 5, 10],
+                    [-1, 1, 5, 10, 50],
+                    [-1, 1, 10, 20, 100],
+                    [-1, 1, 20, 60, 200],
+                    [-1, 1, 10],
+                )
+            )
         )
-    ):
         initial_ranks = [-1, -1, -1, -1, -1]
         update_epoch = 1
         print(f"Setting to rank {new_ranks} on epoch {update_epoch}")
