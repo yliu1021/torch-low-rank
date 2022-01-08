@@ -12,8 +12,8 @@ def get_rank(model):
             continue
         eff_weight = layer.eff_weight()
         s = np.linalg.svd(eff_weight, full_matrices=False, compute_uv=False)
-        print(s.min(), s.max(), s.mean())
-        return np.sum(s > 0.001)  # since we compute (U @ V) first, there's fp rounding errors
+        print(f"Eigenvalue min/max/mean: {s.min()}, {s.max()}, {s.mean()}")
+        return np.sum(s > 1e-7)  # since we compute (U @ V) first, there's fp rounding errors
 
 
 def main():
