@@ -26,7 +26,11 @@ class LRDense(LowRankLayer):
         )
 
     def call(self, inputs, *args, **kwargs):
-        pre_act = inputs @ self.eff_weight() + self.bias
+        if self._rank == -1:
+            pre_act = inputs @ self.kernels[self._rank] + self.bias
+        else:
+            u, v = self.kernels[self._rank]
+            pre_act = inputs @ u @ v + self.bias
         return self.activation(pre_act)
 
 

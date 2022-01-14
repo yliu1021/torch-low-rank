@@ -36,7 +36,6 @@ class UpdateRankExperiment:
             optimizer=optimizers.Adam(0.0001),
             loss=losses.CategoricalCrossentropy(),
             metrics=[metrics.CategoricalAccuracy()],
-            run_eagerly=True,
         )
         self.results = {
             "initial_rank": initial_rank,
@@ -72,6 +71,7 @@ class UpdateRankExperiment:
             if not isinstance(layer, lowrank.LRDense):
                 continue
             layer.set_rank(new_rank)
+        self.model._reset_compile_cache()  # needed to reset computation graph
 
     def _record_fit(self, epochs: int):
         if epochs == 0:
