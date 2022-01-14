@@ -1,8 +1,8 @@
-import numpy as np
-from tensorflow.keras import optimizers, losses, metrics
-
 import data
 import model
+import numpy as np
+from tensorflow.keras import losses, metrics, optimizers
+
 import lowrank
 
 
@@ -13,16 +13,14 @@ def get_rank(model):
         eff_weight = layer.eff_weight()
         s = np.linalg.svd(eff_weight, full_matrices=False, compute_uv=False)
         print(f"Eigenvalue min/max/mean: {s.min()}, {s.max()}, {s.mean()}")
-        return np.sum(s > 1e-7)  # since we compute (U @ V) first, there's fp rounding errors
+        return np.sum(
+            s > 1e-7
+        )  # since we compute (U @ V) first, there's fp rounding errors
 
 
 def main():
-    (x_train, y_train), (x_test, y_test) = data.load_data(
-        "cifar100"
-    )
-    lr_model = model.get_lr_conv_model(
-        x_train.shape[1:], y_train.shape[-1], rank=-1
-    )
+    (x_train, y_train), (x_test, y_test) = data.load_data("cifar100")
+    lr_model = model.get_lr_conv_model(x_train.shape[1:], y_train.shape[-1], rank=-1)
     lr_model.compile(
         optimizer=optimizers.Adam(0.0001),
         loss=losses.CategoricalCrossentropy(),
@@ -51,6 +49,7 @@ def main():
         validation_data=(x_test, y_test),
     )
     print(f"Final rank: {get_rank(lr_model)}")
+
 
 if __name__ == "__main__":
     main()

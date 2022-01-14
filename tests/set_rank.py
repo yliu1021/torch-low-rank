@@ -5,13 +5,13 @@ import json
 import os
 import random
 
-import lowrank
+import data
+import model
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import losses, metrics, optimizers
 
-import data
-import model
+import lowrank
 
 
 class UpdateRankExperiment:
