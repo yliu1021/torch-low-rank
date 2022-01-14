@@ -88,16 +88,20 @@ class UpdateRankExperiment:
 
 
 def main():
-    for _ in range(100):
-        new_rank, update_epoch = random.choice(
-            list(itertools.product([-1, 160, 50, 10, 1], [1, 2, 3]))
+    possible_ranks = [int(round(x)) for x in np.logspace(0, np.log10(200), num=5)]
+    possible_ranks += [-1]
+    for _ in range(500):
+        initial_rank, new_rank, update_epoch = random.choice(
+            list(itertools.product(possible_ranks, possible_ranks, [1, 2, 5, 10, 25]))
         )
-        print(f"Setting to rank {new_rank} on epoch {update_epoch}")
+        print(
+            f"Initial rank: {initial_rank}, new rank: {new_rank}, update epoch: {update_epoch}"
+        )
         time_str = datetime.datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
-        name = f"{new_rank}_{update_epoch}_{time_str}.json"
+        name = f"{initial_rank}, {new_rank}_{update_epoch}_{time_str}.json"
         save_loc = os.path.join("set_rank_results_cifar10", name)
         experiment = UpdateRankExperiment(
-            initial_rank=-1,
+            initial_rank=initial_rank,
             new_rank=new_rank,
             rank_update_epoch=update_epoch,
             total_epochs=50,
