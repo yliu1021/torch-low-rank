@@ -38,6 +38,7 @@ class UpdateConvRanksExperiment:
             optimizer=optimizers.Adam(0.0001),
             loss=losses.CategoricalCrossentropy(),
             metrics=[metrics.CategoricalAccuracy()],
+            run_eagerly=True,
         )
         self.results = {
             "initial_ranks": initial_ranks,
@@ -55,7 +56,6 @@ class UpdateConvRanksExperiment:
 
         print("Updating rank")
         self._set_rank(new_ranks)
-        self.model.build(input_shape=self.x_train.shape[1:])
 
         print("Evaluating post update")
         self._eval_model(self.x_train, self.y_train, "post_update")

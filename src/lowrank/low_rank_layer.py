@@ -68,6 +68,17 @@ class LowRankLayer(Layer):
             u, v = self.kernels[self._rank]
             return u @ v
 
+    @property
+    def trainable_weights(self):
+        if self._rank == -1:
+            weights = [self.kernels[self._rank]]
+        else:
+            u, v = self.kernels[self._rank]
+            weights = [u, v]
+        if self.bias is not None:
+            weights.append(self.bias)
+        return weights
+
     def _create_weights(self, rank: int):
         if rank in self.kernels:
             return

@@ -27,15 +27,16 @@ class UpdateRankExperiment:
                 "Total epochs must be greater than or equal to rank update epoch"
             )
         (self.x_train, self.y_train), (self.x_test, self.y_test) = data.load_data(
-            "cifar100"
+            "cifar10"
         )
-        self.model = model.get_lr_conv_model(
+        self.model = model.get_model(
             self.x_train.shape[1:], self.y_train.shape[-1], rank=initial_rank
         )
         self.model.compile(
             optimizer=optimizers.Adam(0.0001),
             loss=losses.CategoricalCrossentropy(),
             metrics=[metrics.CategoricalAccuracy()],
+            run_eagerly=True,
         )
         self.results = {
             "initial_rank": initial_rank,
@@ -53,7 +54,6 @@ class UpdateRankExperiment:
 
         print("Updating rank")
         self._set_rank(new_rank)
-        self.model.build(input_shape=self.x_train.shape[1:])
 
         print("Evaluating post update")
         self._eval_model(self.x_train, self.y_train, "post_update")
@@ -90,12 +90,12 @@ class UpdateRankExperiment:
 def main():
     for _ in range(100):
         new_rank, update_epoch = random.choice(
-            list(itertools.product([160, 50, 10, 1], [1, 2, 3]))
+            list(itertools.product([-1, 160, 50, 10, 1], [1, 2, 3]))
         )
         print(f"Setting to rank {new_rank} on epoch {update_epoch}")
         time_str = datetime.datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
         name = f"{new_rank}_{update_epoch}_{time_str}.json"
-        save_loc = os.path.join("set_rank_results_conv_cifar100", name)
+        save_loc = os.path.join("set_rank_results_cifar10", name)
         experiment = UpdateRankExperiment(
             initial_rank=-1,
             new_rank=new_rank,
