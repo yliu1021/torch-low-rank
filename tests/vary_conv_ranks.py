@@ -95,30 +95,30 @@ def main():
         new_ranks = random.choice(
             list(
                 itertools.product(
-                    [-1, 1, 5, 24, 118],
-                    [-1, 1, 6, 34, 198],
-                    [-1, 1, 7, 48, 333],
-                    [-1, 1, 8, 68, 559],
-                    [-1, 4, 16, 64],
+                    [-1, 5, 24],
+                    [-1, 6, 34],
+                    [-1, 7, 48],
+                    [-1, 8, 68],
+                    [-1, 16, 64],
                 )
             )
         )
         initial_ranks = [-1, -1, -1, -1, -1]
-        update_epoch = 1
-        print(f"Setting to rank {new_ranks} on epoch {update_epoch}")
-        time_str = datetime.datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
-        name = f"{str(new_ranks)}_{update_epoch}_{time_str}.json"
-        save_loc = os.path.join("vary_conv_ranks_results/", name)
-        experiment = UpdateConvRanksExperiment(
-            initial_ranks=initial_ranks,
-            new_ranks=list(new_ranks),
-            rank_update_epoch=update_epoch,
-            total_epochs=50,
-        )
-        with open(save_loc, "w") as result_file:
-            json.dump(experiment.results, result_file)
-            result_file.flush()
-        print("Saved")
+        for update_epoch in [1, 2, 5]:
+            print(f"Setting to rank {new_ranks} on epoch {update_epoch}")
+            time_str = datetime.datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
+            name = f"{str(new_ranks)}_{update_epoch}_{time_str}.json"
+            save_loc = os.path.join("vary_conv_ranks_results/", name)
+            experiment = UpdateConvRanksExperiment(
+                initial_ranks=initial_ranks,
+                new_ranks=list(new_ranks),
+                rank_update_epoch=update_epoch,
+                total_epochs=50,
+            )
+            with open(save_loc, "w") as result_file:
+                json.dump(experiment.results, result_file)
+                result_file.flush()
+            print("Saved")
 
 
 if __name__ == "__main__":
