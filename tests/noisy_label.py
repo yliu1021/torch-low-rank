@@ -5,30 +5,28 @@ import json
 import os
 import random
 
-import numpy as np
 import tensorflow as tf
 
 from set_rank_experiment import UpdateRankExperiment
 
 
 def main():
-    possible_ranks = [int(round(x)) for x in np.logspace(0, np.log10(200), num=5)]
-    possible_ranks += [-1]
     for _ in range(500):
-        initial_rank, new_rank, update_epoch = random.choice(
-            list(itertools.product(possible_ranks, possible_ranks, [1, 2, 5, 10, 25]))
+        update_epoch, noise = random.choice(
+            list(itertools.product([1, 2, 5, 10, 25], [0, 0.2, 0.5, 0.7]))
         )
         print(
-            f"Initial rank: {initial_rank}, new rank: {new_rank}, update epoch: {update_epoch}"
+            f"Update epoch: {update_epoch}, Noise: {noise}"
         )
         time_str = datetime.datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
-        name = f"{initial_rank}, {new_rank}_{update_epoch}_{time_str}.json"
-        save_loc = os.path.join("set_rank_results_cifar10", name)
+        name = f"{update_epoch}_{noise}_{time_str}.json"
+        save_loc = os.path.join("noisy_label_results", name)
         experiment = UpdateRankExperiment(
-            initial_rank=initial_rank,
-            new_rank=new_rank,
+            initial_rank=200,
+            new_rank=14,
             rank_update_epoch=update_epoch,
             total_epochs=50,
+            noise=noise
         )
         with open(save_loc, "w") as result_file:
             json.dump(experiment.results, result_file)
@@ -49,7 +47,7 @@ if __name__ == "__main__":
             choices=range(len(gpus)),
             required=True,
             help="The GPU to use for this experiment. This should be an integer ranging from 0 to "
-            "num_gpu - 1",
+                 "num_gpu - 1",
         )
         args = parser.parse_args()
         try:
