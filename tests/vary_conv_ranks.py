@@ -96,15 +96,15 @@ def main():
         new_ranks = random.choice(
             list(
                 itertools.product(
-                    [-1, 5, 24],
-                    [-1, 6, 34],
-                    [-1, 7, 48],
-                    [-1, 8, 68],
-                    [-1, 16, 64],
+                    [-1],
+                    [-1, 6, 14, 34],
+                    [-1, 48, 64, 96],
+                    [-1, 8, 16, 32, 68],
+                    [14],
                 )
             )
         )
-        for update_epoch in [1, 2, 3, 25]:
+        for update_epoch in [1, 3, 5, 7]:
             print(f"Setting to rank {new_ranks} on epoch {update_epoch}")
             time_str = datetime.datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
             name = f"{str(new_ranks)}_{update_epoch}_{time_str}.json"
