@@ -1,8 +1,8 @@
+import lowrank
 import numpy as np
-from tensorflow.keras import optimizers, losses, metrics
+from tensorflow.keras import losses, metrics, optimizers
 
 import data
-import lowrank
 import model
 
 
@@ -13,7 +13,7 @@ class UpdateRankExperiment:
         new_rank: int,
         rank_update_epoch: int,
         total_epochs: int,
-        noise: float = 0.0
+        noise: float = 0.0,
     ):
         if total_epochs < rank_update_epoch:
             raise ValueError(
@@ -35,7 +35,7 @@ class UpdateRankExperiment:
             "new_rank": new_rank,
             "rank_update_epoch": rank_update_epoch,
             "total_epochs": total_epochs,
-            "noise": noise
+            "noise": noise,
         }
 
         print("Starting training")

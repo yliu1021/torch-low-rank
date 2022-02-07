@@ -1,9 +1,9 @@
-import data
-import model
+import lowrank
 import numpy as np
 from tensorflow.keras import losses, metrics, optimizers
 
-import lowrank
+import data
+import model
 
 
 def get_rank(model):

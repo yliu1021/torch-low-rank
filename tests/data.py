@@ -47,6 +47,8 @@ def load_data(dataset: str, noise: float = 0.0) -> Tuple[Dataset, Dataset]:
     y_train = _one_hot_y(y_train)
     y_test = _one_hot_y(y_test)
     num_noisy_labels = int(round(noise * len(y_train)))
-    for noisy_index in np.random.choice(len(y_train), size=num_noisy_labels, replace=False):
+    for noisy_index in np.random.choice(
+        len(y_train), size=num_noisy_labels, replace=False
+    ):
         y_train[noisy_index] = _shuffle(y_train[noisy_index])
     return (x_train, y_train), (x_test, y_test)
