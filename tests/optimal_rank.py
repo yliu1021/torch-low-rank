@@ -75,8 +75,8 @@ def optimize_ranks(
 
     print("Training Complete.")
 
-    baseline_initial_loss = model_losses[0]
-    baseline_final_loss = model_losses[-1]
+    baseline_initial_loss = evaluate_model_loss(initial_model, data)
+    baseline_final_loss = evaluate_model_loss(model, data)
     
     '''
     Iterate through layers to determine optimal ranks
@@ -114,10 +114,16 @@ def set_optimal_rank(
     data: Tuple[np.ndarray, np.ndarray]
 ):
     model.layers[layer_ind].set_rank(optimal_rank)
+    return evaluate_model_loss(model, data)
+
+def evaluate_model_loss(
+    model: models.Model,
+    data: Tuple[np.ndarray, np.ndarray]
+):
     model._reset_compile_cache()
     x, y = data
-    losses = model.evaluate(x, y)
-    return losses["loss"]
+    losses = model.evaluate(x, y, batch_size=64)
+    return losses[0]
 
 def optimize_rank_of_layer(
     initial_model: models.Model,
@@ -172,12 +178,12 @@ def is_sufficient_rank(
     print("Low Rank Initial Loss", lowrank_initial_loss)
     print("Low Rank Final Loss", lowrank_final_loss)
 
-    initial_loss_drop = lowrank_initial_loss - baseline_initial_loss
-    final_loss_drop = lowrank_final_loss - baseline_final_loss
-    print("Initial Loss Drop", initial_loss_drop)
-    print("Final Loss Drop", final_loss_drop)
+    initial_loss_drop_pct = (lowrank_initial_loss - baseline_initial_loss) / baseline_initial_loss
+    final_loss_drop_pct = (lowrank_final_loss - baseline_final_loss) / baseline_final_loss
+    print("Initial Loss Drop", initial_loss_drop_pct * 100, "%")
+    print("Final Loss Drop", final_loss_drop_pct * 100, "%")
 
-    return initial_loss_drop > final_loss_drop
+    return (final_loss_drop_pct < 0) or (initial_loss_drop_pct > final_loss_drop_pct)
 
 def compute_new_rank_loss(
     model: models.Model,
@@ -188,10 +194,7 @@ def compute_new_rank_loss(
     curr_rank = layer.rank
     curr_weights = layer.weights
     layer.set_rank(new_rank)
-    model._reset_compile_cache()
-    x, y = data
-    losses = model.evaluate(x, y)
-    loss = losses[0]
+    loss = evaluate_model_loss(model, data)
     layer.set_rank(curr_rank)
     layer.set_weights(curr_weights)
     model._reset_compile_cache()
