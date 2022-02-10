@@ -86,7 +86,7 @@ def optimize_ranks(
         if not isinstance(model.layers[i], low_rank_layer.LowRankLayer):
             continue
         
-        print("Determining Optimal Rank for Layer " + str(i + 1))
+        print("Determining Optimal Rank for Layer " + str(i))
 
         optimal_rank = optimize_rank_of_layer(
             initial_model=initial_model,
@@ -192,7 +192,7 @@ def compute_new_rank_loss(
     data: Tuple[np.ndarray, np.ndarray],
 ):
     curr_rank = layer.rank
-    curr_weights = layer.weights
+    curr_weights = layer.get_weights()
     layer.set_rank(new_rank)
     loss = evaluate_model_loss(model, data)
     layer.set_rank(curr_rank)
@@ -206,11 +206,17 @@ def main():
         )
     X_SHAPE = x.shape[1:]
     Y_SHAPE = y.shape[-1]
+
+    # Subset of Data
+    x = x[:, :, :, :]
+    y = y[:, :]
+
     optimize_ranks(
         model=get_unoptimized_lr__model(x.shape[1:], y.shape[-1]),
         model_copy=get_unoptimized_lr__model(x.shape[1:], y.shape[-1]),
         data=(x, y)
     )
+    
 
 if __name__ == "__main__":
     gpus = tf.config.list_physical_devices("GPU")
