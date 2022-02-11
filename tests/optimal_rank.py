@@ -22,8 +22,8 @@ def optimize_ranks(
     model: models.Model,
     model_copy: models.Model,
     data: Tuple[np.ndarray, np.ndarray],
-    layer_order: OptimizationMethod = OptimizationMethod.BACK_TO_FRONT,
-    epochs: int = 3,
+    layer_order: OptimizationMethod = OptimizationMethod.FRONT_TO_BACK,
+    epochs: int = 5,
 ):
     """
     Optimizes the ranks of a low rank model by monitoring training loss before and after
