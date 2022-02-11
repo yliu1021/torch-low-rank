@@ -91,20 +91,21 @@ class UpdateConvRanksExperiment:
 
 
 def main():
-    for _ in range(500):
+    for _ in range(1):
         initial_ranks = [-1, -1, -1, -1, -1]
         new_ranks = random.choice(
             list(
                 itertools.product(
                     [-1],
-                    [-1, 6, 14, 34],
-                    [-1, 48, 64, 96],
-                    [-1, 8, 16, 32, 68],
-                    [14],
+                    [-1],
+                    [-1],
+                    [-1],
+                    [56],
+                    [9],
                 )
             )
         )
-        for update_epoch in [1, 3, 5, 7]:
+        for update_epoch in [0, 1, 2, 5]:
             print(f"Setting to rank {new_ranks} on epoch {update_epoch}")
             time_str = datetime.datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
             name = f"{str(new_ranks)}_{update_epoch}_{time_str}.json"
