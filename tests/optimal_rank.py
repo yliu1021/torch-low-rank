@@ -22,7 +22,7 @@ def optimize_ranks(
     model: models.Model,
     model_copy: models.Model,
     data: Tuple[np.ndarray, np.ndarray],
-    layer_order: OptimizationMethod = OptimizationMethod.FRONT_TO_BACK,
+    layer_order: OptimizationMethod = OptimizationMethod.BACK_TO_FRONT,
     epochs: int = 5,
 ):
     """
