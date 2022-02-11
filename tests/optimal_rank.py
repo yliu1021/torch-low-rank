@@ -55,7 +55,7 @@ def optimize_ranks(
         )
 
     # Train for 1 epoch and save copy of model
-    loss = model.fit(x, y, batch_size=64)
+    loss = model.fit(x, y, batch_size=64, epochs=2)
     model_losses.extend(loss.history["loss"])
     # TODO: Figure out how to clone model correctly
     # initial_model = models.clone_model(model) - this fails with error
@@ -70,7 +70,7 @@ def optimize_ranks(
     print("Training For Initial Model (1 Epoch) Complete.")
 
     # Train for remaining epochs
-    loss = model.fit(x, y, batch_size=64, epochs=epochs-1)
+    loss = model.fit(x, y, batch_size=64, epochs=epochs-2)
     model_losses.extend(loss.history["loss"])
 
     print("Training Complete.")
