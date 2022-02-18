@@ -77,8 +77,7 @@ class RankOptimizer():
 
             print("Evaluating Baseline Losses")
             for j in range(self.epochs):
-                # Reset ranks to full to set weights correctly
-
+                self.set_model_weights(self.saved_weights[j])
                 baseline_losses.append(self.evaluate_model_loss())
             
             print("Determining Optimal Rank for Layer " + str(i))
@@ -146,14 +145,14 @@ class RankOptimizer():
             self.set_model_weights(self.saved_weights[i])
             lowrank_losses.append(self.compute_new_rank_loss(self.model.layers[layer_ind], new_rank))
             print("Low Rank Loss at Epoch", i+1, lowrank_losses[-1])
-            loss_drop_pcts.append((lowrank_losses[-1] - baseline_losses[-1]) / baseline_losses[-1])
+            loss_drop_pcts.append((lowrank_losses[-1] - baseline_losses[i]) / baseline_losses[i])
         
-        print("Loss Drop Percentages: ")
+        print("Fractional Increase In Loss: ")
         for loss_drop_pct in loss_drop_pcts:
             print(loss_drop_pct)
 
-        print("Initial Loss Drop", loss_drop_pcts[0] * 100, "%")
-        print("Final Loss Drop", loss_drop_pcts[-1] * 100, "%")
+        print("Initial % Increase In Loss", loss_drop_pcts[0] * 100, "%")
+        print("Final % Increase In Loss", loss_drop_pcts[-1] * 100, "%")
 
         return (loss_drop_pcts[-1] < 0) or (loss_drop_pcts[0] > loss_drop_pcts[-1])
 
