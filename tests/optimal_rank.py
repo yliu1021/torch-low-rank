@@ -104,7 +104,7 @@ class RankOptimizer():
     def optimize_rank_of_layer(
         self,
         layer_ind: int,
-        baseline_losses: list[float]
+        baseline_losses
     ):
         """
         Optimizes the rank of just 1 layer specified by `layer_ind`
@@ -137,7 +137,7 @@ class RankOptimizer():
     def is_sufficient_rank(self,
         new_rank: int,
         layer_ind: int, 
-        baseline_losses: list[float]
+        baseline_losses
     ):
         lowrank_losses = []
         loss_drop_pcts = []
@@ -175,6 +175,36 @@ class RankOptimizer():
             if isinstance(layer, low_rank_layer.LowRankLayer):
                 layer.set_rank(-1)
         self.model.set_weights(weights)
+    
+    def train_optimal_rank_model(self, start_epoch, end_epoch, val_data):
+        # Validation
+        for i in range(len(self.model.layers)):
+            if isinstance(self.model.layers[i], low_rank_layer.LowRankLayer):
+                if i not in self.optimal_ranks:
+                    raise Exception("Optimal ranks not found for all low rank layers yet. Cannot train optimized model.")
+        if start_epoch > self.epochs:
+            raise Exception("Cannot start training at this epoch. Rank Optimizer did not train so far.")
+        
+        self.set_model_weights(self.saved_weights[start_epoch-1])
+        for layer_ind in self.optimal_ranks.keys():
+            self.model.layers[layer_ind].set_rank(self.optimal_ranks[layer_ind])
+
+        x, y = self.data
+        val_x, val_y = val_data
+        train_losses = []
+        train_acc = []
+        test_losses = []
+        test_acc = []
+        for _ in range(end_epoch-start_epoch):
+            # Training
+            train_evl = self.model.fit(x, y, batch_size=64)
+            train_losses.append(train_evl.history["loss"])
+            train_acc.append(train_evl.history["categorical_accuracy"])
+            # Validation Metrics
+            test_evl = self.model.evaluate(val_x, val_y, batch_size=64)
+            test_losses.append(test_evl[0])
+            test_acc.append(test_evl[1])
+        return train_losses, train_acc, test_losses, test_acc
             
 def main():
     (x, y), val_data = data.load_data(
@@ -192,6 +222,7 @@ def main():
         data=(x, y)
     )
     rank_optimizer.run()
+    pprint(rank_optimizer.train_optimal_rank_model(start_epoch=5, end_epoch=50, val_data=val_data))
     
 
 if __name__ == "__main__":
