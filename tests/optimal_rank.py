@@ -9,6 +9,7 @@ from lowrank import low_rank_layer
 from tensorflow.keras import losses, metrics, models, optimizers
 from tensorflow.python.framework.ops import Tensor
 from tensorflow.python.training.tracking import base
+import matplotlib.pyplot as plt 
 
 import data
 from model import get_unoptimized_lr__model
@@ -147,6 +148,13 @@ class RankOptimizer():
             print("Low Rank Loss at Epoch", i+1, lowrank_losses[-1])
             loss_drop_pcts.append((lowrank_losses[-1] - baseline_losses[i]) / baseline_losses[i])
         
+        plt.plot([x+1 for x in range(self.epochs)], loss_drop_pcts)
+        plt.xlabel("Epochs")
+        plt.ylabel("Change in Loss")
+        plt.title("Layer " + str(layer_ind) + " Rank " + str(new_rank))
+        plt.savefig("layer_" + str(layer_ind) + "_rank_" + str(new_rank) + ".jpg")
+        plt.clf()
+
         print("Fractional Increase In Loss: ")
         for loss_drop_pct in loss_drop_pcts:
             print(loss_drop_pct)
@@ -203,6 +211,21 @@ class RankOptimizer():
             test_evl = self.model.evaluate(val_x, val_y, batch_size=64)
             test_losses.append(test_evl[0])
             test_acc.append(test_evl[1])
+        
+        #Plot
+        def plot(ylabel, yvalue):
+            plt.plot(range(start_epoch, end_epoch), yvalue)
+            plt.xlabel("Epochs")
+            plt.ylabel(ylabel)
+            plt.title(ylabel)
+            plt.savefig(ylabel + ".jpg")
+            plt.clf()
+        
+        plot("Train Loss", train_losses)
+        plot("Train Accuracy", train_acc)
+        plot("Validation Loss", test_losses)
+        plot("Validation Accuacy", test_acc)
+
         return train_losses, train_acc, test_losses, test_acc
             
 def main():
