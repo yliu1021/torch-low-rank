@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 
 import data
 from model import get_unoptimized_lr__model
+from sort_sv_by_score import sort_sv_by_score, SCORING_METHOD
 
 
 class OptimizationMethod(enum.Enum):
@@ -95,11 +96,15 @@ class RankOptimizer():
 
     def evaluate_model_loss(self):
         for layer_ind in self.optimal_ranks.keys():
-            self.model.layers[layer_ind].set_rank(self.optimal_ranks[layer_ind])
+            self.set_rank(layer_ind, self.optimal_ranks[layer_ind])
         self.model._reset_compile_cache()
         x, y = self.data
         losses = self.model.evaluate(x, y, batch_size=64)
         return losses[0]
+
+    def set_rank(self, layer_ind, rank):
+        sort_sv_by_score(self.model, layer_ind, self.train_data, SCORING_METHOD.SNIP)
+        self.model.layers[layer_ind].set_rank(rank)
 
     def optimize_rank_of_layer(
         self,
@@ -144,7 +149,7 @@ class RankOptimizer():
 
         for i in range(len(baseline_losses)):
             self.set_model_weights(self.saved_weights[i])
-            lowrank_losses.append(self.compute_new_rank_loss(self.model.layers[layer_ind], new_rank))
+            lowrank_losses.append(self.compute_new_rank_loss(layer=self.model.layers[layer_ind], layer_ind=layer_ind, new_rank=new_rank))
             print("Low Rank Loss at Epoch", i+1, lowrank_losses[-1])
             loss_drop_pcts.append((lowrank_losses[-1] - baseline_losses[i]) / baseline_losses[i])
         
@@ -166,13 +171,14 @@ class RankOptimizer():
 
     def compute_new_rank_loss(self, 
         layer: low_rank_layer.LowRankLayer,
+        layer_ind: int,
         new_rank: int
     ):
         curr_rank = layer.rank
         curr_weights = layer.get_weights()
-        layer.set_rank(new_rank)
+        self.set_rank(layer_ind=layer_ind, rank=new_rank)
         loss = self.evaluate_model_loss()
-        layer.set_rank(curr_rank)
+        self.set_rank(layer_ind=layer_ind, rank=curr_rank)
         layer.set_weights(curr_weights)
         self.model._reset_compile_cache()
         return loss
@@ -194,7 +200,7 @@ class RankOptimizer():
         
         self.set_model_weights(self.saved_weights[start_epoch-1])
         for layer_ind in self.optimal_ranks.keys():
-            self.model.layers[layer_ind].set_rank(self.optimal_ranks[layer_ind])
+            self.set_rank(layer_ind=layer_ind, rank=self.optimal_ranks[layer_ind])
 
         x, y = self.data
         val_x, val_y = val_data
