@@ -1,0 +1,5 @@
+sort_sv_by_score:
+  description: Runs validation of sorting singular vectors by score
+  main: tests/sort_sv_by_score
+  sourcecode:
+    -exclude: '*.json'

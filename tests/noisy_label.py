@@ -7,7 +7,7 @@ import random
 
 import tensorflow as tf
 
-from set_rank_experiment import UpdateRankExperiment
+from .set_rank_experiment import UpdateRankExperiment
 
 
 def main():

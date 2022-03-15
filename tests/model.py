@@ -1,14 +1,8 @@
 from typing import List
 
 from lowrank import LRConv2D, LRDense
-from tensorflow.keras.layers import (
-    AveragePooling2D,
-    Conv2D,
-    Dense,
-    Flatten,
-    InputLayer,
-    MaxPool2D,
-)
+from tensorflow.keras.layers import (AveragePooling2D, Conv2D, Dense, Flatten,
+                                     InputLayer, MaxPool2D)
 from tensorflow.keras.models import Sequential
 
 
@@ -49,6 +43,23 @@ def get_lr_conv_model(input_shape: List[int], num_classes: int, rank: int):
         ]
     )
 
+def get_unoptimized_lr__model(input_shape: List[int], num_classes: int):
+        return Sequential(
+        [
+            InputLayer(input_shape=input_shape),
+            LRConv2D(64, 3, rank=-1, activation="relu", padding="same"),
+            MaxPool2D(),
+            LRConv2D(128, 3, rank=-1, activation="relu", padding="same"),
+            MaxPool2D(),
+            LRConv2D(256, 3, rank=-1, activation="relu", padding="same"),
+            MaxPool2D(),
+            LRConv2D(512, 3, rank=-1, activation="relu", padding="same"),
+            AveragePooling2D(),
+            Flatten(),
+            LRDense(256, rank=-1, activation="relu"),
+            Dense(num_classes, activation="softmax"),
+        ]
+    )
 
 def get_vary_conv_rank_model(
     input_shape: List[int], num_classes: int, initial_ranks: List[int]

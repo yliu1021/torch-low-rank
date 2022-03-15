@@ -8,22 +8,26 @@ from tensorflow.keras.layers import Conv2D, Layer
 
 
 class LowRankLayer(Layer):
-    def __init__(self, rank: int, activation: Optional[str] = None):
+    def __init__(self, rank: int, activation: Optional[str] = None, **kwargs):
         """
         Creates a low rank layer with a given rank and (optionally) an activation.
         :param rank: the rank of the layer. Specify -1 for full rank
         :param activation: an optional activation to pass. Values can be "relu", "softmax",
         or "sigmoid"
         """
-        super().__init__()
+        super().__init__(**kwargs)
         self._rank = rank
         self.activation = activations.get(activation)
-
         self.num_inputs: Optional[int] = None
+        self.num_outputs: Optional[int] = None
         self.kernels: Dict[
             int, Union[tf.Variable, Tuple[tf.Variable, tf.Variable]]
         ] = {}
         self.bias: Optional[tf.Variable] = None
+
+    @property
+    def max_rank(self) -> int:
+        return min(self.num_outputs, self.num_inputs)
 
     @property
     def rank(self) -> int:
@@ -40,7 +44,7 @@ class LowRankLayer(Layer):
         self._rank = new_rank
         if self._rank <= 0 and self._rank != -1:
             raise ValueError(f"Rank must be -1 or positive. Got {self._rank} instead.")
-        if self._rank > min(self.num_inputs, self.num_outputs):
+        if self._rank > self.max_rank:
             raise ValueError("Rank must be less than min(num inputs, num outputs)")
         self._create_weights(self._rank)
         if self._rank == -1:
@@ -78,6 +82,13 @@ class LowRankLayer(Layer):
         if self.bias is not None:
             weights.append(self.bias)
         return weights
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "rank": self.rank,
+            "activation": self.activation
+        })
 
     def _create_weights(self, rank: int):
         if rank in self.kernels:
