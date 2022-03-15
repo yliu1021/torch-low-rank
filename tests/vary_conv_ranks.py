@@ -12,8 +12,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import losses, metrics, optimizers
 
-import data
-import model
+from . import data
+from . import model
 
 
 class UpdateConvRanksExperiment:

@@ -3,8 +3,8 @@ from enum import Enum
 import numpy as np
 from tensorflow.keras import losses, metrics, models, optimizers
 import tensorflow as tf 
-import data
-from model import get_unoptimized_lr__model
+from . import data
+from .model import get_unoptimized_lr__model
 
 class SCORING_METHOD(Enum):
     SNIP = 1
@@ -42,7 +42,7 @@ def sort_sv_by_score(model: models.Model, layer_ind: int, train_data, scoring_me
     u.assign(tf.transpose(tf.concat(values=[tf.transpose(u)[i:i+1,:] for i in ranking], axis=0)))
 
     # Sanity Check! Checks if top ranked singular vector is placed at top now
-    assert(original_v[ranking[0]:ranking[0]+1, :], v[0:1, :])
+    assert(original_v[ranking[0]:ranking[0]+1, :] == v[0:1, :])
 
 if __name__ == "__main__":
 
