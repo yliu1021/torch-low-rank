@@ -7,6 +7,8 @@ Submodules
 tests.data module
 -----------------
 
+Testing if I can use automodule in conjunction with regular manually added text. 
+
 .. automodule:: tests.data
    :members:
    :undoc-members:
