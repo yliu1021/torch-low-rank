@@ -1,3 +1,7 @@
+'''
+Module for loading and pre-processing data.
+'''
+
 from typing import Tuple
 
 import numpy as np
@@ -10,12 +14,10 @@ Dataset = Tuple[np.ndarray, np.ndarray]
 def _normalize_x(x: np.ndarray) -> np.ndarray:
     return x.astype(np.float32) / 255.0
 
-
 def _one_hot_y(y: np.ndarray) -> np.ndarray:
     num_classes = np.max(y) + 1
     y = np.squeeze(y)
     return np.array(tf.one_hot(y, depth=num_classes))
-
 
 def _shuffle(label: np.ndarray) -> np.ndarray:
     shuffled_label = np.zeros_like(label)
@@ -29,8 +31,10 @@ def _shuffle(label: np.ndarray) -> np.ndarray:
 def load_data(dataset: str, noise: float = 0.0) -> Tuple[Dataset, Dataset]:
     """
     Loads a dataset and adds noisy labels to `noise` percent of the training labels
+
     :param dataset: the dataset to load: "cifar10" or "cifar100"
     :param noise: a number between 0 and 1
+
     :return: a tuple of Datasets for training and testing
     """
     if dataset == "cifar10":
