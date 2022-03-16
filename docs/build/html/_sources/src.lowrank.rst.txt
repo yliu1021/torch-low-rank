@@ -19,11 +19,3 @@ src.lowrank.low\_rank\_layer module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: src.lowrank
-   :members:
-   :undoc-members:
-   :show-inheritance:

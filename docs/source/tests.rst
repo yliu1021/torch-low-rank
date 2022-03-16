@@ -1,13 +1,13 @@
 tests package
 =============
 
+This package contais the experiment code using the low rank implementations. 
+
 Submodules
 ----------
 
 tests.data module
 -----------------
-
-Testing if I can use automodule in conjunction with regular manually added text. 
 
 .. automodule:: tests.data
    :members:
@@ -74,14 +74,6 @@ tests.vary\_conv\_ranks module
 ------------------------------
 
 .. automodule:: tests.vary_conv_ranks
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: tests
    :members:
    :undoc-members:
    :show-inheritance:
