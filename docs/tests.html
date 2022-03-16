@@ -51,7 +51,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#module-tests.set_rank_experiment">tests.set_rank_experiment module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-tests.sort_sv_by_score">tests.sort_sv_by_score module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-tests.vary_conv_ranks">tests.vary_conv_ranks module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-tests">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -85,42 +84,109 @@
              
   <section id="tests-package">
 <h1>tests package<a class="headerlink" href="#tests-package" title="Permalink to this headline"></a></h1>
+<p>This package contais the experiment code using the low rank implementations.</p>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
 </section>
 <section id="module-tests.data">
 <span id="tests-data-module"></span><h2>tests.data module<a class="headerlink" href="#module-tests.data" title="Permalink to this headline"></a></h2>
+<p>Module for loading and pre-processing data.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="tests.data.load_data">
 <span class="sig-prename descclassname"><span class="pre">tests.data.</span></span><span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/tests/data.html#load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tests.data.load_data" title="Permalink to this definition"></a></dt>
-<dd><p>Loads a dataset and adds noisy labels to <cite>noise</cite> percent of the training labels
-:param dataset: the dataset to load: “cifar10” or “cifar100”
-:param noise: a number between 0 and 1
-:return: a tuple of Datasets for training and testing</p>
+<dd><p>Loads a dataset and adds noisy labels to <cite>noise</cite> percent of the training labels</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – the dataset to load: “cifar10” or “cifar100”</p></li>
+<li><p><strong>noise</strong> – a number between 0 and 1</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a tuple of Datasets for training and testing</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
 <section id="module-tests.model">
 <span id="tests-model-module"></span><h2>tests.model module<a class="headerlink" href="#module-tests.model" title="Permalink to this headline"></a></h2>
+<p>Module containing the different models evaluated by experiments.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="tests.model.get_lr_conv_model">
 <span class="sig-prename descclassname"><span class="pre">tests.model.</span></span><span class="sig-name descname"><span class="pre">get_lr_conv_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tests/model.html#get_lr_conv_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tests.model.get_lr_conv_model" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_shape</strong> – list of integers with input shape</p></li>
+<li><p><strong>num_classes</strong> – number of classes of output</p></li>
+</ul>
+</dd>
+<dt class="field-even">Rank</dt>
+<dd class="field-even"><p>initial rank for LRDense layer used in 2nd last layer</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Model with 4 LRConv layers with rank initialized to 32, followed by a LRDense layer (rank passed as param) and a standard dense layer</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="tests.model.get_model">
 <span class="sig-prename descclassname"><span class="pre">tests.model.</span></span><span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tests/model.html#get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tests.model.get_model" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_shape</strong> – list of integers with input shape</p></li>
+<li><p><strong>num_classes</strong> – number of classes of output</p></li>
+</ul>
+</dd>
+<dt class="field-even">Rank</dt>
+<dd class="field-even"><p>initial rank for LRDense layer used in 2nd last layer</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Model with 4 convolutions layers, followed by a LRDense layer (rank passed as param) and a standard dense layer</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="tests.model.get_unoptimized_lr__model">
 <span class="sig-prename descclassname"><span class="pre">tests.model.</span></span><span class="sig-name descname"><span class="pre">get_unoptimized_lr__model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tests/model.html#get_unoptimized_lr__model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tests.model.get_unoptimized_lr__model" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_shape</strong> – list of integers with input shape</p></li>
+<li><p><strong>num_classes</strong> – number of classes of output</p></li>
+</ul>
+</dd>
+<dt class="field-even">Rank</dt>
+<dd class="field-even"><p>initial rank for LRDense layer used in 2nd last layer</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Model with 4 LRConv layers with no initial rank constraint, followed by a LRDense layer with no initial rank constraint and a standard dense layer</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="tests.model.get_vary_conv_rank_model">
 <span class="sig-prename descclassname"><span class="pre">tests.model.</span></span><span class="sig-name descname"><span class="pre">get_vary_conv_rank_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_ranks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tests/model.html#get_vary_conv_rank_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tests.model.get_vary_conv_rank_model" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_shape</strong> – list of integers with input shape</p></li>
+<li><p><strong>num_classes</strong> – number of classes of output</p></li>
+</ul>
+</dd>
+<dt class="field-even">Initial_ranks</dt>
+<dd class="field-even"><p>list specifying initial ranks for each LRLayer</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Model with 4 LRConv layers with no initial rank constraint, followed by a LRDense layer with no initial rank constraint and a standard dense layer</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 <section id="module-tests.noisy_label">
@@ -273,9 +339,6 @@ compression at various epochs</p>
 <span class="sig-prename descclassname"><span class="pre">tests.vary_conv_ranks.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tests/vary_conv_ranks.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tests.vary_conv_ranks.main" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
-</section>
-<section id="module-tests">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-tests" title="Permalink to this headline"></a></h2>
 </section>
 </section>
 
