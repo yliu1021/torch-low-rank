@@ -6,3 +6,5 @@ implement some common TensorFlow layers with low rank
 representations.
 
 Documentation: https://yliu1021.github.io/tensorflow-low-rank
+
+Update documentation: ```sphinx-apidoc -o docs/source/ . -f -M``` in root directory

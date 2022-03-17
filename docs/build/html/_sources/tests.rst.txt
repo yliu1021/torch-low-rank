@@ -1,7 +1,10 @@
 tests package
 =============
 
-This package contais the experiment code using the low rank implementations. 
+.. automodule:: tests
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Submodules
 ----------
@@ -66,6 +69,14 @@ tests.set\_rank\_experiment module
 ----------------------------------
 
 .. automodule:: tests.set_rank_experiment
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.singular\_value\_distribution module
+------------------------------------------
+
+.. automodule:: tests.singular_value_distribution
    :members:
    :undoc-members:
    :show-inheritance:

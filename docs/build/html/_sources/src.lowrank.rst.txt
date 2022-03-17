@@ -1,6 +1,11 @@
 src.lowrank package
 ===================
 
+.. automodule:: src.lowrank
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Submodules
 ----------
 

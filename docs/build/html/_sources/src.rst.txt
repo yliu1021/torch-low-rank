@@ -1,7 +1,10 @@
-src namespace
-=============
+src package
+===========
 
-.. py:module:: src
+.. automodule:: src
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Subpackages
 -----------
