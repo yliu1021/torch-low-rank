@@ -14,6 +14,14 @@ tests.data module
    :undoc-members:
    :show-inheritance:
 
+tests.evaluate\_sv\_ranking module
+----------------------------------
+
+.. automodule:: tests.evaluate_sv_ranking
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 tests.model module
 ------------------
 
