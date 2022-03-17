@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tensorflow.keras import losses, metrics, models, optimizers
 
-from data import load_data
-from model import get_vary_conv_rank_model
+from .data import load_data
+from .model import get_vary_conv_rank_model
 
 
 def main():
