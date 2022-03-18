@@ -3,7 +3,7 @@ import numpy as np
 from tensorflow.keras import losses, metrics, optimizers
 
 from . import data
-from . import model
+from . import models
 
 
 def get_rank(model):
@@ -20,7 +20,7 @@ def get_rank(model):
 
 def main():
     (x_train, y_train), (x_test, y_test) = data.load_data("cifar100")
-    lr_model = model.get_lr_conv_model(x_train.shape[1:], y_train.shape[-1], rank=-1)
+    lr_model = models.get_lr_conv_model(x_train.shape[1:], y_train.shape[-1], rank=-1)
     lr_model.compile(
         optimizer=optimizers.Adam(0.0001),
         loss=losses.CategoricalCrossentropy(),

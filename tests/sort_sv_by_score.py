@@ -4,15 +4,25 @@ import numpy as np
 from tensorflow.keras import losses, metrics, models, optimizers
 import tensorflow as tf 
 from . import data
-from .model import get_unoptimized_lr__model
+from .models import get_unoptimized_lr__model
 
 class SCORING_METHOD(Enum):
+    MAGNITUDE=0
     SNIP = 1
+    DELTA_OUTPUT = 2
+
+    @staticmethod
+    def from_string(s):
+        try:
+            return SCORING_METHOD[s]
+        except KeyError:
+            raise ValueError()
 
 
 def sort_sv_by_score(model: models.Model, layer_ind: int, train_data, scoring_method: SCORING_METHOD):
-    if scoring_method != SCORING_METHOD.SNIP:
-        raise NotImplementedError()
+    
+    if scoring_method == SCORING_METHOD.MAGNITUDE:
+        return
 
     train_x, train_y = train_data
     layer = model.layers[layer_ind]
@@ -25,16 +35,27 @@ def sort_sv_by_score(model: models.Model, layer_ind: int, train_data, scoring_me
     u, v = layer.kernels[layer.rank]
     scores = []
     original_v = deepcopy(v)
-    for i in range(v.shape[0]):
-        new_v = None
-        if i != 0:
-            new_v = tf.concat(values=[v[:i,:], tf.zeros_like(v[i:i+1,:]), v[i+1:,:]], axis=0)
-        else:
-            new_v = tf.concat(values=[tf.zeros_like(v[i:i+1,:]), v[i+1:,:]], axis=0)
-        v.assign(new_v)
-        new_loss = model.evaluate(train_x, train_y)[0]
-        scores.append(-1 * new_loss)
-        v.assign(original_v)
+
+    if scoring_method == SCORING_METHOD.SNIP:
+        for i in range(v.shape[0]):
+            new_v = None
+            if i != 0:
+                new_v = tf.concat(values=[v[:i,:], tf.zeros_like(v[i:i+1,:]), v[i+1:,:]], axis=0)
+            else:
+                new_v = tf.concat(values=[tf.zeros_like(v[i:i+1,:]), v[i+1:,:]], axis=0)
+            v.assign(new_v)
+            new_loss = model.evaluate(train_x, train_y)[0]
+            scores.append(-1 * new_loss)
+            v.assign(original_v)
+    elif scoring_method == SCORING_METHOD.DELTA_OUTPUT:
+        raise NotImplementedError("Implementation not complete yet for " + str(SCORING_METHOD.DELTA_OUTPUT))
+        for j in range(layer_ind+1, len(model.layers)):
+            x = model.layers[j](x)
+
+        for i in range(v.shape[0]):
+            x = u[:, i:i+1]
+            for j in range(layer_ind+1, len(model.layers)):
+                x = model.layers[j](x)
 
     # Sort by score
     ranking = np.argsort(scores)
@@ -42,7 +63,7 @@ def sort_sv_by_score(model: models.Model, layer_ind: int, train_data, scoring_me
     u.assign(tf.transpose(tf.concat(values=[tf.transpose(u)[i:i+1,:] for i in ranking], axis=0)))
 
     # Sanity Check! Checks if top ranked singular vector is placed at top now
-    assert(original_v[ranking[0]:ranking[0]+1, :] == v[0:1, :])
+    assert(tf.math.reduce_all(original_v[ranking[0]:ranking[0]+1, :] == v[0:1, :]))
 
 if __name__ == "__main__":
 

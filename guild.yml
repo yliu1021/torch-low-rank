@@ -3,3 +3,20 @@ sort_sv_by_score:
   main: tests/sort_sv_by_score
   sourcecode:
     -exclude: '*.json'
+
+evaluate_sv_ranking:
+  description: Experiment to evaluate various singular vector ranking methods
+  main: tests/evaluate_sv_ranking
+  flags:
+    method:
+      default: 0
+    pre_prune_epochs:
+      default: 0
+    total_epochs:
+      default: 10
+    fast:
+      default: False
+    pruning_ratio: 0.9
+    batch_size: 8
+  sourcecode:
+    -exclude: '*.json'

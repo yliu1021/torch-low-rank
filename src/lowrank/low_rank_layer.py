@@ -33,7 +33,7 @@ class LowRankLayer(Layer):
     def rank(self) -> int:
         return self._rank
 
-    def set_rank(self, new_rank: int):
+    def set_rank(self, new_rank: int, reuse_existing_kernels=False):
         """
         Sets the new rank and creates the appropriate weights
         :param new_rank: the new rank to set to. Set to -1 for full rank
@@ -49,7 +49,7 @@ class LowRankLayer(Layer):
         self._create_weights(self._rank)
         if self._rank == -1:
             self.kernels[self._rank].assign(eff_weights)
-        else:
+        elif not reuse_existing_kernels:
             u, s, v = np.linalg.svd(eff_weights, full_matrices=False)
             u = u[:, : self.rank]
             s = s[: self.rank] ** 0.5
@@ -57,6 +57,10 @@ class LowRankLayer(Layer):
             kernel_u, kernel_v = self.kernels[self._rank]
             kernel_u.assign(u * s)
             kernel_v.assign(s[:, None] * v)
+        else:
+            kernel_u, kernel_v = self.kernels[self._rank]
+            kernel_u.assign(kernel_u[:, : self.rank])
+            kernel_v.assign(kernel_v[: self.rank, :])
 
     def eff_weight(self):
         """

@@ -13,7 +13,7 @@ import tensorflow as tf
 from tensorflow.keras import losses, metrics, optimizers
 
 from . import data
-from . import model
+from . import models
 
 
 class UpdateConvRanksExperiment:
@@ -31,7 +31,7 @@ class UpdateConvRanksExperiment:
         (self.x_train, self.y_train), (self.x_test, self.y_test) = data.load_data(
             "cifar10"
         )
-        self.model = model.get_vary_conv_rank_model(
+        self.model = models.get_vary_conv_rank_model(
             self.x_train.shape[1:], self.y_train.shape[-1], initial_ranks=initial_ranks
         )
         self.model.compile(

@@ -12,7 +12,7 @@ from tensorflow.python.training.tracking import base
 import matplotlib.pyplot as plt 
 
 from . import data
-from .model import get_unoptimized_lr__model
+from .models import get_unoptimized_lr__model
 from .sort_sv_by_score import sort_sv_by_score, SCORING_METHOD
 
 

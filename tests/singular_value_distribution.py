@@ -6,7 +6,7 @@ import numpy as np
 from tensorflow.keras import losses, metrics, models, optimizers
 
 from .data import load_data
-from .model import get_vary_conv_rank_model
+from .models import get_vary_conv_rank_model
 
 
 def main():

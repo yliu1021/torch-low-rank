@@ -3,7 +3,7 @@ import numpy as np
 from tensorflow.keras import losses, metrics, optimizers
 
 from . import data
-from . import model
+from . import models
 
 
 class UpdateRankExperiment:
@@ -22,7 +22,7 @@ class UpdateRankExperiment:
         (self.x_train, self.y_train), (self.x_test, self.y_test) = data.load_data(
             "cifar10", noise=noise
         )
-        self.model = model.get_model(
+        self.model = models.get_model(
             self.x_train.shape[1:], self.y_train.shape[-1], rank=initial_rank
         )
         self.model.compile(
