@@ -25,10 +25,10 @@ tests.evaluate\_sv\_ranking module
    :undoc-members:
    :show-inheritance:
 
-tests.model module
-------------------
+tests.models module
+-------------------
 
-.. automodule:: tests.model
+.. automodule:: tests.models
    :members:
    :undoc-members:
    :show-inheritance:
