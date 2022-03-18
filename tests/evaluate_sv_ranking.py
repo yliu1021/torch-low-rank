@@ -2,6 +2,11 @@
 Evalute Singular Vector Ranking Methods:
 - Looking to determine which method of ranking singular vectors allows us to prune
 while losing minimal accuracy, highest pruning ration and can be evaluated early in training
+
+Current Logic: Model - Low Rank Layers with Initial Rank = Max Rank
+- Traing pre-pruning for given number of epochs
+- For each low rank layer, sort singular vectors by method and retain pruning_ratio of the singular vectors
+- Train low rank model for remaining epochs
 '''
 import os, sys
 
@@ -53,14 +58,14 @@ if __name__ == "__main__":
         print(metric, values)
 
     for i, layer in enumerate(model.layers):
-        if type(layer) == LowRankLayer:
+        if issubclass(type(layer), LowRankLayer):
             sort_sv_by_score(
                 model=model,
                 layer_ind=i,
                 train_data=(train_x, train_y),
                 scoring_method=args.method
             )
-            layer.set_rank(max_rank=int(layer.max_rank * args.pruning_ratio), reuse_existing_kernels=True)
+            layer.set_rank(new_rank=int(layer.max_rank * args.pruning_ratio), reuse_existing_kernels=True)
             print("Layer " + str(i) + " New Rank: " + str(int(layer.max_rank * args.pruning_ratio)))
     
     train_metrics = model.fit(train_x, train_y, batch_size=args.batch_size, epochs=(args.total_epochs - args.pre_prune_epochs))
