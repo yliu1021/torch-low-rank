@@ -89,10 +89,7 @@ class LowRankLayer(Layer):
 
     def get_config(self):
         config = super().get_config()
-        config.update({
-            "rank": self.rank,
-            "activation": self.activation
-        })
+        config.update({"rank": self.rank, "activation": self.activation})
 
     def _create_weights(self, rank: int):
         if rank in self.kernels:

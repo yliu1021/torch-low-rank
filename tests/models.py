@@ -1,22 +1,29 @@
-'''
+"""
 Module containing the different models evaluated by experiments.
-'''
+"""
 
 from typing import List
 
-from lowrank import LRConv2D, LRDense
-from tensorflow.keras.layers import (AveragePooling2D, Conv2D, Dense, Flatten,
-                                     InputLayer, MaxPool2D)
+from tensorflow.keras.layers import (
+    AveragePooling2D,
+    Conv2D,
+    Dense,
+    Flatten,
+    InputLayer,
+    MaxPool2D,
+)
 from tensorflow.keras.models import Sequential
+
+from lowrank import LRConv2D, LRDense
 
 
 def get_model(input_shape: List[int], num_classes: int, rank: int):
-    '''
+    """
     :param input_shape: list of integers with input shape
     :param num_classes: number of classes of output
     :rank: initial rank for LRDense layer used in 2nd last layer
     :returns: Model with 4 convolutions layers, followed by a LRDense layer (rank passed as param) and a standard dense layer
-    '''
+    """
     return Sequential(
         [
             InputLayer(input_shape=input_shape),
@@ -36,12 +43,12 @@ def get_model(input_shape: List[int], num_classes: int, rank: int):
 
 
 def get_lr_conv_model(input_shape: List[int], num_classes: int, rank: int):
-    '''
+    """
     :param input_shape: list of integers with input shape
     :param num_classes: number of classes of output
     :rank: initial rank for LRDense layer used in 2nd last layer
     :returns: Model with 4 LRConv layers with rank initialized to 32, followed by a LRDense layer (rank passed as param) and a standard dense layer
-    '''
+    """
     return Sequential(
         [
             InputLayer(input_shape=input_shape),
@@ -59,13 +66,14 @@ def get_lr_conv_model(input_shape: List[int], num_classes: int, rank: int):
         ]
     )
 
+
 def get_unoptimized_lr__model(input_shape: List[int], num_classes: int):
-    '''
+    """
     :param input_shape: list of integers with input shape
     :param num_classes: number of classes of output
     :rank: initial rank for LRDense layer used in 2nd last layer
     :returns: Model with 4 LRConv layers with no initial rank constraint, followed by a LRDense layer with no initial rank constraint and a standard dense layer
-    '''
+    """
     return Sequential(
         [
             InputLayer(input_shape=input_shape),
@@ -83,15 +91,16 @@ def get_unoptimized_lr__model(input_shape: List[int], num_classes: int):
         ]
     )
 
+
 def get_vary_conv_rank_model(
     input_shape: List[int], num_classes: int, initial_ranks: List[int]
 ):
-    '''
+    """
     :param input_shape: list of integers with input shape
     :param num_classes: number of classes of output
     :initial_ranks: list specifying initial ranks for each LRLayer
     :returns: Model with 4 LRConv layers with no initial rank constraint, followed by a LRDense layer with no initial rank constraint and a standard dense layer
-    '''
+    """
     return Sequential(
         [
             InputLayer(input_shape=input_shape),

@@ -1,9 +1,10 @@
 from typing import List
 
-import lowrank.low_rank_layer
 import matplotlib.pyplot as plt
 import numpy as np
 from tensorflow.keras import losses, metrics, models, optimizers
+
+import lowrank.low_rank_layer
 
 from .data import load_data
 from .models import get_vary_conv_rank_model

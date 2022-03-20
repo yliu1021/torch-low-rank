@@ -1,13 +1,16 @@
 from copy import deepcopy
 from enum import Enum
+
 import numpy as np
+import tensorflow as tf
 from tensorflow.keras import losses, metrics, models, optimizers
-import tensorflow as tf 
+
 from . import data
 from .models import get_unoptimized_lr__model
 
+
 class SCORING_METHOD(Enum):
-    MAGNITUDE=0
+    MAGNITUDE = 0
     SNIP = 1
     DELTA_OUTPUT = 2
 
@@ -19,8 +22,10 @@ class SCORING_METHOD(Enum):
             raise ValueError()
 
 
-def sort_sv_by_score(model: models.Model, layer_ind: int, train_data, scoring_method: SCORING_METHOD):
-    
+def sort_sv_by_score(
+    model: models.Model, layer_ind: int, train_data, scoring_method: SCORING_METHOD
+):
+
     if scoring_method == SCORING_METHOD.MAGNITUDE:
         return
 
@@ -40,39 +45,49 @@ def sort_sv_by_score(model: models.Model, layer_ind: int, train_data, scoring_me
         for i in range(v.shape[0]):
             new_v = None
             if i != 0:
-                new_v = tf.concat(values=[v[:i,:], tf.zeros_like(v[i:i+1,:]), v[i+1:,:]], axis=0)
+                new_v = tf.concat(
+                    values=[v[:i, :], tf.zeros_like(v[i : i + 1, :]), v[i + 1 :, :]],
+                    axis=0,
+                )
             else:
-                new_v = tf.concat(values=[tf.zeros_like(v[i:i+1,:]), v[i+1:,:]], axis=0)
+                new_v = tf.concat(
+                    values=[tf.zeros_like(v[i : i + 1, :]), v[i + 1 :, :]], axis=0
+                )
             v.assign(new_v)
             new_loss = model.evaluate(train_x, train_y)[0]
             scores.append(-1 * new_loss)
             v.assign(original_v)
     elif scoring_method == SCORING_METHOD.DELTA_OUTPUT:
-        raise NotImplementedError("Implementation not complete yet for " + str(SCORING_METHOD.DELTA_OUTPUT))
-        for j in range(layer_ind+1, len(model.layers)):
+        raise NotImplementedError(
+            "Implementation not complete yet for " + str(SCORING_METHOD.DELTA_OUTPUT)
+        )
+        for j in range(layer_ind + 1, len(model.layers)):
             x = model.layers[j](x)
 
         for i in range(v.shape[0]):
-            x = u[:, i:i+1]
-            for j in range(layer_ind+1, len(model.layers)):
+            x = u[:, i : i + 1]
+            for j in range(layer_ind + 1, len(model.layers)):
                 x = model.layers[j](x)
 
     # Sort by score
     ranking = np.argsort(scores)
-    v.assign(tf.concat(values=[v[i:i+1,:] for i in ranking], axis=0))
-    u.assign(tf.transpose(tf.concat(values=[tf.transpose(u)[i:i+1,:] for i in ranking], axis=0)))
+    v.assign(tf.concat(values=[v[i : i + 1, :] for i in ranking], axis=0))
+    u.assign(
+        tf.transpose(
+            tf.concat(values=[tf.transpose(u)[i : i + 1, :] for i in ranking], axis=0)
+        )
+    )
 
     # Sanity Check! Checks if top ranked singular vector is placed at top now
-    assert(tf.math.reduce_all(original_v[ranking[0]:ranking[0]+1, :] == v[0:1, :]))
+    assert tf.math.reduce_all(original_v[ranking[0] : ranking[0] + 1, :] == v[0:1, :])
+
 
 if __name__ == "__main__":
 
     gpus = tf.config.list_physical_devices("GPU")
     tf.config.set_visible_devices(gpus[0], "GPU")
 
-    (x, y), val_data = data.load_data(
-            "cifar10"
-        )
+    (x, y), val_data = data.load_data("cifar10")
     x = x[:128, :, :, :]
     y = y[:128, :]
 
@@ -83,6 +98,6 @@ if __name__ == "__main__":
         metrics=[metrics.CategoricalAccuracy()],
         run_eagerly=True,
     )
-    sort_sv_by_score(model=model, layer_ind=9, train_data=(x,y), scoring_method=SCORING_METHOD.SNIP)
-
-
+    sort_sv_by_score(
+        model=model, layer_ind=9, train_data=(x, y), scoring_method=SCORING_METHOD.SNIP
+    )

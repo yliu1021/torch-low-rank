@@ -1,9 +1,9 @@
-import lowrank
 import numpy as np
 from tensorflow.keras import losses, metrics, optimizers
 
-from . import data
-from . import models
+import lowrank
+
+from . import data, models
 
 
 class UpdateRankExperiment:

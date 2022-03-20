@@ -27,9 +27,9 @@ class LRDense(LowRankLayer):
         )
 
     def call(self, inputs, *args, **kwargs):
-        '''
+        """
         Like pytorch forward function
-        '''
+        """
         if self._rank == -1:
             pre_act = inputs @ self.kernels[self._rank] + self.bias
         else:
@@ -68,9 +68,9 @@ class LRConv2D(LowRankLayer):
         )
 
     def call(self, inputs, *args, **kwargs):
-        '''
+        """
         Like pytorch forward function
-        '''
+        """
         weights = self.eff_weight()
         h, w = self.kernel_size
         num_in_channels = self.num_inputs // (h * w)

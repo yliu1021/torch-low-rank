@@ -6,14 +6,14 @@ import os
 import random
 from typing import List
 
-import lowrank
-import lowrank.low_rank_layer
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import losses, metrics, optimizers
 
-from . import data
-from . import models
+import lowrank
+import lowrank.low_rank_layer
+
+from . import data, models
 
 
 class UpdateConvRanksExperiment:

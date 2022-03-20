@@ -4,6 +4,7 @@
 # Python
 *.egg-info/
 __pycache__/
+venv/
 
 # macOS
 .DS_Store

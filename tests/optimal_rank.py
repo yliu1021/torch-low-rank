@@ -3,25 +3,28 @@ import enum
 from pprint import pprint
 from typing import Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from lowrank import low_rank_layer
 from tensorflow.keras import losses, metrics, models, optimizers
 from tensorflow.python.framework.ops import Tensor
 from tensorflow.python.training.tracking import base
-import matplotlib.pyplot as plt 
+
+from lowrank import low_rank_layer
 
 from . import data
 from .models import get_unoptimized_lr__model
-from .sort_sv_by_score import sort_sv_by_score, SCORING_METHOD
+from .sort_sv_by_score import SCORING_METHOD, sort_sv_by_score
 
 
 class OptimizationMethod(enum.Enum):
     BACK_TO_FRONT = enum.auto()
     FRONT_TO_BACK = enum.auto()
 
-class RankOptimizer():
-    def __init__(self, 
+
+class RankOptimizer:
+    def __init__(
+        self,
         model: models.Model,
         data: Tuple[np.ndarray, np.ndarray],
         layer_order: OptimizationMethod = OptimizationMethod.BACK_TO_FRONT,
@@ -29,9 +32,9 @@ class RankOptimizer():
     ):
 
         self.model = model
-        self.data = data 
-        self.layer_order = layer_order 
-        self.epochs = epochs 
+        self.data = data
+        self.layer_order = layer_order
+        self.epochs = epochs
 
         self.optimal_ranks = {}
         self.saved_weights = []
@@ -48,18 +51,18 @@ class RankOptimizer():
             layer_inds = range(num_layers)
         else:
             raise NotImplementedError(f"Layer order: {self.layer_order} not supported")
-        
-        '''
+
+        """
         Train Model
-        ''' 
+        """
         print("Training Model")
         x, y = self.data
         self.model.compile(
-                optimizer=optimizers.Adam(0.0001),
-                loss=losses.CategoricalCrossentropy(),
-                metrics=[metrics.CategoricalAccuracy()],
-                run_eagerly=True,
-            )
+            optimizer=optimizers.Adam(0.0001),
+            loss=losses.CategoricalCrossentropy(),
+            metrics=[metrics.CategoricalAccuracy()],
+            run_eagerly=True,
+        )
 
         # Train
         for _ in range(self.epochs):
@@ -67,10 +70,10 @@ class RankOptimizer():
             self.saved_weights.append(self.model.get_weights())
 
         print("Training Complete.")
-        
-        '''
+
+        """
         Iterate through layers to determine optimal ranks
-        '''
+        """
         for i in layer_inds:
             if not isinstance(self.model.layers[i], low_rank_layer.LowRankLayer):
                 continue
@@ -81,12 +84,14 @@ class RankOptimizer():
             for j in range(self.epochs):
                 self.set_model_weights(self.saved_weights[j])
                 baseline_losses.append(self.evaluate_model_loss())
-            
+
             print("Determining Optimal Rank for Layer " + str(i))
 
-            optimal_rank = self.optimize_rank_of_layer(layer_ind=i, baseline_losses=baseline_losses)
+            optimal_rank = self.optimize_rank_of_layer(
+                layer_ind=i, baseline_losses=baseline_losses
+            )
             self.optimal_ranks[i] = optimal_rank
-            
+
             print("Optimal Rank for Layer " + str(i) + " = " + str(optimal_rank))
 
         print("Optimal Ranks: ")
@@ -106,23 +111,21 @@ class RankOptimizer():
         sort_sv_by_score(self.model, layer_ind, self.train_data, SCORING_METHOD.SNIP)
         self.model.layers[layer_ind].set_rank(rank)
 
-    def optimize_rank_of_layer(
-        self,
-        layer_ind: int,
-        baseline_losses
-    ):
+    def optimize_rank_of_layer(self, layer_ind: int, baseline_losses):
         """
         Optimizes the rank of just 1 layer specified by `layer_ind`
         """
         if not isinstance(self.model.layers[layer_ind], low_rank_layer.LowRankLayer):
-            raise ValueError(f"Layer must be a low rank layer. Got a {type(self.model.layers[layer_ind])} instead")
-        
+            raise ValueError(
+                f"Layer must be a low rank layer. Got a {type(self.model.layers[layer_ind])} instead"
+            )
+
         print("Baseline Losses")
         print(baseline_losses)
 
         max_insufficient_rank = 1
         min_sufficient_rank = self.max_rank(self.model.layers[layer_ind])
-        while(min_sufficient_rank > max_insufficient_rank + 1):
+        while min_sufficient_rank > max_insufficient_rank + 1:
             print("Min Sufficient Rank", min_sufficient_rank)
             print("Max Insufficient Rank", max_insufficient_rank)
             new_rank = int((min_sufficient_rank + max_insufficient_rank) / 2)
@@ -139,21 +142,25 @@ class RankOptimizer():
             raise ValueError(f"Layer's weights must be formatted as a 2D Tensor")
         return min(shape)
 
-    def is_sufficient_rank(self,
-        new_rank: int,
-        layer_ind: int, 
-        baseline_losses
-    ):
+    def is_sufficient_rank(self, new_rank: int, layer_ind: int, baseline_losses):
         lowrank_losses = []
         loss_drop_pcts = []
 
         for i in range(len(baseline_losses)):
             self.set_model_weights(self.saved_weights[i])
-            lowrank_losses.append(self.compute_new_rank_loss(layer=self.model.layers[layer_ind], layer_ind=layer_ind, new_rank=new_rank))
-            print("Low Rank Loss at Epoch", i+1, lowrank_losses[-1])
-            loss_drop_pcts.append((lowrank_losses[-1] - baseline_losses[i]) / baseline_losses[i])
-        
-        plt.plot([x+1 for x in range(self.epochs)], loss_drop_pcts)
+            lowrank_losses.append(
+                self.compute_new_rank_loss(
+                    layer=self.model.layers[layer_ind],
+                    layer_ind=layer_ind,
+                    new_rank=new_rank,
+                )
+            )
+            print("Low Rank Loss at Epoch", i + 1, lowrank_losses[-1])
+            loss_drop_pcts.append(
+                (lowrank_losses[-1] - baseline_losses[i]) / baseline_losses[i]
+            )
+
+        plt.plot([x + 1 for x in range(self.epochs)], loss_drop_pcts)
         plt.xlabel("Epochs")
         plt.ylabel("Change in Loss")
         plt.title("Layer " + str(layer_ind) + " Rank " + str(new_rank))
@@ -169,10 +176,8 @@ class RankOptimizer():
 
         return (loss_drop_pcts[-1] < 0) or (loss_drop_pcts[0] > loss_drop_pcts[-1])
 
-    def compute_new_rank_loss(self, 
-        layer: low_rank_layer.LowRankLayer,
-        layer_ind: int,
-        new_rank: int
+    def compute_new_rank_loss(
+        self, layer: low_rank_layer.LowRankLayer, layer_ind: int, new_rank: int
     ):
         curr_rank = layer.rank
         curr_weights = layer.get_weights()
@@ -188,17 +193,21 @@ class RankOptimizer():
             if isinstance(layer, low_rank_layer.LowRankLayer):
                 layer.set_rank(-1)
         self.model.set_weights(weights)
-    
+
     def train_optimal_rank_model(self, start_epoch, end_epoch, val_data):
         # Validation
         for i in range(len(self.model.layers)):
             if isinstance(self.model.layers[i], low_rank_layer.LowRankLayer):
                 if i not in self.optimal_ranks:
-                    raise Exception("Optimal ranks not found for all low rank layers yet. Cannot train optimized model.")
+                    raise Exception(
+                        "Optimal ranks not found for all low rank layers yet. Cannot train optimized model."
+                    )
         if start_epoch > self.epochs:
-            raise Exception("Cannot start training at this epoch. Rank Optimizer did not train so far.")
-        
-        self.set_model_weights(self.saved_weights[start_epoch-1])
+            raise Exception(
+                "Cannot start training at this epoch. Rank Optimizer did not train so far."
+            )
+
+        self.set_model_weights(self.saved_weights[start_epoch - 1])
         for layer_ind in self.optimal_ranks.keys():
             self.set_rank(layer_ind=layer_ind, rank=self.optimal_ranks[layer_ind])
 
@@ -208,7 +217,7 @@ class RankOptimizer():
         train_acc = []
         test_losses = []
         test_acc = []
-        for _ in range(end_epoch-start_epoch):
+        for _ in range(end_epoch - start_epoch):
             # Training
             train_evl = self.model.fit(x, y, batch_size=64)
             train_losses.append(train_evl.history["loss"])
@@ -217,8 +226,8 @@ class RankOptimizer():
             test_evl = self.model.evaluate(val_x, val_y, batch_size=64)
             test_losses.append(test_evl[0])
             test_acc.append(test_evl[1])
-        
-        #Plot
+
+        # Plot
         def plot(ylabel, yvalue):
             plt.plot(range(start_epoch, end_epoch), yvalue)
             plt.xlabel("Epochs")
@@ -226,18 +235,17 @@ class RankOptimizer():
             plt.title(ylabel)
             plt.savefig(ylabel + ".jpg")
             plt.clf()
-        
+
         plot("Train Loss", train_losses)
         plot("Train Accuracy", train_acc)
         plot("Validation Loss", test_losses)
         plot("Validation Accuacy", test_acc)
 
         return train_losses, train_acc, test_losses, test_acc
-            
+
+
 def main():
-    (x, y), val_data = data.load_data(
-            "cifar10"
-        )
+    (x, y), val_data = data.load_data("cifar10")
     X_SHAPE = x.shape[1:]
     Y_SHAPE = y.shape[-1]
 
@@ -246,12 +254,15 @@ def main():
     y = y[:, :]
 
     rank_optimizer = RankOptimizer(
-        model=get_unoptimized_lr__model(x.shape[1:], y.shape[-1]),
-        data=(x, y)
+        model=get_unoptimized_lr__model(x.shape[1:], y.shape[-1]), data=(x, y)
     )
     rank_optimizer.run()
-    pprint(rank_optimizer.train_optimal_rank_model(start_epoch=5, end_epoch=50, val_data=val_data))
-    
+    pprint(
+        rank_optimizer.train_optimal_rank_model(
+            start_epoch=5, end_epoch=50, val_data=val_data
+        )
+    )
+
 
 if __name__ == "__main__":
     gpus = tf.config.list_physical_devices("GPU")

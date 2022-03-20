@@ -1,6 +1,6 @@
-'''
+"""
 Module for loading and pre-processing data.
-'''
+"""
 
 from typing import Tuple
 
@@ -14,10 +14,12 @@ Dataset = Tuple[np.ndarray, np.ndarray]
 def _normalize_x(x: np.ndarray) -> np.ndarray:
     return x.astype(np.float32) / 255.0
 
+
 def _one_hot_y(y: np.ndarray) -> np.ndarray:
     num_classes = np.max(y) + 1
     y = np.squeeze(y)
     return np.array(tf.one_hot(y, depth=num_classes))
+
 
 def _shuffle(label: np.ndarray) -> np.ndarray:
     shuffled_label = np.zeros_like(label)
