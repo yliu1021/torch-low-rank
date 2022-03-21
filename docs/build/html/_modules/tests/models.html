@@ -64,25 +64,32 @@
            <div itemprop="articleBody">
              
   <h1>Source code for tests.models</h1><div class="highlight"><pre>
-<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Module containing the different models evaluated by experiments.</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 
-<span class="kn">from</span> <span class="nn">lowrank</span> <span class="kn">import</span> <span class="n">LRConv2D</span><span class="p">,</span> <span class="n">LRDense</span>
-<span class="kn">from</span> <span class="nn">tensorflow.keras.layers</span> <span class="kn">import</span> <span class="p">(</span><span class="n">AveragePooling2D</span><span class="p">,</span> <span class="n">Conv2D</span><span class="p">,</span> <span class="n">Dense</span><span class="p">,</span> <span class="n">Flatten</span><span class="p">,</span>
-                                     <span class="n">InputLayer</span><span class="p">,</span> <span class="n">MaxPool2D</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.layers</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AveragePooling2D</span><span class="p">,</span>
+    <span class="n">Conv2D</span><span class="p">,</span>
+    <span class="n">Dense</span><span class="p">,</span>
+    <span class="n">Flatten</span><span class="p">,</span>
+    <span class="n">InputLayer</span><span class="p">,</span>
+    <span class="n">MaxPool2D</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">tensorflow.keras.models</span> <span class="kn">import</span> <span class="n">Sequential</span>
+
+<span class="kn">from</span> <span class="nn">lowrank</span> <span class="kn">import</span> <span class="n">LRConv2D</span><span class="p">,</span> <span class="n">LRDense</span>
 
 
 <div class="viewcode-block" id="get_model"><a class="viewcode-back" href="../../tests.html#tests.models.get_model">[docs]</a><span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="n">input_shape</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param input_shape: list of integers with input shape</span>
 <span class="sd">    :param num_classes: number of classes of output</span>
 <span class="sd">    :rank: initial rank for LRDense layer used in 2nd last layer</span>
 <span class="sd">    :returns: Model with 4 convolutions layers, followed by a LRDense layer (rank passed as param) and a standard dense layer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">Sequential</span><span class="p">(</span>
         <span class="p">[</span>
             <span class="n">InputLayer</span><span class="p">(</span><span class="n">input_shape</span><span class="o">=</span><span class="n">input_shape</span><span class="p">),</span>
@@ -102,12 +109,12 @@
 
 
 <div class="viewcode-block" id="get_lr_conv_model"><a class="viewcode-back" href="../../tests.html#tests.models.get_lr_conv_model">[docs]</a><span class="k">def</span> <span class="nf">get_lr_conv_model</span><span class="p">(</span><span class="n">input_shape</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param input_shape: list of integers with input shape</span>
 <span class="sd">    :param num_classes: number of classes of output</span>
 <span class="sd">    :rank: initial rank for LRDense layer used in 2nd last layer</span>
 <span class="sd">    :returns: Model with 4 LRConv layers with rank initialized to 32, followed by a LRDense layer (rank passed as param) and a standard dense layer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">Sequential</span><span class="p">(</span>
         <span class="p">[</span>
             <span class="n">InputLayer</span><span class="p">(</span><span class="n">input_shape</span><span class="o">=</span><span class="n">input_shape</span><span class="p">),</span>
@@ -125,13 +132,14 @@
         <span class="p">]</span>
     <span class="p">)</span></div>
 
+
 <div class="viewcode-block" id="get_unoptimized_lr__model"><a class="viewcode-back" href="../../tests.html#tests.models.get_unoptimized_lr__model">[docs]</a><span class="k">def</span> <span class="nf">get_unoptimized_lr__model</span><span class="p">(</span><span class="n">input_shape</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param input_shape: list of integers with input shape</span>
 <span class="sd">    :param num_classes: number of classes of output</span>
 <span class="sd">    :rank: initial rank for LRDense layer used in 2nd last layer</span>
 <span class="sd">    :returns: Model with 4 LRConv layers with no initial rank constraint, followed by a LRDense layer with no initial rank constraint and a standard dense layer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">Sequential</span><span class="p">(</span>
         <span class="p">[</span>
             <span class="n">InputLayer</span><span class="p">(</span><span class="n">input_shape</span><span class="o">=</span><span class="n">input_shape</span><span class="p">),</span>
@@ -149,15 +157,16 @@
         <span class="p">]</span>
     <span class="p">)</span></div>
 
+
 <div class="viewcode-block" id="get_vary_conv_rank_model"><a class="viewcode-back" href="../../tests.html#tests.models.get_vary_conv_rank_model">[docs]</a><span class="k">def</span> <span class="nf">get_vary_conv_rank_model</span><span class="p">(</span>
     <span class="n">input_shape</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">initial_ranks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
 <span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param input_shape: list of integers with input shape</span>
 <span class="sd">    :param num_classes: number of classes of output</span>
 <span class="sd">    :initial_ranks: list specifying initial ranks for each LRLayer</span>
 <span class="sd">    :returns: Model with 4 LRConv layers with no initial rank constraint, followed by a LRDense layer with no initial rank constraint and a standard dense layer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">Sequential</span><span class="p">(</span>
         <span class="p">[</span>
             <span class="n">InputLayer</span><span class="p">(</span><span class="n">input_shape</span><span class="o">=</span><span class="n">input_shape</span><span class="p">),</span>

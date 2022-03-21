@@ -69,25 +69,28 @@
 <span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
 
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
-<span class="kn">from</span> <span class="nn">lowrank</span> <span class="kn">import</span> <span class="n">low_rank_layer</span>
 <span class="kn">from</span> <span class="nn">tensorflow.keras</span> <span class="kn">import</span> <span class="n">losses</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">optimizers</span>
 <span class="kn">from</span> <span class="nn">tensorflow.python.framework.ops</span> <span class="kn">import</span> <span class="n">Tensor</span>
 <span class="kn">from</span> <span class="nn">tensorflow.python.training.tracking</span> <span class="kn">import</span> <span class="n">base</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span> 
+
+<span class="kn">from</span> <span class="nn">lowrank</span> <span class="kn">import</span> <span class="n">low_rank_layer</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">data</span>
 <span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">get_unoptimized_lr__model</span>
-<span class="kn">from</span> <span class="nn">.sort_sv_by_score</span> <span class="kn">import</span> <span class="n">sort_sv_by_score</span><span class="p">,</span> <span class="n">SCORING_METHOD</span>
+<span class="kn">from</span> <span class="nn">.sort_sv_by_score</span> <span class="kn">import</span> <span class="n">SCORING_METHOD</span><span class="p">,</span> <span class="n">sort_sv_by_score</span>
 
 
 <div class="viewcode-block" id="OptimizationMethod"><a class="viewcode-back" href="../../tests.html#tests.optimal_rank.OptimizationMethod">[docs]</a><span class="k">class</span> <span class="nc">OptimizationMethod</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">BACK_TO_FRONT</span> <span class="o">=</span> <span class="n">enum</span><span class="o">.</span><span class="n">auto</span><span class="p">()</span>
     <span class="n">FRONT_TO_BACK</span> <span class="o">=</span> <span class="n">enum</span><span class="o">.</span><span class="n">auto</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="RankOptimizer"><a class="viewcode-back" href="../../tests.html#tests.optimal_rank.RankOptimizer">[docs]</a><span class="k">class</span> <span class="nc">RankOptimizer</span><span class="p">():</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+
+<div class="viewcode-block" id="RankOptimizer"><a class="viewcode-back" href="../../tests.html#tests.optimal_rank.RankOptimizer">[docs]</a><span class="k">class</span> <span class="nc">RankOptimizer</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
         <span class="n">layer_order</span><span class="p">:</span> <span class="n">OptimizationMethod</span> <span class="o">=</span> <span class="n">OptimizationMethod</span><span class="o">.</span><span class="n">BACK_TO_FRONT</span><span class="p">,</span>
@@ -95,9 +98,9 @@
     <span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span> 
-        <span class="bp">self</span><span class="o">.</span><span class="n">layer_order</span> <span class="o">=</span> <span class="n">layer_order</span> 
-        <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="n">epochs</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer_order</span> <span class="o">=</span> <span class="n">layer_order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="n">epochs</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">optimal_ranks</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">saved_weights</span> <span class="o">=</span> <span class="p">[]</span>
@@ -114,18 +117,18 @@
             <span class="n">layer_inds</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_layers</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Layer order: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_order</span><span class="si">}</span><span class="s2"> not supported&quot;</span><span class="p">)</span>
-        
-        <span class="sd">&#39;&#39;&#39;</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Train Model</span>
-<span class="sd">        &#39;&#39;&#39;</span> 
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training Model&quot;</span><span class="p">)</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
-                <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="mf">0.0001</span><span class="p">),</span>
-                <span class="n">loss</span><span class="o">=</span><span class="n">losses</span><span class="o">.</span><span class="n">CategoricalCrossentropy</span><span class="p">(),</span>
-                <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">metrics</span><span class="o">.</span><span class="n">CategoricalAccuracy</span><span class="p">()],</span>
-                <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="mf">0.0001</span><span class="p">),</span>
+            <span class="n">loss</span><span class="o">=</span><span class="n">losses</span><span class="o">.</span><span class="n">CategoricalCrossentropy</span><span class="p">(),</span>
+            <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">metrics</span><span class="o">.</span><span class="n">CategoricalAccuracy</span><span class="p">()],</span>
+            <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="c1"># Train</span>
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">):</span>
@@ -133,10 +136,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">saved_weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_weights</span><span class="p">())</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training Complete.&quot;</span><span class="p">)</span>
-        
-        <span class="sd">&#39;&#39;&#39;</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Iterate through layers to determine optimal ranks</span>
-<span class="sd">        &#39;&#39;&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">layer_inds</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">low_rank_layer</span><span class="o">.</span><span class="n">LowRankLayer</span><span class="p">):</span>
                 <span class="k">continue</span>
@@ -147,12 +150,14 @@
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">set_model_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_weights</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
                 <span class="n">baseline_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evaluate_model_loss</span><span class="p">())</span>
-            
+
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Determining Optimal Rank for Layer &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
 
-            <span class="n">optimal_rank</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_rank_of_layer</span><span class="p">(</span><span class="n">layer_ind</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">baseline_losses</span><span class="o">=</span><span class="n">baseline_losses</span><span class="p">)</span>
+            <span class="n">optimal_rank</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_rank_of_layer</span><span class="p">(</span>
+                <span class="n">layer_ind</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">baseline_losses</span><span class="o">=</span><span class="n">baseline_losses</span>
+            <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">optimal_ranks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">optimal_rank</span>
-            
+
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimal Rank for Layer &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">optimal_rank</span><span class="p">))</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimal Ranks: &quot;</span><span class="p">)</span>
@@ -172,23 +177,21 @@
         <span class="n">sort_sv_by_score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">layer_ind</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_data</span><span class="p">,</span> <span class="n">SCORING_METHOD</span><span class="o">.</span><span class="n">SNIP</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer_ind</span><span class="p">]</span><span class="o">.</span><span class="n">set_rank</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="RankOptimizer.optimize_rank_of_layer"><a class="viewcode-back" href="../../tests.html#tests.optimal_rank.RankOptimizer.optimize_rank_of_layer">[docs]</a>    <span class="k">def</span> <span class="nf">optimize_rank_of_layer</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">layer_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">baseline_losses</span>
-    <span class="p">):</span>
+<div class="viewcode-block" id="RankOptimizer.optimize_rank_of_layer"><a class="viewcode-back" href="../../tests.html#tests.optimal_rank.RankOptimizer.optimize_rank_of_layer">[docs]</a>    <span class="k">def</span> <span class="nf">optimize_rank_of_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">baseline_losses</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Optimizes the rank of just 1 layer specified by `layer_ind`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer_ind</span><span class="p">],</span> <span class="n">low_rank_layer</span><span class="o">.</span><span class="n">LowRankLayer</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Layer must be a low rank layer. Got a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer_ind</span><span class="p">])</span><span class="si">}</span><span class="s2"> instead&quot;</span><span class="p">)</span>
-        
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Layer must be a low rank layer. Got a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer_ind</span><span class="p">])</span><span class="si">}</span><span class="s2"> instead&quot;</span>
+            <span class="p">)</span>
+
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Baseline Losses&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">baseline_losses</span><span class="p">)</span>
 
         <span class="n">max_insufficient_rank</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">min_sufficient_rank</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_rank</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer_ind</span><span class="p">])</span>
-        <span class="k">while</span><span class="p">(</span><span class="n">min_sufficient_rank</span> <span class="o">&gt;</span> <span class="n">max_insufficient_rank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">min_sufficient_rank</span> <span class="o">&gt;</span> <span class="n">max_insufficient_rank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Min Sufficient Rank&quot;</span><span class="p">,</span> <span class="n">min_sufficient_rank</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Max Insufficient Rank&quot;</span><span class="p">,</span> <span class="n">max_insufficient_rank</span><span class="p">)</span>
             <span class="n">new_rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">min_sufficient_rank</span> <span class="o">+</span> <span class="n">max_insufficient_rank</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
@@ -205,21 +208,25 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Layer&#39;s weights must be formatted as a 2D Tensor&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="RankOptimizer.is_sufficient_rank"><a class="viewcode-back" href="../../tests.html#tests.optimal_rank.RankOptimizer.is_sufficient_rank">[docs]</a>    <span class="k">def</span> <span class="nf">is_sufficient_rank</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-        <span class="n">new_rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">layer_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
-        <span class="n">baseline_losses</span>
-    <span class="p">):</span>
+<div class="viewcode-block" id="RankOptimizer.is_sufficient_rank"><a class="viewcode-back" href="../../tests.html#tests.optimal_rank.RankOptimizer.is_sufficient_rank">[docs]</a>    <span class="k">def</span> <span class="nf">is_sufficient_rank</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">layer_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">baseline_losses</span><span class="p">):</span>
         <span class="n">lowrank_losses</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">loss_drop_pcts</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">baseline_losses</span><span class="p">)):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_model_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_weights</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="n">lowrank_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_new_rank_loss</span><span class="p">(</span><span class="n">layer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer_ind</span><span class="p">],</span> <span class="n">layer_ind</span><span class="o">=</span><span class="n">layer_ind</span><span class="p">,</span> <span class="n">new_rank</span><span class="o">=</span><span class="n">new_rank</span><span class="p">))</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Low Rank Loss at Epoch&quot;</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">lowrank_losses</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-            <span class="n">loss_drop_pcts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lowrank_losses</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">baseline_losses</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">baseline_losses</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-        
-        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">)],</span> <span class="n">loss_drop_pcts</span><span class="p">)</span>
+            <span class="n">lowrank_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">compute_new_rank_loss</span><span class="p">(</span>
+                    <span class="n">layer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer_ind</span><span class="p">],</span>
+                    <span class="n">layer_ind</span><span class="o">=</span><span class="n">layer_ind</span><span class="p">,</span>
+                    <span class="n">new_rank</span><span class="o">=</span><span class="n">new_rank</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Low Rank Loss at Epoch&quot;</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">lowrank_losses</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">loss_drop_pcts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">lowrank_losses</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">baseline_losses</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">baseline_losses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">)],</span> <span class="n">loss_drop_pcts</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Epochs&quot;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Change in Loss&quot;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Layer &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">layer_ind</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; Rank &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">new_rank</span><span class="p">))</span>
@@ -235,10 +242,8 @@
 
         <span class="k">return</span> <span class="p">(</span><span class="n">loss_drop_pcts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">loss_drop_pcts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">loss_drop_pcts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="RankOptimizer.compute_new_rank_loss"><a class="viewcode-back" href="../../tests.html#tests.optimal_rank.RankOptimizer.compute_new_rank_loss">[docs]</a>    <span class="k">def</span> <span class="nf">compute_new_rank_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
-        <span class="n">layer</span><span class="p">:</span> <span class="n">low_rank_layer</span><span class="o">.</span><span class="n">LowRankLayer</span><span class="p">,</span>
-        <span class="n">layer_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">new_rank</span><span class="p">:</span> <span class="nb">int</span>
+<div class="viewcode-block" id="RankOptimizer.compute_new_rank_loss"><a class="viewcode-back" href="../../tests.html#tests.optimal_rank.RankOptimizer.compute_new_rank_loss">[docs]</a>    <span class="k">def</span> <span class="nf">compute_new_rank_loss</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">:</span> <span class="n">low_rank_layer</span><span class="o">.</span><span class="n">LowRankLayer</span><span class="p">,</span> <span class="n">layer_ind</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">new_rank</span><span class="p">:</span> <span class="nb">int</span>
     <span class="p">):</span>
         <span class="n">curr_rank</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">rank</span>
         <span class="n">curr_weights</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">get_weights</span><span class="p">()</span>
@@ -254,17 +259,21 @@
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">low_rank_layer</span><span class="o">.</span><span class="n">LowRankLayer</span><span class="p">):</span>
                 <span class="n">layer</span><span class="o">.</span><span class="n">set_rank</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span></div>
-    
+
 <div class="viewcode-block" id="RankOptimizer.train_optimal_rank_model"><a class="viewcode-back" href="../../tests.html#tests.optimal_rank.RankOptimizer.train_optimal_rank_model">[docs]</a>    <span class="k">def</span> <span class="nf">train_optimal_rank_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_epoch</span><span class="p">,</span> <span class="n">end_epoch</span><span class="p">,</span> <span class="n">val_data</span><span class="p">):</span>
         <span class="c1"># Validation</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">)):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">low_rank_layer</span><span class="o">.</span><span class="n">LowRankLayer</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimal_ranks</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Optimal ranks not found for all low rank layers yet. Cannot train optimized model.&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                        <span class="s2">&quot;Optimal ranks not found for all low rank layers yet. Cannot train optimized model.&quot;</span>
+                    <span class="p">)</span>
         <span class="k">if</span> <span class="n">start_epoch</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Cannot start training at this epoch. Rank Optimizer did not train so far.&quot;</span><span class="p">)</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_model_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_weights</span><span class="p">[</span><span class="n">start_epoch</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot start training at this epoch. Rank Optimizer did not train so far.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_model_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_weights</span><span class="p">[</span><span class="n">start_epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">layer_ind</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimal_ranks</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_rank</span><span class="p">(</span><span class="n">layer_ind</span><span class="o">=</span><span class="n">layer_ind</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimal_ranks</span><span class="p">[</span><span class="n">layer_ind</span><span class="p">])</span>
 
@@ -274,7 +283,7 @@
         <span class="n">train_acc</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">test_losses</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">test_acc</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">end_epoch</span><span class="o">-</span><span class="n">start_epoch</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">end_epoch</span> <span class="o">-</span> <span class="n">start_epoch</span><span class="p">):</span>
             <span class="c1"># Training</span>
             <span class="n">train_evl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
             <span class="n">train_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">train_evl</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">])</span>
@@ -283,8 +292,8 @@
             <span class="n">test_evl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">val_x</span><span class="p">,</span> <span class="n">val_y</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
             <span class="n">test_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_evl</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="n">test_acc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_evl</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        
-        <span class="c1">#Plot</span>
+
+        <span class="c1"># Plot</span>
         <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="n">ylabel</span><span class="p">,</span> <span class="n">yvalue</span><span class="p">):</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">start_epoch</span><span class="p">,</span> <span class="n">end_epoch</span><span class="p">),</span> <span class="n">yvalue</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Epochs&quot;</span><span class="p">)</span>
@@ -292,18 +301,17 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">ylabel</span> <span class="o">+</span> <span class="s2">&quot;.jpg&quot;</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
-        
+
         <span class="n">plot</span><span class="p">(</span><span class="s2">&quot;Train Loss&quot;</span><span class="p">,</span> <span class="n">train_losses</span><span class="p">)</span>
         <span class="n">plot</span><span class="p">(</span><span class="s2">&quot;Train Accuracy&quot;</span><span class="p">,</span> <span class="n">train_acc</span><span class="p">)</span>
         <span class="n">plot</span><span class="p">(</span><span class="s2">&quot;Validation Loss&quot;</span><span class="p">,</span> <span class="n">test_losses</span><span class="p">)</span>
         <span class="n">plot</span><span class="p">(</span><span class="s2">&quot;Validation Accuacy&quot;</span><span class="p">,</span> <span class="n">test_acc</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">train_losses</span><span class="p">,</span> <span class="n">train_acc</span><span class="p">,</span> <span class="n">test_losses</span><span class="p">,</span> <span class="n">test_acc</span></div></div>
-            
+
+
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../../tests.html#tests.optimal_rank.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">val_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span>
-            <span class="s2">&quot;cifar10&quot;</span>
-        <span class="p">)</span>
+    <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">val_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">&quot;cifar10&quot;</span><span class="p">)</span>
     <span class="n">X_SHAPE</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
     <span class="n">Y_SHAPE</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
@@ -312,12 +320,15 @@
     <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:,</span> <span class="p">:]</span>
 
     <span class="n">rank_optimizer</span> <span class="o">=</span> <span class="n">RankOptimizer</span><span class="p">(</span>
-        <span class="n">model</span><span class="o">=</span><span class="n">get_unoptimized_lr__model</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
-        <span class="n">data</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">get_unoptimized_lr__model</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">data</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
     <span class="p">)</span>
     <span class="n">rank_optimizer</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-    <span class="n">pprint</span><span class="p">(</span><span class="n">rank_optimizer</span><span class="o">.</span><span class="n">train_optimal_rank_model</span><span class="p">(</span><span class="n">start_epoch</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">end_epoch</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">val_data</span><span class="o">=</span><span class="n">val_data</span><span class="p">))</span></div>
-    
+    <span class="n">pprint</span><span class="p">(</span>
+        <span class="n">rank_optimizer</span><span class="o">.</span><span class="n">train_optimal_rank_model</span><span class="p">(</span>
+            <span class="n">start_epoch</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">end_epoch</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">val_data</span><span class="o">=</span><span class="n">val_data</span>
+        <span class="p">)</span>
+    <span class="p">)</span></div>
+
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">gpus</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">list_physical_devices</span><span class="p">(</span><span class="s2">&quot;GPU&quot;</span><span class="p">)</span>
