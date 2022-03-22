@@ -3,7 +3,8 @@ from tensorflow.keras import losses, metrics, optimizers
 
 import lowrank
 
-from . import data, models
+import data
+import models
 
 
 class UpdateRankExperiment:
