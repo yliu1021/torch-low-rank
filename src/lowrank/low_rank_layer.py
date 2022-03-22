@@ -45,9 +45,13 @@ class LowRankLayer(Layer):
             self._rank = -1
         else:
             if len(rank_mask) > self.max_rank:
-                raise ValueError("Rank mask must have length less than or equal to max rank.")
+                raise ValueError(
+                    "Rank mask must have length less than or equal to max rank."
+                )
             if len(rank_mask) < self.max_rank:
-                rank_mask.extend([False] * (self.max_rank - len(rank_mask)))  # pad mask with 0's
+                rank_mask.extend(
+                    [False] * (self.max_rank - len(rank_mask))
+                )  # pad mask with 0's
             assert len(rank_mask) == self.max_rank
             self._rank = sum(rank_mask)
         self._allocate_weights(self._rank)
