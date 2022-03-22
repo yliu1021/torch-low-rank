@@ -19,4 +19,10 @@ evaluate_sv_ranking:
     pruning_ratio: 0.9
     batch_size: 8
   sourcecode:
-    - exclude: '**.json'
+    - exclude: '*.json'
+
+remotes:
+  sjoshi:
+    type: gist
+    user: sjoshi804
+    gist-name: low_rank_pruning_results.md
