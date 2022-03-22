@@ -40,3 +40,4 @@ class Pruner:
             raise ValueError("Computed mask does not match length of model layers")
         for mask, layer in zip(masks, low_rank_layers):
             layer.set_rank(mask)
+        self.model._reset_compile_cache()  # ensure model is recompiled

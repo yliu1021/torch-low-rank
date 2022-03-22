@@ -1,14 +1,14 @@
-import pruner
+import lowrank.pruners
 from lowrank import low_rank_layer
 
 
-class MagPruner(pruner.Pruner):
+class MagPruner(lowrank.pruners.Pruner):
     """
-    Magnitude pruner scores singular vectors based on magnitude of the vector
+    Magnitude pruners scores singular vectors based on magnitude of the vector
     """
 
     def compute_masks(self) -> list[list[bool]]:
-        if self.scope == pruner.PruningScope.GLOBAL:
+        if self.scope == lowrank.pruners.PruningScope.GLOBAL:
             raise ValueError("Global pruning not yet supported")
         masks = []
         for layer in self.model.layers:
