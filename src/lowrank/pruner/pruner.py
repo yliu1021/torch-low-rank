@@ -1,5 +1,12 @@
+import enum
+
 from tensorflow.keras import models
 from lowrank.low_rank_layer import LowRankLayer
+
+
+class PruningScope(enum.Enum):
+    GLOBAL = enum.auto()  # global pruning will score all ranks from all layers together
+    LOCAL = enum.auto()  # local pruning will treat each layer independently
 
 
 class Pruner:
@@ -7,8 +14,12 @@ class Pruner:
     Pruners take a model, and upon examining its effective weights, computes rank masks for
     each layer
     """
-    def __init__(self, model: models.Sequential):
+    def __init__(self, model: models.Sequential, scope: PruningScope, sparsity: float):
         self.model = model
+        self.scope = scope
+        if sparsity < 0 or sparsity > 1:
+            raise ValueError("Sparsity must be in the range [0, 1]")
+        self.sparsity = sparsity
 
     def compute_masks(self) -> list[list[bool]]:
         """
