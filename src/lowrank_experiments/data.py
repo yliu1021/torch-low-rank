@@ -21,13 +21,10 @@ def _one_hot_y(y: np.ndarray) -> np.ndarray:
     return np.array(tf.one_hot(y, depth=num_classes))
 
 
-def load_data(dataset: str, noise: float = 0.0) -> Tuple[Dataset, Dataset]:
+def load_data(dataset: str) -> Tuple[Dataset, Dataset]:
     """
     Loads a dataset and adds noisy labels to `noise` percent of the training labels
-
     :param dataset: the dataset to load: "cifar10" or "cifar100"
-    :param noise: a number between 0 and 1
-
     :return: a tuple of Datasets for training and testing
     """
     if dataset == "cifar10":
@@ -37,8 +34,6 @@ def load_data(dataset: str, noise: float = 0.0) -> Tuple[Dataset, Dataset]:
     else:
         raise ValueError(f"Invalid dataset: {dataset}")
     (x_train, y_train), (x_test, y_test) = load()
-    if noise < 0 or noise > 1:
-        raise ValueError("Noise parameter must be between 0 and 1")
     x_train = _normalize_x(x_train)
     x_test = _normalize_x(x_test)
     y_train = _one_hot_y(y_train)
