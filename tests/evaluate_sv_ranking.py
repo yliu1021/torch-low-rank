@@ -12,6 +12,7 @@ import argparse
 
 import tensorflow as tf
 from tensorflow.keras import losses, metrics, models, optimizers
+from tensorflow.keras.callbacks import TensorBoard
 
 from lowrank.low_rank_layer import LowRankLayer
 from tests import data, models
@@ -67,11 +68,13 @@ def main(args):
                 + str(int(layer.max_rank * args.pruning_ratio))
             )
 
+    tensorboard_callback = TensorBoard(log_dir="logs/", update_freq='batch')
     train_metrics = model.fit(
         train_x,
         train_y,
         batch_size=args.batch_size,
         epochs=(args.total_epochs - args.pre_prune_epochs),
+        callbacks=[tensorboard_callback]
     )
     for metric, values in train_metrics.history.items():
         print(metric, ":", values)
