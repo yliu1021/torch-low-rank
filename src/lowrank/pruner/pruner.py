@@ -14,6 +14,7 @@ class Pruner:
     Pruners take a model, and upon examining its effective weights, computes rank masks for
     each layer
     """
+
     def __init__(self, model: models.Sequential, scope: PruningScope, sparsity: float):
         self.model = model
         self.scope = scope
