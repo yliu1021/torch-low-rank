@@ -1,7 +1,7 @@
 import datetime
 import pathlib
 
-from tensorflow.keras import losses, metrics, optimizers, callbacks
+from tensorflow.keras import callbacks, losses, metrics, optimizers
 
 import lowrank.pruners
 import lowrank_experiments.data
@@ -12,7 +12,9 @@ from lowrank.pruners import alignment_pruner, mag_pruner
 def main(dataset: str, sparsity: float, prune_epoch: int, total_epochs: int):
     tensorboard_log_dir = pathlib.Path("./logs_set_rank")
     tensorboard_log_dir.mkdir(exist_ok=True)  # make root logging directory
-    tensorboard_log_dir /= "logs_" + datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    tensorboard_log_dir /= "logs_" + datetime.datetime.now().strftime(
+        "%Y-%m-%d_%H:%M:%S"
+    )
 
     (x_train, y_train), (x_test, y_test) = lowrank_experiments.data.load_data(dataset)
     model = lowrank_experiments.model.get_lr_model(
@@ -31,7 +33,7 @@ def main(dataset: str, sparsity: float, prune_epoch: int, total_epochs: int):
         batch_size=128,
         epochs=prune_epoch,
         validation_data=(x_test, y_test),
-        callbacks=[callbacks.TensorBoard(log_dir=tensorboard_log_dir)]
+        callbacks=[callbacks.TensorBoard(log_dir=tensorboard_log_dir)],
     )
     print("Before pruning:")
     model.evaluate(x_test, y_test)
@@ -48,7 +50,7 @@ def main(dataset: str, sparsity: float, prune_epoch: int, total_epochs: int):
         epochs=total_epochs,
         validation_data=(x_test, y_test),
         initial_epoch=prune_epoch,
-        callbacks=[callbacks.TensorBoard(log_dir=tensorboard_log_dir)]
+        callbacks=[callbacks.TensorBoard(log_dir=tensorboard_log_dir)],
     )
 
 
