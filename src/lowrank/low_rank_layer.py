@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import activations
 from tensorflow.keras.initializers import GlorotUniform
-from tensorflow.keras.layers import Conv2D, Layer
+from tensorflow.keras.layers import Layer
 
 
 class LowRankLayer(Layer):
@@ -33,34 +33,35 @@ class LowRankLayer(Layer):
     def rank(self) -> int:
         return self._rank
 
-    def set_rank(self, new_rank: int, reuse_existing_kernels=False):
+    def set_rank(self, rank_mask: Optional[list[bool]] = None):
         """
         Sets the new rank and creates the appropriate weights
-        :param new_rank: the new rank to set to. Set to -1 for full rank
-        :return:
+        :param rank_mask: the rank mask to apply. The SVD is sorted from the largest singular value
+        to smallest. Thus, if the first entry of the mask is True, then the largest singular
+        value is kept.
         """
         assert self.num_inputs is not None, "Layer needs to be built first"
+        if rank_mask is None:
+            self._rank = -1
+        else:
+            if len(rank_mask) > self.max_rank:
+                raise ValueError("Rank mask must have length less than or equal to max rank.")
+            if len(rank_mask) < self.max_rank:
+                rank_mask.extend([False] * (self.max_rank - len(rank_mask)))  # pad mask with 0's
+            assert len(rank_mask) == self.max_rank
+            self._rank = sum(rank_mask)
+        self._allocate_weights(self._rank)
         eff_weights = self.eff_weight()
-        self._rank = new_rank
-        if self._rank <= 0 and self._rank != -1:
-            raise ValueError(f"Rank must be -1 or positive. Got {self._rank} instead.")
-        if self._rank > self.max_rank:
-            raise ValueError("Rank must be less than min(num inputs, num outputs)")
-        self._create_weights(self._rank)
         if self._rank == -1:
             self.kernels[self._rank].assign(eff_weights)
-        elif not reuse_existing_kernels:
+        else:
             u, s, v = np.linalg.svd(eff_weights, full_matrices=False)
-            u = u[:, : self.rank]
-            s = s[: self.rank] ** 0.5
-            v = v[: self.rank, :]
+            u = u[:, rank_mask]
+            s = s[rank_mask] ** 0.5
+            v = v[rank_mask, :]
             kernel_u, kernel_v = self.kernels[self._rank]
             kernel_u.assign(u * s)
             kernel_v.assign(s[:, None] * v)
-        else:
-            kernel_u, kernel_v = self.kernels[self._rank]
-            kernel_u.assign(kernel_u[:, : self.rank])
-            kernel_v.assign(kernel_v[: self.rank, :])
 
     def eff_weight(self):
         """
@@ -91,7 +92,10 @@ class LowRankLayer(Layer):
         config = super().get_config()
         config.update({"rank": self.rank, "activation": self.activation})
 
-    def _create_weights(self, rank: int):
+    def _allocate_weights(self, rank: int):
+        """
+        Creates tensorflow weights for a given rank and fills them with glorot uniform.
+        """
         if rank in self.kernels:
             return
         if rank == -1:
