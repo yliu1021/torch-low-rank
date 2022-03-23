@@ -44,7 +44,7 @@ class LowRankLayer(Layer):
             return self.max_rank
         return sum(self._mask)
 
-    def set_mask(self, new_mask: list[bool]):
+    def set_mask(self, new_mask: 'list[bool]'):
         if len(new_mask) != len(self._mask):
             raise ValueError("New mask must have the same size")
         self._mask = np.array(new_mask)
