@@ -3,6 +3,7 @@ Pruner Base Class Implementation and other useful package wide code
 """
 import enum
 from typing import Optional
+from venv import create
 import numpy as np
 from tensorflow.keras import losses, models
 from lowrank.low_rank_layer import LowRankLayer
@@ -78,26 +79,25 @@ class AbstractPrunerBase:
         Create masks for the pruning method.
         Calls compute scores which is implemented by the subclass overriding the base Pruner class.
         """
-        scores = np.array(self.compute_scores())
+        scores = self.compute_scores()
         masks = []
 
+        thresholds = []
         if self.scope == PruningScope.LOCAL:
-            for i, layer in enumerate(self.layers_to_prune):
-                # Get indices of elements if they were to be sorted in ascending order
-                ranking = np.argsort(scores[i])
-                num_to_drop = (int) (len(ranking) * (1 - self.sparsity))
-                masks.append(create_mask(layer.rank_capacity, ranking[:num_to_drop], True))
-
+            for i in range(len(self.layers_to_prune)):
+                sorted_layer_scores = sorted(scores[i])
+                num_to_drop = int(len(scores[i]) * (1 - self.sparsity))
+                thresholds.append(sorted_layer_scores[num_to_drop])
         elif self.scope == PruningScope.GLOBAL:
-            ranking = np.vstack(np.unravel_index(np.argsort(scores, axis=None), scores.shape)).T
-            num_to_drop = (int) (len(ranking) * (1 - self.sparsity))
-            global_indices_to_drop = [tuple(x) for x in ranking[:num_to_drop]]
-            for i, layer in enumerate(self.layers_to_prune):
-                for j in range(layer.rank_capacity):
-                    layer_indices_to_drop = []
-                    if (i, j) in global_indices_to_drop:
-                        layer_indices_to_drop.append(j)
-                masks.append(create_mask(layer.rank_capacity, layer_indices_to_drop, True))
+            flattened_sorted_scores = sorted([score for layer_scores in scores for score in layer_scores])
+            num_to_drop = int(len(flattened_sorted_scores) * (1 - self.sparsity))
+            thresholds = [flattened_sorted_scores[num_to_drop]] * len(self.layers_to_prune)
+        else:
+            raise NotImplementedError(str(self.scope) + " is not supported yet.")
+
+        for i in range(len(self.layers_to_prune)):
+            indices_to_drop = np.where(np.array(scores[i]) < thresholds[i])
+            masks.append(create_mask(len(scores[i]), indices_to_drop, inverted=True))
 
         return masks
 
