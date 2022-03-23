@@ -14,3 +14,4 @@ venv/
 
 # misc
 tests_old/
+logs_*
