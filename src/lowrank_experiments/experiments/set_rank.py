@@ -17,7 +17,7 @@ def main(dataset: str, sparsity: float, prune_epoch: int, total_epochs: int):
     )
 
     (x_train, y_train), (x_test, y_test) = lowrank_experiments.data.load_data(dataset)
-    model = lowrank_experiments.model.get_lr_model(
+    model = lowrank_experiments.model.LowRankModel(
         x_train.shape[1:],
         num_classes=y_train.shape[1],
         initial_ranks=[-1, -1, -1, -1, -1],  # start full rank

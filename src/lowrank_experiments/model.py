@@ -8,23 +8,30 @@ from tensorflow.keras.layers import (
     MaxPool2D,
 )
 from tensorflow.keras.models import Sequential
+import tensorflow as tf 
 
 from lowrank import LRConv2D, LRDense
 
-
-def get_lr_model(input_shape: List[int], num_classes: int, initial_ranks: List[int]):
-    """
-    :param input_shape: list of integers with input shape
-    :param num_classes: number of classes of output
-    :param initial_ranks: list specifying initial ranks for each LRLayer
-    :returns: Model with 4 LRConv layers with no initial rank constraint,
-    followed by a LRDense layer with no initial rank constraint and a standard dense layer
-    """
-    if len(initial_ranks) != 5:
-        raise ValueError(
+class LowRankModel(tf.keras.Model):
+    def __init__(self, input_shape: List[int], num_classes: int, initial_ranks: List[int]) -> None:
+        """
+        :param input_shape: list of integers with input shape
+        :param num_classes: number of classes of output
+        :param initial_ranks: list specifying initial ranks for each LRLayer
+        :returns: Model with 4 LRConv layers with no initial rank constraint,
+        followed by a LRDense layer with no initial rank constraint and a standard dense layer
+        """
+        super().__init__()
+        if len(initial_ranks) != 5:
+            raise ValueError(
             f"Must specify 5 initial ranks. Given {len(initial_ranks)} instead"
         )
-    return Sequential(
+
+        self.input_shape = input_shape
+        self.num_classes = num_classes
+        self.initial_ranks = initial_ranks
+        
+        self.layers = Sequential(
         [
             InputLayer(input_shape=input_shape),
             LRConv2D(64, 3, rank=initial_ranks[0], activation="relu", padding="same"),
@@ -40,3 +47,6 @@ def get_lr_model(input_shape: List[int], num_classes: int, initial_ranks: List[i
             Dense(num_classes, activation="softmax"),
         ]
     )
+
+    def call(self, x):
+        return self.layers(x)
