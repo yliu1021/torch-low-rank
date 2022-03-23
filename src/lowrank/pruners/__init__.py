@@ -44,13 +44,19 @@ class Pruner:
         """
         Calls the `compute_mask` method and actually sets the ranks
         """
-        masks = self.compute_masks()
         low_rank_layers: list[LowRankLayer] = list(
             filter(lambda x: isinstance(x, LowRankLayer), self.model.layers)
         )
+        for layer in low_rank_layers:
+            if layer.rank_capacity is None:
+                layer.set_rank_capacity(layer.max_rank)
+        masks = self.compute_masks()
         if len(masks) != len(low_rank_layers):
             raise ValueError("Computed mask does not match length of model layers")
         for mask, layer in zip(masks, low_rank_layers):
-            layer.set_rank(mask)
+            assert layer.rank_capacity == len(mask), (
+                "Computed mask should be the same length as " "rank capacity"
+            )
+            layer.set_mask(mask)
             layer.squeeze_rank_capacity()
         self.model._reset_compile_cache()  # ensure model is recompiled

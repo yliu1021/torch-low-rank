@@ -44,32 +44,34 @@ class LowRankLayer(Layer):
             return self.max_rank
         return sum(self._mask)
 
-    def set_rank(self, rank_mask: Optional[list[bool]] = None):
+    def set_mask(self, new_mask: list[bool]):
+        if len(new_mask) != len(self._mask):
+            raise ValueError("New mask must have the same size")
+        self._mask = np.array(new_mask)
+
+    def set_rank_capacity(self, capacity: Optional[int] = None):
         """
         Sets the new rank and creates the appropriate weights (without actually removing singular
         vectors). Call `commit_rank` to actually remove the singular vector.
-        :param rank_mask: the rank mask to apply. The SVD is sorted from the largest singular value
-        to smallest. Thus, if the first entry of the mask is True, then the largest singular
-        value is kept.
+        :param capacity: The capacity
         """
         assert self.num_inputs is not None, "Layer needs to be built first"
+        if self.rank_capacity == capacity:
+            raise ValueError("Setting capacity to current capacity")
+        if capacity > self.max_rank:
+            raise ValueError("Rank capacity must be less than or equal to max rank.")
         eff_weights = self.eff_weight()
-        if rank_mask is None:
+        if capacity is None:
             self._mask = None
             self._allocate_weights(-1)
             self.kernels[-1].assign(eff_weights)
             return
-        if len(rank_mask) > self.max_rank:
-            raise ValueError(
-                "Rank mask must have length less than or equal to max rank."
-            )
-        self._mask = rank_mask
-        assert self.rank_capacity is not None
+        self._mask = [True] * capacity
         self._allocate_weights(self.rank_capacity)
         u, s, v = np.linalg.svd(eff_weights, full_matrices=False)
-        u = u[:, :self.rank_capacity]
-        s = s[:self.rank_capacity] ** 0.5
-        v = v[:self.rank_capacity, :]
+        u = u[:, : self.rank_capacity]
+        s = s[: self.rank_capacity] ** 0.5
+        v = v[: self.rank_capacity, :]
         kernel_u, kernel_v = self.kernels[self.rank_capacity]
         kernel_u.assign(u * s)
         kernel_v.assign(s[:, None] * v)
@@ -81,7 +83,9 @@ class LowRankLayer(Layer):
         if self.rank_capacity is None:
             # rank -1 layers cannot be squeezed because we have no mask
             return
-        self.set_rank([True] * self.rank)
+        if all(self._mask):
+            return
+        self.set_rank_capacity(self.rank)
 
     def eff_weight(self) -> tf.Variable:
         """
@@ -90,6 +94,7 @@ class LowRankLayer(Layer):
         :return: effective weights
         """
         if self._mask is None:
+            # we can't mask here
             return self.kernels[-1]
         else:
             u, v = self.kernels[self.rank_capacity]

@@ -1,3 +1,18 @@
+"""
+pseudo-code for snip
+layer1 -> matrix that transforms 10 -> 20
+max_rank := min(10, 20) = 10
+
+layer1.set_rank_capacity(layer1.max_rank)
+
+min_i = ____
+for i in range(layer1.rank_capacity or layer1.max_rank):
+    layer1.set_mask(1 - one_hot(i))
+    score = loss(model)
+    min_i = ____
+masks.append(one_hot(min_i))
+return masks
+"""
 import lowrank.pruners
 from lowrank import low_rank_layer
 
