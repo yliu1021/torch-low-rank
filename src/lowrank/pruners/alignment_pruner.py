@@ -1,7 +1,7 @@
 import lowrank.pruners
 import tensorflow as tf
 
-class AlignmentPruner(lowrank.pruners.Pruner):
+class AlignmentPruner(lowrank.pruners.AbstractPrunerBase):
     """
     Alignment pruners scores singular vectors based on how much each singular vector perturbs the
     model output from the baseline

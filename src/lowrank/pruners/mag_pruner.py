@@ -2,7 +2,7 @@ import lowrank.pruners
 from lowrank import low_rank_layer
 
 
-class MagPruner(lowrank.pruners.Pruner):
+class MagPruner(lowrank.pruners.AbstractPrunerBase):
     """
     Magnitude pruners scores singular vectors based on magnitude of the vector
     """

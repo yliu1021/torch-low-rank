@@ -17,7 +17,7 @@ import lowrank.pruners
 from lowrank import low_rank_layer
 
 
-class SnipPruner(lowrank.pruners.Pruner):
+class SnipPruner(lowrank.pruners.AbstractPrunerBase):
     def compute_scores(self) -> 'list[list[int | float]]':
         """
         Score = loss if masking out the singular vector
