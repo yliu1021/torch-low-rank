@@ -33,6 +33,9 @@ class Pruner:
         self.sparsity = sparsity
         self.data = data
         self.loss = loss
+        self.low_rank_layers: list[LowRankLayer] = list(
+            filter(lambda x: isinstance(x, LowRankLayer), self.model.layers)
+        )
 
     def compute_masks(self) -> list[list[bool]]:
         """
@@ -44,16 +47,14 @@ class Pruner:
         """
         Calls the `compute_mask` method and actually sets the ranks
         """
-        low_rank_layers: list[LowRankLayer] = list(
-            filter(lambda x: isinstance(x, LowRankLayer), self.model.layers)
-        )
-        for layer in low_rank_layers:
+
+        for layer in self.low_rank_layers:
             if layer.rank_capacity is None:
                 layer.set_rank_capacity(layer.max_rank)
         masks = self.compute_masks()
-        if len(masks) != len(low_rank_layers):
+        if len(masks) != len(self.low_rank_layers):
             raise ValueError("Computed mask does not match length of model layers")
-        for mask, layer in zip(masks, low_rank_layers):
+        for mask, layer in zip(masks, self.low_rank_layers):
             assert layer.rank_capacity == len(mask), (
                 "Computed mask should be the same length as " "rank capacity"
             )
