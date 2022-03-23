@@ -18,7 +18,7 @@ from lowrank import low_rank_layer
 
 
 class SnipPruner(lowrank.pruners.Pruner):
-    def compute_scores(self) -> 'list[list[bool]]':
+    def compute_scores(self) -> 'list[list[int | float]]':
         """
         Score = loss if masking out the singular vector
         Intuition = if loss when masking out the singular vector is high, then the singular vector must be important.
