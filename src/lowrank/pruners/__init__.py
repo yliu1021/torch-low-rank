@@ -1,3 +1,6 @@
+"""
+Pruner Base Class Implementation and other useful package wide code
+"""
 import enum
 from typing import Optional
 
@@ -8,14 +11,14 @@ from lowrank.low_rank_layer import LowRankLayer
 
 
 class PruningScope(enum.Enum):
+    """
+    Pruning Scope determines how to use scores to rank singular vectors and generate mask.
+    Global ranks globally, Local ranks locally
+    """
     GLOBAL = enum.auto()  # global pruning will score all ranks from all layers together
     LOCAL = enum.auto()  # local pruning will treat each layer independently
 
-class MaskType(enum.Enum):
-    STANDARD = enum.auto() # mask to be generated using indices that should be set to True
-    INVERTED = enum.auto() # mask to be generated using indices that should be set to False
-
-class Pruner:
+class AbstractPrunerBase:
     """
     Pruners take a model, and upon examining its effective weights, computes rank masks for
     each layer
@@ -26,7 +29,7 @@ class Pruner:
         model: models.Sequential,
         scope: PruningScope,
         sparsity: float,
-        data: Optional[tuple[np.ndarray, np.ndarray]] = None,
+        data: 'Optional[tuple[np.ndarray, np.ndarray]]' = None,
         batch_size: int = 64,
         loss: Optional[losses.Loss] = None,
     ):
@@ -35,7 +38,8 @@ class Pruner:
         if sparsity < 0 or sparsity > 1:
             raise ValueError("Sparsity must be in the range [0, 1]")
         self.sparsity = sparsity
-        if data is not None:
+        self.data = data
+        if self.data is not None:
             self.x, self.y = data
         self.batch_size = batch_size
         self.loss = loss
@@ -74,33 +78,42 @@ class Pruner:
             layer.squeeze_rank_capacity()
         self.model._reset_compile_cache()  # ensure model is recompiled
 
-        # TODO: Return new rank capacity of each layer?
+        #TODO: Return new rank capacity of each layer?
 
     def create_masks(self):
+        """
+        Create masks for the pruning method.
+        Calls compute scores which is implemented by the subclass overriding the base Pruner class.
+        """
         scores = np.array(self.compute_scores())
         masks = []
 
         if self.scope == PruningScope.LOCAL:
             for i, layer in enumerate(self.layers_to_prune):
-                ranking = np.argsort(scores[i]) # gets indices of elements if they were to be sorted in ascending order
+                # Get indices of elements if they were to be sorted in ascending order
+                ranking = np.argsort(scores[i])
                 num_to_drop = (int) (len(ranking) * (1 - self.sparsity))
-                masks.append(Pruner.create_mask(layer.rank_capacity, MaskType.INVERTED, ranking[:num_to_drop]))
+                masks.append(create_mask(layer.rank_capacity, ranking[:num_to_drop], True))
 
         elif self.scope == PruningScope.GLOBAL:
-            ranking = np.vstack(np.unravel_index(np.argsort(scores, axis=None), scores.shape)).T #2d equivalent of argsort
-            num_to_drop = (int) (len(ranking) * (1 - self.sparsity)) 
+            ranking = np.vstack(np.unravel_index(np.argsort(scores, axis=None), scores.shape)).T
+            num_to_drop = (int) (len(ranking) * (1 - self.sparsity))
             global_indices_to_drop = [tuple(x) for x in ranking[:num_to_drop]]
             for i, layer in enumerate(self.layers_to_prune):
                 for j in range(layer.rank_capacity):
                     layer_indices_to_drop = []
                     if (i, j) in global_indices_to_drop:
                         layer_indices_to_drop.append(j)
-                masks.append(Pruner.create_mask(layer.rank_capacity, MaskType.INVERTED, layer_indices_to_drop))
+                masks.append(create_mask(layer.rank_capacity, layer_indices_to_drop, True))
 
         return masks
 
-    @staticmethod
-    def create_mask(length: int, mask_type: MaskType, indices: 'list[int]'):
-        mask = [True if x in indices else False for x in range(length)]
-        if mask_type == MaskType.INVERTED:
-            mask = [not(x) for x in mask]
+
+def create_mask(length: int, indices: 'list[int]', inverted: bool = False, ):
+    """
+    Helper function that creates mask given
+    """
+    mask = [True if x in indices else False for x in range(length)]
+    if inverted:
+        mask = [not x for x in mask]
+    return mask
