@@ -3,12 +3,9 @@ Pruner Base Class Implementation and other useful package wide code
 """
 import enum
 from typing import Optional
-
 import numpy as np
 from tensorflow.keras import losses, models
-
 from lowrank.low_rank_layer import LowRankLayer
-
 
 class PruningScope(enum.Enum):
     """
