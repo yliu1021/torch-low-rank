@@ -44,5 +44,5 @@ def load_data(dataset: str, fast: bool = False) -> Tuple[Dataset, Dataset]:
         y_train = y_train[:64, :]
         x_test = x_test[:64, :, :, :]
         y_test = y_test[:64, :]
-        
+
     return (x_train, y_train), (x_test, y_test)

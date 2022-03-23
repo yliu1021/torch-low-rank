@@ -1,3 +1,7 @@
+"""
+Module containing models
+"""
+
 from typing import List
 
 from tensorflow.keras.layers import (

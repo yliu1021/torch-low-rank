@@ -1,13 +1,21 @@
+"""
+Experiment to compare various pruners.
+"""
+
 import datetime
 import pathlib
+from tensorflow.keras import callbacks, losses, metrics, optimizers
 
 import lowrank_experiments.data
 import lowrank_experiments.model
-from lowrank.pruners import alignment_pruner, mag_pruner, PruningScope
-from tensorflow.keras import callbacks, losses, metrics, optimizers
+from lowrank.pruners import PruningScope, mag_pruner
+
 
 
 def main(dataset: str, sparsity: float, prune_epoch: int, total_epochs: int, batch_size: int = 64, fast = False):
+    """
+    Main method that runs the experiment
+    """
     tensorboard_log_dir = pathlib.Path("./logs_set_rank")
     tensorboard_log_dir.mkdir(exist_ok=True)  # make root logging directory
     tensorboard_log_dir /= "logs_" + datetime.datetime.now().strftime(
