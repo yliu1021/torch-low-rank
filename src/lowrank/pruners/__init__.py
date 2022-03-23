@@ -37,14 +37,12 @@ class AbstractPrunerBase:
         self.sparsity = sparsity
         self.data = data
         if self.data is not None:
-            self.x, self.y = data
+            self.data_x, self.data_y = data
         self.batch_size = batch_size
         self.loss = loss
         self.layers_to_prune: list[LowRankLayer] = list(
             filter(lambda x: isinstance(x, LowRankLayer), self.model.layers)
         )
-
-        #TODO: Compile Model?
 
     def compute_scores(self) -> 'list[list[int | float]]':
         """
@@ -74,8 +72,6 @@ class AbstractPrunerBase:
             layer.set_mask(mask)
             layer.squeeze_rank_capacity()
         self.model._reset_compile_cache()  # ensure model is recompiled
-
-        #TODO: Return new rank capacity of each layer?
 
     def create_masks(self):
         """
@@ -110,7 +106,7 @@ def create_mask(length: int, indices: 'list[int]', inverted: bool = False, ):
     """
     Helper function that creates mask given
     """
-    mask = [True if x in indices else False for x in range(length)]
+    mask = [x in indices for x in range(length)]
     if inverted:
         mask = [not x for x in mask]
     return mask

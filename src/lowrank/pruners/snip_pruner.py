@@ -25,7 +25,7 @@ class SnipPruner(AbstractPrunerBase):
                 layer.set_mask(
                     create_mask(layer.rank_capacity, [i], inverted=True)
                     )
-                loss = self.model.evaluate(self.x, self.y, self.batch_size)[0]
+                loss = self.model.evaluate(self.data_x, self.data_y, self.batch_size)[0]
                 layer_scores.append(loss)
             scores.append(layer_scores)
         return scores
