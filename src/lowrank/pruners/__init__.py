@@ -1,6 +1,8 @@
 import enum
+from typing import Callable, Optional
 
-from tensorflow.keras import models
+import numpy as np
+from tensorflow.keras import losses, models
 
 from lowrank.low_rank_layer import LowRankLayer
 
@@ -16,12 +18,21 @@ class Pruner:
     each layer
     """
 
-    def __init__(self, model: models.Sequential, scope: PruningScope, sparsity: float):
+    def __init__(
+        self,
+        model: models.Sequential,
+        scope: PruningScope,
+        sparsity: float,
+        data: Optional[tuple[np.ndarray, np.ndarray]] = None,
+        loss: Optional[losses.Loss] = None,
+    ):
         self.model = model
         self.scope = scope
         if sparsity < 0 or sparsity > 1:
             raise ValueError("Sparsity must be in the range [0, 1]")
         self.sparsity = sparsity
+        self.data = data
+        self.loss = loss
 
     def compute_masks(self) -> list[list[bool]]:
         """

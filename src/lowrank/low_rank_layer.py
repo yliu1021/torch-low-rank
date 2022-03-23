@@ -24,6 +24,8 @@ class LowRankLayer(Layer):
             int, Union[tf.Variable, Tuple[tf.Variable, tf.Variable]]
         ] = {}
         self.bias: Optional[tf.Variable] = None
+        self.mask = None  # this is set when `set_rank` is called. When `commit_rank` is called,
+        # the weights are actually pruned so the mask is set back to None
 
     @property
     def max_rank(self) -> int:
@@ -35,7 +37,8 @@ class LowRankLayer(Layer):
 
     def set_rank(self, rank_mask: Optional[list[bool]] = None):
         """
-        Sets the new rank and creates the appropriate weights
+        Sets the new rank and creates the appropriate weights (without actually removing singular
+        vectors). Call `commit_rank` to actually remove the singular vector.
         :param rank_mask: the rank mask to apply. The SVD is sorted from the largest singular value
         to smallest. Thus, if the first entry of the mask is True, then the largest singular
         value is kept.
@@ -67,12 +70,21 @@ class LowRankLayer(Layer):
             kernel_u.assign(u * s)
             kernel_v.assign(s[:, None] * v)
 
+    def commit_rank(self):
+        """
+        Commit the pruning action of an ephemeral set rank
+        """
+        raise NotImplementedError()  # TODO
+
     def eff_weight(self):
         """
         Return the effective weights of the layer.
         If the layer is in SVD form, return U @ V
         :return: effective weights
         """
+        # if there's a mask
+        # if self.mask is not None:
+        #     return u @ np.diag(self.mask) @ v
         if self._rank not in self.kernels:
             return None
         if self._rank == -1:
