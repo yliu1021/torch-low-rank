@@ -16,7 +16,10 @@ class LowRankLayer(Layer):
         or "sigmoid"
         """
         super().__init__(**kwargs)
-        self._rank = rank
+        if rank == -1:
+            self._mask: Optional[np.ndarray] = None
+        else:
+            self._mask: Optional[np.ndarray] = np.array([True] * rank)
         self.activation = activations.get(activation)
         self.num_inputs: Optional[int] = None
         self.num_outputs: Optional[int] = None
@@ -24,16 +27,22 @@ class LowRankLayer(Layer):
             int, Union[tf.Variable, Tuple[tf.Variable, tf.Variable]]
         ] = {}
         self.bias: Optional[tf.Variable] = None
-        self.mask = None  # this is set when `set_rank` is called. When `commit_rank` is called,
-        # the weights are actually pruned so the mask is set back to None
 
     @property
     def max_rank(self) -> int:
         return min(self.num_outputs, self.num_inputs)
 
     @property
+    def rank_capacity(self) -> Optional[int]:
+        if self._mask is None:
+            return None
+        return len(self._mask)
+
+    @property
     def rank(self) -> int:
-        return self._rank
+        if self._mask is None:
+            return self.max_rank
+        return sum(self._mask)
 
     def set_rank(self, rank_mask: Optional[list[bool]] = None):
         """
@@ -44,61 +53,54 @@ class LowRankLayer(Layer):
         value is kept.
         """
         assert self.num_inputs is not None, "Layer needs to be built first"
-        if rank_mask is None:
-            self._rank = -1
-        else:
-            if len(rank_mask) > self.max_rank:
-                raise ValueError(
-                    "Rank mask must have length less than or equal to max rank."
-                )
-            if len(rank_mask) < self.max_rank:
-                rank_mask.extend(
-                    [False] * (self.max_rank - len(rank_mask))
-                )  # pad mask with 0's
-            assert len(rank_mask) == self.max_rank
-            self._rank = sum(rank_mask)
-        self._allocate_weights(self._rank)
         eff_weights = self.eff_weight()
-        if self._rank == -1:
-            self.kernels[self._rank].assign(eff_weights)
-        else:
-            u, s, v = np.linalg.svd(eff_weights, full_matrices=False)
-            u = u[:, rank_mask]
-            s = s[rank_mask] ** 0.5
-            v = v[rank_mask, :]
-            kernel_u, kernel_v = self.kernels[self._rank]
-            kernel_u.assign(u * s)
-            kernel_v.assign(s[:, None] * v)
+        if rank_mask is None:
+            self._mask = None
+            self._allocate_weights(-1)
+            self.kernels[-1].assign(eff_weights)
+            return
+        if len(rank_mask) > self.max_rank:
+            raise ValueError(
+                "Rank mask must have length less than or equal to max rank."
+            )
+        self._mask = rank_mask
+        assert self.rank_capacity is not None
+        self._allocate_weights(self.rank_capacity)
+        u, s, v = np.linalg.svd(eff_weights, full_matrices=False)
+        u = u[:, :self.rank_capacity]
+        s = s[:self.rank_capacity] ** 0.5
+        v = v[:self.rank_capacity, :]
+        kernel_u, kernel_v = self.kernels[self.rank_capacity]
+        kernel_u.assign(u * s)
+        kernel_v.assign(s[:, None] * v)
 
-    def commit_rank(self):
+    def squeeze_rank_capacity(self):
         """
-        Commit the pruning action of an ephemeral set rank
+        Removes unneeded singular vectors. I.e. removes singular vectors that are masked out
         """
-        raise NotImplementedError()  # TODO
+        if self.rank_capacity is None:
+            # rank -1 layers cannot be squeezed because we have no mask
+            return
+        self.set_rank([True] * self.rank)
 
-    def eff_weight(self):
+    def eff_weight(self) -> tf.Variable:
         """
         Return the effective weights of the layer.
         If the layer is in SVD form, return U @ V
         :return: effective weights
         """
-        # if there's a mask
-        # if self.mask is not None:
-        #     return u @ np.diag(self.mask) @ v
-        if self._rank not in self.kernels:
-            return None
-        if self._rank == -1:
-            return self.kernels[self._rank]
+        if self._mask is None:
+            return self.kernels[-1]
         else:
-            u, v = self.kernels[self._rank]
-            return u @ v
+            u, v = self.kernels[self.rank_capacity]
+            return u @ np.diag(self._mask) @ v
 
     @property
     def trainable_weights(self):
-        if self._rank == -1:
-            weights = [self.kernels[self._rank]]
+        if self._rank_capacity == -1:
+            weights = [self.kernels[self._rank_capacity]]
         else:
-            u, v = self.kernels[self._rank]
+            u, v = self.kernels[self._rank_capacity]
             weights = [u, v]
         if self.bias is not None:
             weights.append(self.bias)
@@ -120,16 +122,16 @@ class LowRankLayer(Layer):
                 shape=(self.num_inputs, self.num_outputs),
                 initializer=GlorotUniform(),
             )
-        else:
-            self.kernels[rank] = (
-                self.add_weight(
-                    name=f"kernel_{rank}_u",
-                    shape=(self.num_inputs, rank),
-                    initializer=GlorotUniform(),
-                ),
-                self.add_weight(
-                    name=f"kernel_{rank}_v",
-                    shape=(rank, self.num_outputs),
-                    initializer=GlorotUniform(),
-                ),
-            )
+            return
+        self.kernels[rank] = (
+            self.add_weight(
+                name=f"kernel_{rank}_u",
+                shape=(self.num_inputs, rank),
+                initializer=GlorotUniform(),
+            ),
+            self.add_weight(
+                name=f"kernel_{rank}_v",
+                shape=(rank, self.num_outputs),
+                initializer=GlorotUniform(),
+            ),
+        )

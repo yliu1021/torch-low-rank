@@ -21,7 +21,7 @@ class LRDense(LowRankLayer):
 
     def build(self, input_shape):
         self.num_inputs = int(input_shape[-1])
-        self._allocate_weights(self._rank)
+        self._allocate_weights(self._rank_capacity)
         self.bias = self.add_weight(
             name="bias", shape=(self.num_outputs,), initializer=Zeros()
         )
@@ -30,11 +30,7 @@ class LRDense(LowRankLayer):
         """
         Like pytorch forward function
         """
-        if self._rank == -1:
-            pre_act = inputs @ self.kernels[self._rank] + self.bias
-        else:
-            u, v = self.kernels[self._rank]
-            pre_act = inputs @ u @ v + self.bias
+        pre_act = inputs @ self.eff_weight() + self.bias
         return self.activation(pre_act)
 
 
@@ -62,7 +58,7 @@ class LRConv2D(LowRankLayer):
         h, w = self.kernel_size
         num_in_channels = input_shape[-1]
         self.num_inputs = h * w * num_in_channels
-        self._allocate_weights(self._rank)
+        self._allocate_weights(self._rank_capacity)
         self.bias = self.add_weight(
             name="bias", shape=(self.num_outputs,), initializer=Zeros()
         )
