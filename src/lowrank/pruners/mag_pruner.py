@@ -1,22 +1,17 @@
-import lowrank.pruners
-from lowrank import low_rank_layer
+"""
+Magnitude Pruner
+"""
 
+import numpy as np
+from lowrank.pruners import AbstractPrunerBase
 
-class MagPruner(lowrank.pruners.AbstractPrunerBase):
+class MagPruner(AbstractPrunerBase):
     """
     Magnitude pruners scores singular vectors based on magnitude of the vector
     """
-
-    def compute_masks(self) -> list[list[bool]]:
-        if self.scope == lowrank.pruners.PruningScope.GLOBAL:
-            raise ValueError("Global pruning not yet supported")
-        masks = []
-        for layer in self.model.layers:
-            if not isinstance(layer, low_rank_layer.LowRankLayer):
-                # only care about low rank layers
-                continue
-            num_drop = int(round(self.sparsity * layer.max_rank))
-            mask = [True] * layer.max_rank
-            mask[-num_drop:] = [False] * num_drop
-            masks.append(mask)
-        return masks
+    def compute_scores(self) -> 'list[list[int | float]]':
+        scores = []
+        for layer in self.layers_to_prune:
+            _, singular_values, _ = np.linalg.svd(layer.eff_weight(), full_matrices=False)
+            scores.append(singular_values)
+        return scores
