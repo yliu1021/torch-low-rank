@@ -7,12 +7,19 @@ set_rank:
     dataset:
       default: cifar10
     pruner:
+      default: Magnitude
     prune_epoch:
+      default: 1
     total_epochs:
+      default: 2
     batch_size:
       default: 64
     sparsity:
+      default: 0.5
     pruning_scope:
+      default: local
     fast:
+      default: False
+    no_gpu:
       default: False
     
