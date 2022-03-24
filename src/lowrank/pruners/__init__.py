@@ -4,17 +4,22 @@ Pruner Base Class Implementation and other useful package wide code
 import enum
 from typing import Optional
 from venv import create
+
 import numpy as np
 from tensorflow.keras import losses, models
+
 from lowrank.low_rank_layer import LowRankLayer
+
 
 class PruningScope(enum.Enum):
     """
     Pruning Scope determines how to use scores to rank singular vectors and generate mask.
     Global ranks globally, Local ranks locally
     """
+
     GLOBAL = enum.auto()  # global pruning will score all ranks from all layers together
     LOCAL = enum.auto()  # local pruning will treat each layer independently
+
 
 class AbstractPrunerBase:
     """
@@ -27,7 +32,7 @@ class AbstractPrunerBase:
         model: models.Sequential,
         scope: PruningScope,
         sparsity: float,
-        data: 'Optional[tuple[np.ndarray, np.ndarray]]' = None,
+        data: "Optional[tuple[np.ndarray, np.ndarray]]" = None,
         batch_size: int = 64,
         loss: Optional[losses.Loss] = None,
     ):
@@ -45,7 +50,7 @@ class AbstractPrunerBase:
             filter(lambda x: isinstance(x, LowRankLayer), self.model.layers)
         )
 
-    def compute_scores(self) -> 'list[list[int | float]]':
+    def compute_scores(self) -> "list[list[int | float]]":
         """
         Computes and returns scores for the singular vectors in each layer.
         - High Score = Important Singular Vector
@@ -89,9 +94,13 @@ class AbstractPrunerBase:
                 num_to_drop = int(len(scores[i]) * (1 - self.sparsity))
                 thresholds.append(sorted_layer_scores[num_to_drop])
         elif self.scope == PruningScope.GLOBAL:
-            flattened_sorted_scores = sorted([score for layer_scores in scores for score in layer_scores])
+            flattened_sorted_scores = sorted(
+                [score for layer_scores in scores for score in layer_scores]
+            )
             num_to_drop = int(len(flattened_sorted_scores) * (1 - self.sparsity))
-            thresholds = [flattened_sorted_scores[num_to_drop]] * len(self.layers_to_prune)
+            thresholds = [flattened_sorted_scores[num_to_drop]] * len(
+                self.layers_to_prune
+            )
         else:
             raise NotImplementedError(str(self.scope) + " is not supported yet.")
 
@@ -100,16 +109,23 @@ class AbstractPrunerBase:
             masks.append(create_mask(len(scores[i]), indices_to_drop, inverted=True))
 
         return masks
-    
+
     def set_mask_on_layer(self, layer: LowRankLayer, mask):
         layer.set_mask(mask)
         self.model._reset_compile_cache()
-    
-    def set_rank_capacity_on_layer(self, layer: LowRankLayer, capacity: Optional[int] = None):
+
+    def set_rank_capacity_on_layer(
+        self, layer: LowRankLayer, capacity: Optional[int] = None
+    ):
         layer.set_rank_capacity(capacity)
         self.model._reset_compile_cache()
 
-def create_mask(length: int, indices: 'list[int]', inverted: bool = False, ):
+
+def create_mask(
+    length: int,
+    indices: "list[int]",
+    inverted: bool = False,
+):
     """
     Helper function that creates mask given
     """

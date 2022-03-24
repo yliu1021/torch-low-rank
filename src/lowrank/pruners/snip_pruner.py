@@ -2,14 +2,16 @@
 SNIP Pruner
 """
 
-from lowrank.pruners import create_mask, AbstractPrunerBase
+from lowrank.pruners import AbstractPrunerBase, create_mask
+
 
 class SnipPruner(AbstractPrunerBase):
-    '''
+    """
     Class for SNIP Pruner
     Implements compute score to score singular vectors using SNIP Method.
-    '''
-    def compute_scores(self) -> 'list[list[int | float]]':
+    """
+
+    def compute_scores(self) -> "list[list[int | float]]":
         """
         Score = loss if masking out the singular vector
         Intuition = if loss when masking out the singular vector is high,
@@ -23,8 +25,7 @@ class SnipPruner(AbstractPrunerBase):
             layer_scores = []
             for i in range(layer.rank_capacity):
                 self.set_mask_on_layer(
-                    layer, 
-                    create_mask(layer.rank_capacity, [i], inverted=True)
+                    layer, create_mask(layer.rank_capacity, [i], inverted=True)
                 )
                 loss = self.model.evaluate(self.data_x, self.data_y, self.batch_size)[0]
                 layer_scores.append(loss)

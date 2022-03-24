@@ -12,6 +12,7 @@ from tensorflow.keras.layers import (
     MaxPool2D,
 )
 from tensorflow.keras.models import Sequential
+
 from lowrank import LRConv2D, LRDense
 
 

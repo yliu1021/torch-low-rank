@@ -4,13 +4,15 @@ Experiment to compare various pruners.
 
 import argparse
 import pathlib
+from random import randint
+
 import tensorflow as tf
 from tensorflow.keras import callbacks, losses, metrics, optimizers
-from random import randint
 
 import lowrank_experiments.data
 import lowrank_experiments.model
-from lowrank.pruners import PruningScope, mag_pruner, snip_pruner, alignment_pruner
+from lowrank.pruners import PruningScope, alignment_pruner, mag_pruner, snip_pruner
+
 
 def main(args):
     """
@@ -19,7 +21,9 @@ def main(args):
     tensorboard_log_dir = pathlib.Path("./logs_set_rank")
     tensorboard_log_dir.mkdir(exist_ok=True)  # make root logging directory
 
-    (x_train, y_train), (x_test, y_test) = lowrank_experiments.data.load_data(args.dataset, args.fast)
+    (x_train, y_train), (x_test, y_test) = lowrank_experiments.data.load_data(
+        args.dataset, args.fast
+    )
     model = lowrank_experiments.model.get_lr_model(
         x_train.shape[1:],
         num_classes=y_train.shape[1],
@@ -45,29 +49,29 @@ def main(args):
     model.evaluate(x_test, y_test)
 
     pruner = None
-    if args.pruner == 'Magnitude':
+    if args.pruner == "Magnitude":
         pruner = mag_pruner.MagPruner(
             model=model,
-            scope=args.pruning_scope, 
-            sparsity=args.sparsity,
-            batch_size=args.batch_size
-        )
-    elif args.pruner == 'SNIP':
-        pruner = snip_pruner.SnipPruner(
-            model=model, 
             scope=args.pruning_scope,
             sparsity=args.sparsity,
-            data=(x_train, y_train), 
-            batch_size=args.batch_size, 
-            loss=losses.CategoricalCrossentropy()
+            batch_size=args.batch_size,
         )
-    elif args.pruner == 'Alignment':
+    elif args.pruner == "SNIP":
+        pruner = snip_pruner.SnipPruner(
+            model=model,
+            scope=args.pruning_scope,
+            sparsity=args.sparsity,
+            data=(x_train, y_train),
+            batch_size=args.batch_size,
+            loss=losses.CategoricalCrossentropy(),
+        )
+    elif args.pruner == "Alignment":
         pruner = alignment_pruner.AlignmentPruner(
-            model=model, 
+            model=model,
             scope=PruningScope.LOCAL,
             sparsity=args.sparsity,
             data=(x_train, y_train),
-            batch_size=args.batch_size
+            batch_size=args.batch_size,
         )
 
     pruner.prune()
@@ -87,32 +91,48 @@ def main(args):
     print("End of training")
     model.evaluate(x_test, y_test)
 
-PRUNERS = ['Magnitude', 'SNIP', 'Alignment']
-DATASETS = ['cifar10', 'cifar100']
-PRUNING_SCOPES = ['global', 'local']
+
+PRUNERS = ["Magnitude", "SNIP", "Alignment"]
+DATASETS = ["cifar10", "cifar100"]
+PRUNING_SCOPES = ["global", "local"]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate singular vector rankings")
-    parser.add_argument('--dataset', choices=DATASETS, help="Choice of dataset")
-    parser.add_argument('--pruner', choices=PRUNERS, help="Choice of pruning algorithm")
-    parser.add_argument('--prune_epoch', type=int, help="Epoch to prune at")
-    parser.add_argument('--total_epochs', type=int, help="Total number of epochs to train for")
-    parser.add_argument('--batch_size', type=int)
-    parser.add_argument('--sparsity', type=float, help="Percentage of singular vectors to be pruned")
-    parser.add_argument('--pruning_scope', choices=PRUNING_SCOPES, help="Scope to rank singular vectors (global or layer wise)")
-    parser.add_argument('--fast', action='store_true', default=False, help="Enable to run fast mode. \
-        Fast mode subsets the dataset. To be used for verifying code")
-    parser.add_argument('--no_gpu', action='store_true', default=False, help="Disable GPU")
+    parser.add_argument("--dataset", choices=DATASETS, help="Choice of dataset")
+    parser.add_argument("--pruner", choices=PRUNERS, help="Choice of pruning algorithm")
+    parser.add_argument("--prune_epoch", type=int, help="Epoch to prune at")
+    parser.add_argument(
+        "--total_epochs", type=int, help="Total number of epochs to train for"
+    )
+    parser.add_argument("--batch_size", type=int)
+    parser.add_argument(
+        "--sparsity", type=float, help="Percentage of singular vectors to be pruned"
+    )
+    parser.add_argument(
+        "--pruning_scope",
+        choices=PRUNING_SCOPES,
+        help="Scope to rank singular vectors (global or layer wise)",
+    )
+    parser.add_argument(
+        "--fast",
+        action="store_true",
+        default=False,
+        help="Enable to run fast mode. \
+        Fast mode subsets the dataset. To be used for verifying code",
+    )
+    parser.add_argument(
+        "--no_gpu", action="store_true", default=False, help="Disable GPU"
+    )
     args = parser.parse_args()
-    
+
     if not args.no_gpu:
         gpus = tf.config.list_physical_devices("GPU")
         tf.config.set_visible_devices(gpus[randint(0, len(gpus) - 1)], "GPU")
 
     # Preprocess arguments
-    if args.pruning_scope == 'global':
+    if args.pruning_scope == "global":
         args.pruning_scope = PruningScope.GLOBAL
-    elif args.pruning_scope == 'local':
+    elif args.pruning_scope == "local":
         args.pruning_scope = PruningScope.LOCAL
     else:
         raise argparse.ArgumentError(argument=None, message="Unsupported pruning scope")
