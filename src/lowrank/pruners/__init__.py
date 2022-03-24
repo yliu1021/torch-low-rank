@@ -96,7 +96,7 @@ class AbstractPrunerBase:
             raise NotImplementedError(str(self.scope) + " is not supported yet.")
 
         for i in range(len(self.layers_to_prune)):
-            indices_to_drop = np.where(np.array(scores[i]) < thresholds[i])
+            indices_to_drop = np.where(np.array(scores[i]) < thresholds[i])[0]
             masks.append(create_mask(len(scores[i]), indices_to_drop, inverted=True))
 
         return masks
@@ -106,7 +106,7 @@ def create_mask(length: int, indices: 'list[int]', inverted: bool = False, ):
     """
     Helper function that creates mask given
     """
-    mask = [x in indices for x in range(length)]
+    mask = [(x in indices) for x in range(length)]
     if inverted:
         mask = [not x for x in mask]
     return mask
