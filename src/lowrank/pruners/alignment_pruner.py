@@ -19,6 +19,7 @@ class AlignmentPruner(AbstractPrunerBase):
         Intuition = the singular vectors that change the output vector the most from baseline
         activation are the most important
         """
+        assert self.data_x is not None, "Data x is none, cannot infer input shape"
         scores = []
         for layer in self.layers_to_prune:
             layer_scores = []
