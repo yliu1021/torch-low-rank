@@ -109,6 +109,6 @@ if __name__ == "__main__":
     elif args.pruning_scope == 'local':
         args.pruning_scope = PruningScope.LOCAL
     else:
-        raise argparse.ArgumentError("Unsupported pruning scope")
+        raise argparse.ArgumentError(argument=None, message="Unsupported pruning scope")
 
     main(args)
