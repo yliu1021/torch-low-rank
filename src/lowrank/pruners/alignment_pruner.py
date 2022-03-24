@@ -2,6 +2,7 @@
 Alignment Pruner (Defined in overleaf)
 """
 
+from numpy import float64
 import tensorflow as tf
 from lowrank.pruners import create_mask, AbstractPrunerBase
 
@@ -22,12 +23,13 @@ class AlignmentPruner(AbstractPrunerBase):
         for layer in self.layers_to_prune:
             layer_scores = []
             self.set_mask_on_layer(layer, create_mask(layer.rank_capacity, []))
-            baseline_output_activation = self.model.call(tf.ones(self.model.input_shape))
+            all_ones_input = tf.convert_to_tensor([tf.ones(self.data_x.shape[1:])], dtype=float64)
+            baseline_output_activation = self.model.call(all_ones_input)
             for i in range(layer.rank_capacity):
                 self.set_mask_on_layer(layer, create_mask(layer.rank_capacity, [i]))
-                sv_output_activation = self.model.call(tf.ones(self.model.input_shape))
-                layer_scores.append(tf.norm(
+                sv_output_activation = self.model.call(all_ones_input)
+                layer_scores.append(float(tf.norm(
                     tf.math.subtract(baseline_output_activation, sv_output_activation)
-                ))
+                )))
             scores.append(layer_scores)
         return scores
