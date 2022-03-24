@@ -6,6 +6,7 @@ import argparse
 import pathlib
 import tensorflow as tf
 from tensorflow.keras import callbacks, losses, metrics, optimizers
+from random import randint
 
 import lowrank_experiments.data
 import lowrank_experiments.model
@@ -106,7 +107,7 @@ if __name__ == "__main__":
     
     if not args.no_gpu:
         gpus = tf.config.list_physical_devices("GPU")
-        tf.config.set_visible_devices(gpus[0], "GPU")
+        tf.config.set_visible_devices(gpus[randint(len(gpus) - 1)], "GPU")
 
     # Preprocess arguments
     if args.pruning_scope == 'global':
