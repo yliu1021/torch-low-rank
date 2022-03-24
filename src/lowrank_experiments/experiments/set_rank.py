@@ -4,6 +4,7 @@ Experiment to compare various pruners.
 
 import argparse
 import pathlib
+import tensorflow as tf
 from tensorflow.keras import callbacks, losses, metrics, optimizers
 
 import lowrank_experiments.data
@@ -100,9 +101,13 @@ if __name__ == "__main__":
     parser.add_argument('--pruning_scope', choices=PRUNING_SCOPES, help="Scope to rank singular vectors (global or layer wise)")
     parser.add_argument('--fast', action='store_true', default=False, help="Enable to run fast mode. \
         Fast mode subsets the dataset. To be used for verifying code")
-
+    parser.add_argument('--no_gpu', action='store_true', default=False, help="Disable GPU")
     args = parser.parse_args()
     
+    if not args.no_gpu:
+        gpus = tf.config.list_physical_devices("GPU")
+        tf.config.set_visible_devices(gpus[0], "GPU")
+
     # Preprocess arguments
     if args.pruning_scope == 'global':
         args.pruning_scope = PruningScope.GLOBAL
