@@ -22,9 +22,10 @@ class SnipPruner(AbstractPrunerBase):
         for layer in self.layers_to_prune:
             layer_scores = []
             for i in range(layer.rank_capacity):
-                layer.set_mask(
+                self.set_mask_on_layer(
+                    layer, 
                     create_mask(layer.rank_capacity, [i], inverted=True)
-                    )
+                )
                 loss = self.model.evaluate(self.data_x, self.data_y, self.batch_size)[0]
                 layer_scores.append(loss)
             scores.append(layer_scores)

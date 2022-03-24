@@ -21,10 +21,10 @@ class AlignmentPruner(AbstractPrunerBase):
         scores = []
         for layer in self.layers_to_prune:
             layer_scores = []
-            layer.set_mask(create_mask(layer.rank_capacity, []))
+            self.set_mask_on_layer(layer, create_mask(layer.rank_capacity, []))
             baseline_output_activation = self.model.call(tf.ones(self.model.input_shape))
             for i in range(layer.rank_capacity):
-                layer.set_mask(create_mask(layer.rank_capacity, [i]))
+                self.set_mask_on_layer(layer, create_mask(layer.rank_capacity, [i]))
                 sv_output_activation = self.model.call(tf.ones(self.model.input_shape))
                 layer_scores.append(tf.norm(
                     tf.math.subtract(baseline_output_activation, sv_output_activation)

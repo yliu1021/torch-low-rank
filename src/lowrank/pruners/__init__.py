@@ -100,7 +100,14 @@ class AbstractPrunerBase:
             masks.append(create_mask(len(scores[i]), indices_to_drop, inverted=True))
 
         return masks
-
+    
+    def set_mask_on_layer(self, layer: LowRankLayer, mask):
+        layer.set_mask(mask)
+        self.model._reset_compile_cache()
+    
+    def set_rank_capacity_on_layer(self, layer: LowRankLayer, capacity: Optional[int] = None):
+        layer.set_rank_capacity(capacity)
+        self.model._reset_compile_cache()
 
 def create_mask(length: int, indices: 'list[int]', inverted: bool = False, ):
     """
