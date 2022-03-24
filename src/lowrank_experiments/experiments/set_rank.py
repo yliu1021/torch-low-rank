@@ -66,5 +66,8 @@ def main(dataset: str, sparsity: float, prune_epoch: int, total_epochs: int, bat
         callbacks=[callbacks.TensorBoard(log_dir=tensorboard_log_dir)],
     )
 
+    print("End of training")
+    model.evaluate(x_test, y_test)
+
 if __name__ == "__main__":
-    main(dataset="cifar10", sparsity=0.1, prune_epoch=5, total_epochs=10, fast=True)
+    main(dataset="cifar10", sparsity=0.9, prune_epoch=5, total_epochs=10)
