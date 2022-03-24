@@ -107,7 +107,7 @@ if __name__ == "__main__":
     
     if not args.no_gpu:
         gpus = tf.config.list_physical_devices("GPU")
-        tf.config.set_visible_devices(gpus[randint(len(gpus) - 1)], "GPU")
+        tf.config.set_visible_devices(gpus[randint(0, len(gpus) - 1)], "GPU")
 
     # Preprocess arguments
     if args.pruning_scope == 'global':
