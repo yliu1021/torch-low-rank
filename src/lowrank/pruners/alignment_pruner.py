@@ -35,13 +35,10 @@ class AlignmentPruner(AbstractPrunerBase):
                 self.set_mask_on_layer(layer, create_mask(layer.rank_capacity, [i]))
                 sv_output_activation = self.model.call(all_ones_input)
                 layer_scores.append(
-                    float(
-                        tf.norm(
-                            tf.math.subtract(
-                                baseline_output_activation, sv_output_activation
-                            )
-                        )
-                    )
+                    tf.norm(baseline_output_activation - sv_output_activation)
                 )
+            self.set_mask_on_layer(
+                layer, create_mask(layer.rank_capacity, [], inverted=True)
+            )
             scores.append(layer_scores)
         return scores

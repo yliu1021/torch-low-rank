@@ -91,13 +91,13 @@ class AbstractPrunerBase:
         if self.scope == PruningScope.LOCAL:
             for i in range(len(self.layers_to_prune)):
                 sorted_layer_scores = sorted(scores[i])
-                num_to_drop = int(len(scores[i]) * (1 - self.sparsity))
+                num_to_drop = int(len(scores[i]) * self.sparsity)
                 thresholds.append(sorted_layer_scores[num_to_drop])
         elif self.scope == PruningScope.GLOBAL:
             flattened_sorted_scores = sorted(
                 [score for layer_scores in scores for score in layer_scores]
             )
-            num_to_drop = int(len(flattened_sorted_scores) * (1 - self.sparsity))
+            num_to_drop = int(len(flattened_sorted_scores) * self.sparsity)
             thresholds = [flattened_sorted_scores[num_to_drop]] * len(
                 self.layers_to_prune
             )
@@ -105,8 +105,8 @@ class AbstractPrunerBase:
             raise NotImplementedError(str(self.scope) + " is not supported yet.")
 
         for i in range(len(self.layers_to_prune)):
-            indices_to_drop = np.where(np.array(scores[i]) < thresholds[i])[0]
-            masks.append(create_mask(len(scores[i]), indices_to_drop, inverted=True))
+            indices_to_keep = np.where(np.array(scores[i]) >= thresholds[i])[0]
+            masks.append(create_mask(len(scores[i]), indices_to_keep))
 
         return masks
 

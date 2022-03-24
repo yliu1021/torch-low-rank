@@ -27,7 +27,14 @@ class SnipPruner(AbstractPrunerBase):
                 self.set_mask_on_layer(
                     layer, create_mask(layer.rank_capacity, [i], inverted=True)
                 )
-                loss = self.model.evaluate(self.data_x, self.data_y, self.batch_size)[0]
+                loss = self.model.evaluate(
+                    self.data_x, self.data_y, self.batch_size, verbose=0
+                )[0]
+                print(f"Masking out SV {i:03}\tloss: {loss:.5f}")
                 layer_scores.append(loss)
+            # reset mask of layer before moving onto next layer
+            self.set_mask_on_layer(
+                layer, create_mask(layer.rank_capacity, [], inverted=True)
+            )
             scores.append(layer_scores)
         return scores

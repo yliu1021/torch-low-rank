@@ -61,14 +61,14 @@ def main(args):
             model=model,
             scope=args.pruning_scope,
             sparsity=args.sparsity,
-            data=(x_train, y_train),
+            data=(x_train[:64], y_train[:64]),
             batch_size=args.batch_size,
             loss=losses.CategoricalCrossentropy(),
         )
     elif args.pruner == "Alignment":
         pruner = alignment_pruner.AlignmentPruner(
             model=model,
-            scope=PruningScope.LOCAL,
+            scope=args.pruning_scope,
             sparsity=args.sparsity,
             data=(x_train, y_train),
             batch_size=args.batch_size,
