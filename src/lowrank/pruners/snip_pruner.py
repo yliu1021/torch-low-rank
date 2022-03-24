@@ -21,7 +21,8 @@ class SnipPruner(AbstractPrunerBase):
             raise ValueError("Snip pruner requires data and loss function.")
 
         scores = []
-        for layer in self.layers_to_prune:
+        for layer_ind, layer in enumerate(self.layers_to_prune):
+            print(f"Pruning layer: {layer_ind}")
             layer_scores = []
             for i in range(layer.rank_capacity):
                 self.set_mask_on_layer(
@@ -30,8 +31,9 @@ class SnipPruner(AbstractPrunerBase):
                 loss = self.model.evaluate(
                     self.data_x, self.data_y, self.batch_size, verbose=0
                 )[0]
-                print(f"Masking out SV {i:03}\tloss: {loss:.5f}")
+                print(f"\rMasking out SV {i:03}\tloss: {loss:.5f}", end="")
                 layer_scores.append(loss)
+            print()
             # reset mask of layer before moving onto next layer
             self.set_mask_on_layer(
                 layer, create_mask(layer.rank_capacity, [], inverted=True)

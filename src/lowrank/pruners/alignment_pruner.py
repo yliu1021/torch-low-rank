@@ -24,7 +24,8 @@ class AlignmentPruner(AbstractPrunerBase):
         """
         assert self.data_x is not None, "Data x is none, cannot infer input shape"
         scores = []
-        for layer in self.layers_to_prune:
+        for layer_ind, layer in enumerate(self.layers_to_prune):
+            print(f"Pruning layer: {layer_ind}")
             layer_scores = []
             self.set_mask_on_layer(layer, create_mask(layer.rank_capacity, []))
             all_ones_input = tf.convert_to_tensor(
