@@ -21,7 +21,7 @@ def _one_hot_y(y: np.ndarray) -> np.ndarray:
     return np.array(tf.one_hot(y, depth=num_classes))
 
 
-def load_data(dataset: str) -> Tuple[Dataset, Dataset]:
+def load_data(dataset: str, fast: bool = False) -> Tuple[Dataset, Dataset]:
     """
     Loads a dataset and adds noisy labels to `noise` percent of the training labels
     :param dataset: the dataset to load: "cifar10" or "cifar100"
@@ -38,4 +38,11 @@ def load_data(dataset: str) -> Tuple[Dataset, Dataset]:
     x_test = _normalize_x(x_test)
     y_train = _one_hot_y(y_train)
     y_test = _one_hot_y(y_test)
+
+    if fast:
+        x_train = x_train[:64, :, :, :]
+        y_train = y_train[:64, :]
+        x_test = x_test[:64, :, :, :]
+        y_test = y_test[:64, :]
+
     return (x_train, y_train), (x_test, y_test)

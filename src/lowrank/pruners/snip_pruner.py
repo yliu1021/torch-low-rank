@@ -1,31 +1,32 @@
 """
-pseudo-code for snip
-layer1 -> matrix that transforms 10 -> 20
-max_rank := min(10, 20) = 10
-
-layer1.set_rank_capacity(layer1.max_rank)
-
-min_i = ____
-for i in range(layer1.rank_capacity or layer1.max_rank):
-    layer1.set_mask(1 - one_hot(i))
-    score = loss(model)
-    min_i = ____
-masks.append(one_hot(min_i))
-return masks
+SNIP Pruner
 """
-import lowrank.pruners
-from lowrank import low_rank_layer
 
+from lowrank.pruners import create_mask, AbstractPrunerBase
 
-class SnipPruner(lowrank.pruners.Pruner):
-    def compute_masks(self) -> list[list[bool]]:
+class SnipPruner(AbstractPrunerBase):
+    '''
+    Class for SNIP Pruner
+    Implements compute score to score singular vectors using SNIP Method.
+    '''
+    def compute_scores(self) -> 'list[list[int | float]]':
+        """
+        Score = loss if masking out the singular vector
+        Intuition = if loss when masking out the singular vector is high,
+        then the singular vector must be important.
+        """
         if self.data is None or self.loss is None:
             raise ValueError("Snip pruner requires data and loss function.")
-        masks = []
-        for layer in self.model.layers:
-            if not isinstance(layer, low_rank_layer.LowRankLayer):
-                continue
-            # explicitly set rank to max rank to force weights into U @ V form
-            layer.set_rank([True] * layer.max_rank)
-            U, V = layer.kernels[layer.rank]
-        return masks
+
+        scores = []
+        for layer in self.layers_to_prune:
+            layer_scores = []
+            for i in range(layer.rank_capacity):
+                self.set_mask_on_layer(
+                    layer, 
+                    create_mask(layer.rank_capacity, [i], inverted=True)
+                )
+                loss = self.model.evaluate(self.data_x, self.data_y, self.batch_size)[0]
+                layer_scores.append(loss)
+            scores.append(layer_scores)
+        return scores

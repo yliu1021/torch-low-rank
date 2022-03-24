@@ -44,7 +44,7 @@ class LowRankLayer(Layer):
             return self.max_rank
         return sum(self._mask)
 
-    def set_mask(self, new_mask: list[bool]):
+    def set_mask(self, new_mask: 'list[bool]'):
         if len(new_mask) != len(self._mask):
             raise ValueError("New mask must have the same size")
         self._mask = np.array(new_mask)
@@ -102,10 +102,10 @@ class LowRankLayer(Layer):
 
     @property
     def trainable_weights(self):
-        if self._rank_capacity == -1:
-            weights = [self.kernels[self._rank_capacity]]
+        if self.rank_capacity == None:
+            weights = [self.kernels[-1]]
         else:
-            u, v = self.kernels[self._rank_capacity]
+            u, v = self.kernels[self.rank_capacity]
             weights = [u, v]
         if self.bias is not None:
             weights.append(self.bias)

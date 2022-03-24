@@ -1,22 +1,25 @@
-sort_sv_by_score:
-  description: Runs validation of sorting singular vectors by score
-  main: tests/sort_sv_by_score
+set_rank:
+  description: Experiment to evaluate various singular vector ranking methods
+  main: src/lowrank_experiments/experiments/set_rank
   sourcecode:
     - exclude: '*.json'
-
-evaluate_sv_ranking:
-  description: Experiment to evaluate various singular vector ranking methods
-  main: tests/evaluate_sv_ranking
   flags:
-    method:
-      default: 0
-    pre_prune_epochs:
-      default: 0
+    dataset:
+      default: cifar10
+    pruner:
+      default: Magnitude
+    prune_epoch:
+      default: 1
     total_epochs:
-      default: 10
+      default: 2
+    batch_size:
+      default: 64
+    sparsity:
+      default: 0.5
+    pruning_scope:
+      default: local
     fast:
       default: False
-    pruning_ratio: 0.9
-    batch_size: 8
-  sourcecode:
-    - exclude: '*.json'
+    no_gpu:
+      default: False
+    
