@@ -11,9 +11,9 @@ set_rank:
     prune_epoch:
       default: 1
     total_epochs:
-      default: 2
+      default: 50
     batch_size:
-      default: 64
+      default: 128
     sparsity:
       default: 0.5
     pruning_scope:
