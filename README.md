@@ -18,3 +18,13 @@ for i in {1..10}; do guild run queue --background -y; done
 ```bash
 guild run set_rank prune_epoch=[1,2,5,10] pruner=[Magnitude,SNIP,Alignment] pruning_scope=[local,global] sparsity=[0.25,0.5,0.75] total_epochs=50 --trials=216 --stage-trials
 ```
+
+## Push / Pull Results
+
+```bash
+guild push gist:sjoshi804/low_rank_pruning_results.md
+```
+
+```bash
+guild pull gist:sjoshi804/low_rank_pruning_results.md
+```
