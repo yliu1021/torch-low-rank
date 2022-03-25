@@ -7,11 +7,21 @@ import pathlib
 from random import randint
 
 import tensorflow as tf
-from tensorflow.keras import callbacks, losses, metrics, optimizers
+from tensorflow.keras import callbacks, losses, metrics, optimizers, models
 
 import lowrank_experiments.data
 import lowrank_experiments.model
 from lowrank.pruners import PruningScope, alignment_pruner, mag_pruner, snip_pruner
+
+
+def calc_num_weights(model: models.Model) -> int:
+    """
+    Calculates the number of trainable weights in a model
+    """
+    num_weights = 0
+    for weight in model.trainable_weights:
+        num_weights += tf.size(weight)
+    return num_weights
 
 
 def main(args):
@@ -20,6 +30,9 @@ def main(args):
     """
     tensorboard_log_dir = pathlib.Path("./logs_set_rank")
     tensorboard_log_dir.mkdir(exist_ok=True)  # make root logging directory
+    tensorboard_metrics_writer = tf.summary.create_file_writer(
+        str(tensorboard_log_dir / "metrics")
+    )
 
     (x_train, y_train), (x_test, y_test) = lowrank_experiments.data.load_data(
         args.dataset, args.fast
@@ -48,6 +61,12 @@ def main(args):
     print("Before pruning:")
     model.evaluate(x_test, y_test)
 
+    with tensorboard_metrics_writer.as_default(step=args.prune_epoch - 1):
+        pre_prune_size = calc_num_weights(model)
+        print(f"Pre prune size: {pre_prune_size}")
+        tf.summary.scalar(name="model_size", data=pre_prune_size)
+
+    # prune
     pruner = None
     if args.pruner == "Magnitude":
         pruner = mag_pruner.MagPruner(
@@ -73,11 +92,16 @@ def main(args):
             data=(x_train, y_train),
             batch_size=args.batch_size,
         )
-
     pruner.prune()
+
+    with tensorboard_metrics_writer.as_default(step=args.prune_epoch):
+        post_prune_size = calc_num_weights(model)
+        print(f"Post prune size: {post_prune_size}")
+        tf.summary.scalar(name="model_size", data=post_prune_size)
 
     print("After pruning")
     model.evaluate(x_test, y_test)
+
     model.fit(
         x_train,
         y_train,
