@@ -4,7 +4,7 @@ Experiment to compare various pruners.
 
 import argparse
 import pathlib
-from random import randint
+import random
 
 import tensorflow as tf
 from tensorflow.keras import callbacks, losses, metrics, optimizers, models
@@ -59,12 +59,13 @@ def main(args):
     )
 
     print("Before pruning:")
-    model.evaluate(x_test, y_test)
+    (loss, acc) = model.evaluate(x_test, y_test)
 
     with tensorboard_metrics_writer.as_default(step=args.prune_epoch - 1):
         pre_prune_size = calc_num_weights(model)
-        print(f"Pre prune size: {pre_prune_size}")
         tf.summary.scalar(name="model_size", data=pre_prune_size)
+        tf.summary.scalar(name="preprune_loss", data=loss)
+        tf.summary.scalar(name="preprune_acc", data=acc)
 
     # prune
     pruner = None
@@ -94,13 +95,14 @@ def main(args):
         )
     pruner.prune()
 
+    print("After pruning")
+    loss, acc = model.evaluate(x_test, y_test)
+    
     with tensorboard_metrics_writer.as_default(step=args.prune_epoch):
         post_prune_size = calc_num_weights(model)
-        print(f"Post prune size: {post_prune_size}")
         tf.summary.scalar(name="model_size", data=post_prune_size)
-
-    print("After pruning")
-    model.evaluate(x_test, y_test)
+        tf.summary.scalar(name="postprune_loss", data=loss)
+        tf.summary.scalar(name="postprune_acc", data=acc)
 
     model.fit(
         x_train,
@@ -151,7 +153,9 @@ if __name__ == "__main__":
 
     if not args.no_gpu:
         gpus = tf.config.list_physical_devices("GPU")
-        tf.config.set_visible_devices(gpus[randint(0, len(gpus) - 1)], "GPU")
+        gpu = random.choice(gpus)
+        tf.config.experimental.set_memory_growth(gpu, True)
+        tf.config.set_visible_devices(gpu, "GPU")
 
     # Preprocess arguments
     if args.pruning_scope == "global":
