@@ -3,7 +3,7 @@ Alignment Pruner (Defined in overleaf)
 """
 
 import tensorflow as tf
-from numpy import float64
+import numpy as np
 
 from lowrank.pruners import AbstractPrunerBase, create_mask
 
@@ -29,17 +29,38 @@ class AlignmentPruner(AbstractPrunerBase):
             layer_scores = []
             self.set_mask_on_layer(layer, create_mask(layer.rank_capacity, []))
             all_ones_input = tf.convert_to_tensor(
-                [tf.ones(self.data_x.shape[1:])], dtype=float64
+                [tf.ones(self.data_x.shape[1:])], dtype=np.float64
             )
             baseline_output_activation = self.model.call(all_ones_input)
             for i in range(layer.rank_capacity):
                 self.set_mask_on_layer(layer, create_mask(layer.rank_capacity, [i]))
                 sv_output_activation = self.model.call(all_ones_input)
                 layer_scores.append(
-                    tf.norm(baseline_output_activation - sv_output_activation)
+                    kl_divergence(baseline_output_activation, sv_output_activation)
                 )
             self.set_mask_on_layer(
                 layer, create_mask(layer.rank_capacity, [], inverted=True)
             )
             scores.append(layer_scores)
         return scores
+
+def kl_divergence(p, q):
+    """
+    Safe implementation of KL Divergence, using https://stats.stackexchange.com/questions/362860/kl-divergence-between-which-distributions-could-be-infinity
+    :param p: Target Distribution
+    :param q: Approximate Distribution
+    """
+    p = np.array(p[0])
+    q = np.array(q[0])
+    if len(p) != len(q):
+        raise Exception("Length of the two distibutions must be identical")
+    kl = 0
+    for x in range(len(p)):
+        if p[x] == 0:
+            continue
+        elif q[x] == 0:
+            kl = float('inf')
+            break 
+        kl += p[x] * np.log2(p[x] / q[x])
+    return kl
+        
