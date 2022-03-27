@@ -9,7 +9,7 @@ Documentation: https://yliu1021.github.io/tensorflow-low-rank
 
 ## Updating Documentation
 
-Update documentation: ```sphinx-apidoc -o docs/source/ . -f -M``` in root directory
+Update documentation: ```sphinx-apidoc -o docs/source/ src -f -M``` in root directory
 
 ## Running experiments
 1. Create quild queues
