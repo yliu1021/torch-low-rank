@@ -1,8 +1,8 @@
-tensorflow-low-rank
-===================
+src
+===
 
 .. toctree::
    :maxdepth: 4
 
-   src
-   tests
+   lowrank
+   lowrank_experiments

@@ -1,0 +1,371 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lowrank.pruners package &mdash; Tensorflow-Low-Rank  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lowrank_experiments package" href="lowrank_experiments.html" />
+    <link rel="prev" title="lowrank package" href="lowrank.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Tensorflow-Low-Rank
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="lowrank.html">lowrank package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="lowrank.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">lowrank.pruners package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="lowrank.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lowrank.html#module-lowrank.layers">lowrank.layers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lowrank.html#module-lowrank.low_rank_layer">lowrank.low_rank_layer module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lowrank_experiments.html">lowrank_experiments package</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Tensorflow-Low-Rank</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">src</a> &raquo;</li>
+        
+          <li><a href="lowrank.html">lowrank package</a> &raquo;</li>
+        
+      <li>lowrank.pruners package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/lowrank.pruners.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="module-lowrank.pruners">
+<span id="lowrank-pruners-package"></span><h1>lowrank.pruners package<a class="headerlink" href="#module-lowrank.pruners" title="Permalink to this headline">¶</a></h1>
+<p>Pruner Base Class Implementation and other useful package wide code</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lowrank.pruners.AbstractPrunerBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lowrank.pruners.</span></span><span class="sig-name descname"><span class="pre">AbstractPrunerBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.python.keras.engine.sequential.Sequential</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scope</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#lowrank.pruners.PruningScope" title="lowrank.pruners.PruningScope"><span class="pre">lowrank.pruners.PruningScope</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparsity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tensorflow.python.keras.losses.Loss</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lowrank/pruners.html#AbstractPrunerBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.AbstractPrunerBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Pruners take a model, and upon examining its effective weights, computes rank masks for
+each layer</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lowrank.pruners.AbstractPrunerBase.compute_scores">
+<span class="sig-name descname"><span class="pre">compute_scores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lowrank/pruners.html#AbstractPrunerBase.compute_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.AbstractPrunerBase.compute_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes and returns scores for the singular vectors in each layer.
+- High Score = Important Singular Vector
+- Low Score = Unimportant Singular Vector</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lowrank.pruners.AbstractPrunerBase.create_masks">
+<span class="sig-name descname"><span class="pre">create_masks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lowrank/pruners.html#AbstractPrunerBase.create_masks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.AbstractPrunerBase.create_masks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create masks for the pruning method.
+Calls compute scores which is implemented by the subclass overriding the base Pruner class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lowrank.pruners.AbstractPrunerBase.prune">
+<span class="sig-name descname"><span class="pre">prune</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lowrank/pruners.html#AbstractPrunerBase.prune"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.AbstractPrunerBase.prune" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls the <cite>compute_mask</cite> method and actually sets the ranks</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lowrank.pruners.AbstractPrunerBase.set_mask_on_layer">
+<span class="sig-name descname"><span class="pre">set_mask_on_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="lowrank.html#lowrank.low_rank_layer.LowRankLayer" title="lowrank.low_rank_layer.LowRankLayer"><span class="pre">lowrank.low_rank_layer.LowRankLayer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lowrank/pruners.html#AbstractPrunerBase.set_mask_on_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.AbstractPrunerBase.set_mask_on_layer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lowrank.pruners.AbstractPrunerBase.set_rank_capacity_on_layer">
+<span class="sig-name descname"><span class="pre">set_rank_capacity_on_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="lowrank.html#lowrank.low_rank_layer.LowRankLayer" title="lowrank.low_rank_layer.LowRankLayer"><span class="pre">lowrank.low_rank_layer.LowRankLayer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">capacity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lowrank/pruners.html#AbstractPrunerBase.set_rank_capacity_on_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.AbstractPrunerBase.set_rank_capacity_on_layer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="lowrank.pruners.PruningScope">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lowrank.pruners.</span></span><span class="sig-name descname"><span class="pre">PruningScope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lowrank/pruners.html#PruningScope"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.PruningScope" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Pruning Scope determines how to use scores to rank singular vectors and generate mask.
+Global ranks globally, Local ranks locally</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lowrank.pruners.PruningScope.GLOBAL">
+<span class="sig-name descname"><span class="pre">GLOBAL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#lowrank.pruners.PruningScope.GLOBAL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lowrank.pruners.PruningScope.LOCAL">
+<span class="sig-name descname"><span class="pre">LOCAL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#lowrank.pruners.PruningScope.LOCAL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lowrank.pruners.create_mask">
+<span class="sig-prename descclassname"><span class="pre">lowrank.pruners.</span></span><span class="sig-name descname"><span class="pre">create_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inverted</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lowrank/pruners.html#create_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.create_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function that creates mask given</p>
+</dd></dl>
+
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="module-lowrank.pruners.alignment_pruner">
+<span id="lowrank-pruners-alignment-pruner-module"></span><h2>lowrank.pruners.alignment_pruner module<a class="headerlink" href="#module-lowrank.pruners.alignment_pruner" title="Permalink to this headline">¶</a></h2>
+<p>Alignment Pruner (Defined in overleaf)</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lowrank.pruners.alignment_pruner.AlignmentPruner">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lowrank.pruners.alignment_pruner.</span></span><span class="sig-name descname"><span class="pre">AlignmentPruner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.python.keras.engine.sequential.Sequential</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scope</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#lowrank.pruners.PruningScope" title="lowrank.pruners.PruningScope"><span class="pre">lowrank.pruners.PruningScope</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparsity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tensorflow.python.keras.losses.Loss</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lowrank/pruners/alignment_pruner.html#AlignmentPruner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.alignment_pruner.AlignmentPruner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lowrank.pruners.AbstractPrunerBase" title="lowrank.pruners.AbstractPrunerBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">lowrank.pruners.AbstractPrunerBase</span></code></a></p>
+<p>Alignment pruners scores singular vectors based on how
+much each singular vector perturbs the model output from
+the baseline</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lowrank.pruners.alignment_pruner.AlignmentPruner.compute_scores">
+<span class="sig-name descname"><span class="pre">compute_scores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lowrank/pruners/alignment_pruner.html#AlignmentPruner.compute_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.alignment_pruner.AlignmentPruner.compute_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Score = Magnitude of the vector difference between output of model when passed all 1s
+(with singular vector zeroed out and not)
+Intuition = the singular vectors that change the output vector the most from baseline
+activation are the most important</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-lowrank.pruners.gradient_snip_pruner">
+<span id="lowrank-pruners-gradient-snip-pruner-module"></span><h2>lowrank.pruners.gradient_snip_pruner module<a class="headerlink" href="#module-lowrank.pruners.gradient_snip_pruner" title="Permalink to this headline">¶</a></h2>
+<p>Gradient SNIP SV Pruner - implements actual SNIP gradient method for SV</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lowrank.pruners.gradient_snip_pruner.SnipPruner">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lowrank.pruners.gradient_snip_pruner.</span></span><span class="sig-name descname"><span class="pre">SnipPruner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.python.keras.engine.sequential.Sequential</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scope</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#lowrank.pruners.PruningScope" title="lowrank.pruners.PruningScope"><span class="pre">lowrank.pruners.PruningScope</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparsity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tensorflow.python.keras.losses.Loss</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lowrank/pruners/gradient_snip_pruner.html#SnipPruner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.gradient_snip_pruner.SnipPruner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lowrank.pruners.AbstractPrunerBase" title="lowrank.pruners.AbstractPrunerBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">lowrank.pruners.AbstractPrunerBase</span></code></a></p>
+<p>Class for Gradient SNIP Pruner
+Implements compute score to score singular vectors using Gradient SNIP Method.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lowrank.pruners.gradient_snip_pruner.SnipPruner.compute_scores">
+<span class="sig-name descname"><span class="pre">compute_scores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lowrank/pruners/gradient_snip_pruner.html#SnipPruner.compute_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.gradient_snip_pruner.SnipPruner.compute_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Score = -1 * gradient of c_j - a continuous relaxation of the binary switch for a 
+singular value evaluated at c_j = 1 for all j in weights
+Intuition = if</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-lowrank.pruners.mag_pruner">
+<span id="lowrank-pruners-mag-pruner-module"></span><h2>lowrank.pruners.mag_pruner module<a class="headerlink" href="#module-lowrank.pruners.mag_pruner" title="Permalink to this headline">¶</a></h2>
+<p>Magnitude Pruner</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lowrank.pruners.mag_pruner.MagPruner">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lowrank.pruners.mag_pruner.</span></span><span class="sig-name descname"><span class="pre">MagPruner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.python.keras.engine.sequential.Sequential</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scope</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#lowrank.pruners.PruningScope" title="lowrank.pruners.PruningScope"><span class="pre">lowrank.pruners.PruningScope</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparsity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tensorflow.python.keras.losses.Loss</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lowrank/pruners/mag_pruner.html#MagPruner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.mag_pruner.MagPruner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lowrank.pruners.AbstractPrunerBase" title="lowrank.pruners.AbstractPrunerBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">lowrank.pruners.AbstractPrunerBase</span></code></a></p>
+<p>Magnitude pruners scores singular vectors based on magnitude of the vector</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lowrank.pruners.mag_pruner.MagPruner.compute_scores">
+<span class="sig-name descname"><span class="pre">compute_scores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lowrank/pruners/mag_pruner.html#MagPruner.compute_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.mag_pruner.MagPruner.compute_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes and returns scores for the singular vectors in each layer.
+- High Score = Important Singular Vector
+- Low Score = Unimportant Singular Vector</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-lowrank.pruners.snip_pruner">
+<span id="lowrank-pruners-snip-pruner-module"></span><h2>lowrank.pruners.snip_pruner module<a class="headerlink" href="#module-lowrank.pruners.snip_pruner" title="Permalink to this headline">¶</a></h2>
+<p>SNIP SV Pruner - calculates Delta L instead of gradient estimate</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lowrank.pruners.snip_pruner.SnipPruner">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lowrank.pruners.snip_pruner.</span></span><span class="sig-name descname"><span class="pre">SnipPruner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.python.keras.engine.sequential.Sequential</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scope</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#lowrank.pruners.PruningScope" title="lowrank.pruners.PruningScope"><span class="pre">lowrank.pruners.PruningScope</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparsity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tensorflow.python.keras.losses.Loss</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lowrank/pruners/snip_pruner.html#SnipPruner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.snip_pruner.SnipPruner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lowrank.pruners.AbstractPrunerBase" title="lowrank.pruners.AbstractPrunerBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">lowrank.pruners.AbstractPrunerBase</span></code></a></p>
+<p>Class for SNIP Pruner
+Implements compute score to score singular vectors using SNIP Method.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lowrank.pruners.snip_pruner.SnipPruner.compute_scores">
+<span class="sig-name descname"><span class="pre">compute_scores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lowrank/pruners/snip_pruner.html#SnipPruner.compute_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lowrank.pruners.snip_pruner.SnipPruner.compute_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Score = loss if masking out the singular vector
+Intuition = if loss when masking out the singular vector is high,
+then the singular vector must be important.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="lowrank_experiments.html" class="btn btn-neutral float-right" title="lowrank_experiments package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="lowrank.html" class="btn btn-neutral float-left" title="lowrank package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2022, Siddharth Joshi, Yuhan Liu
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
