@@ -58,9 +58,9 @@ def kl_divergence(p, q):
     for x in range(len(p)):
         if p[x] == 0:
             continue
-        elif q[x] == 0:
+        if q[x] == 0:
             kl = float('inf')
-            break 
+            break
         kl += p[x] * np.log2(p[x] / q[x])
     return kl
         
