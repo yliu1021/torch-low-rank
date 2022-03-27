@@ -5,7 +5,7 @@ generalization abilities. This Python package aims to
 implement some common TensorFlow layers with low rank
 representations.
 
-Documentation: https://yliu1021.github.io/tensorflow-low-rank
+Documentation: https://yliu1021.github.io/tensorflow-low-rank/build/html/
 
 ## Updating Documentation
 
