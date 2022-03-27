@@ -1,5 +1,5 @@
 """
-SNIP Pruner
+SNIP SV Pruner - calculates Delta L instead of gradient estimate
 """
 
 from lowrank.pruners import AbstractPrunerBase, create_mask
