@@ -44,6 +44,12 @@ def main(args):
             num_classes=y_train.shape[1],
             initial_ranks=None
         )
+    elif args.model == 'vgg11':
+        model = lowrank_experiments.model.get_lr_vgg11(
+            x_train.shape[1:],
+            num_classes=y_train.shape[1],
+            initial_ranks=None
+        )
     elif args.model == 'vgg16':
         model = lowrank_experiments.model.get_lr_vgg16(
             x_train.shape[1:],
@@ -131,7 +137,7 @@ def main(args):
 PRUNERS = ["Magnitude", "SNIP", "Alignment"]
 DATASETS = ["cifar10", "cifar100"]
 PRUNING_SCOPES = ["global", "local"]
-MODELS = ['default', 'vgg16']
+MODELS = ['default', 'vgg11', 'vgg16']
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate singular vector rankings")
