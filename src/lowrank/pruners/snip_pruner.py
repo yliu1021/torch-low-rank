@@ -3,7 +3,8 @@ SNIP SV Pruner - calculates Delta L instead of gradient estimate
 """
 
 from lowrank.pruners import AbstractPrunerBase, create_mask
-
+import tensorflow as tf
+import numpy as np
 
 class SnipPruner(AbstractPrunerBase):
     """
@@ -20,23 +21,30 @@ class SnipPruner(AbstractPrunerBase):
         if self.data is None or self.loss is None:
             raise ValueError("Snip pruner requires data and loss function.")
 
-        scores = []
-        for layer_ind, layer in enumerate(self.layers_to_prune):
-            print(f"Pruning layer: {layer_ind}")
-            layer_scores = []
-            for i in range(layer.rank_capacity):
-                self.set_mask_on_layer(
-                    layer, create_mask(layer.rank_capacity, [i], inverted=True)
-                )
-                loss = self.model.evaluate(
-                    self.data_x, self.data_y, self.batch_size, verbose=0
-                )[0]
-                print(f"\rMasking out SV {i:03}\tloss: {loss:.5f}", end="")
-                layer_scores.append(loss)
-            print()
-            # reset mask of layer before moving onto next layer
-            self.set_mask_on_layer(
-                layer, create_mask(layer.rank_capacity, [], inverted=True)
-            )
-            scores.append(layer_scores)
-        return scores
+        with tf.GradientTape(watch_accessed_variables=False) as grad_tape:
+            for layer in self.layers_to_prune:
+                # Set mask to all ones to evaluate gradient at $c = 1$
+                self.set_mask_on_layer(layer, create_mask(layer.rank_capacity, [], inverted=True))
+                grad_tape.watch(layer._mask)
+                logits = self.model(self.data_x)
+                loss = self.loss(self.data_y, logits)
+        grads = grad_tape.gradient(loss, [layer._mask for layer in self.layers_to_prune])
+        normalized_grads = SnipPruner.normalize(grads)
+        return normalized_grads
+
+    @staticmethod
+    def normalize(grads):
+        """
+        Absolute Value Norm
+        Intuition = Large gradients for relaxed binary indicator for weights indicates
+        that the weight is important regardless of sign, hence these should correspond
+        to higher scores
+        :param grads: un-normalized gradients of all the layers
+        """
+        sum = 0
+        for i in range(len(grads)):
+            grads[i] = np.abs(np.array(grads[i]))
+            sum += np.sum(grads[i]) 
+        for i in range(len(grads)):
+            grads[i] /= sum 
+        return grads

@@ -6,6 +6,7 @@ from typing import Optional
 from venv import create
 
 import numpy as np
+import tensorflow as tf
 from tensorflow.keras import losses, models
 
 from lowrank.low_rank_layer import LowRankLayer
@@ -110,7 +111,7 @@ class AbstractPrunerBase:
 
         return masks
 
-    def set_mask_on_layer(self, layer: LowRankLayer, mask):
+    def set_mask_on_layer(self, layer: LowRankLayer, mask: tf.Variable):
         layer.set_mask(mask)
         self.model._reset_compile_cache()
 
@@ -128,8 +129,12 @@ def create_mask(
 ):
     """
     Helper function that creates mask given
+    :param length: Length of bool vector
+    :param indices: Indices to set to true (if inverted=False i.e. default) and rest set to false
+    :param inverted: set to false (default) default behavior, set to true - element-wise not
+    :returns: bool vector with only variables at indices set to true if inverted=False (default)
     """
-    mask = [(x in indices) for x in range(length)]
+    mask = [float(x in indices) for x in range(length)]
     if inverted:
-        mask = [not x for x in mask]
-    return mask
+        mask = [(1 - x) for x in mask]
+    return tf.Variable(mask, trainable=False)
