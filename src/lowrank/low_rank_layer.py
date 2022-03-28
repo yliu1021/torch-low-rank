@@ -17,9 +17,9 @@ class LowRankLayer(Layer):
         """
         super().__init__(**kwargs)
         if rank == -1:
-            self._mask: Optional[np.ndarray] = None
+            self._mask: Optional[tf.Variable] = None
         else:
-            self._mask: Optional[np.ndarray] = np.array([True] * rank)
+            self._mask: Optional[tf.Variable] = tf.Variable([0.0] * rank)
         self.activation = activations.get(activation)
         self.num_inputs: Optional[int] = None
         self.num_outputs: Optional[int] = None
@@ -36,7 +36,10 @@ class LowRankLayer(Layer):
     def rank_capacity(self) -> Optional[int]:
         if self._mask is None:
             return None
-        return len(self._mask)
+        if len(self._mask.shape) == 1:
+            return self._mask.shape[0]
+        else:
+            raise NotImplementedError("This else was added to account for 2d mask for weight pruning.")
 
     @property
     def rank(self) -> int:
@@ -44,10 +47,10 @@ class LowRankLayer(Layer):
             return self.max_rank
         return sum(self._mask)
 
-    def set_mask(self, new_mask: "list[bool]"):
-        if len(new_mask) != len(self._mask):
-            raise ValueError("New mask must have the same size")
-        self._mask = np.array(new_mask)
+    def set_mask(self, new_mask: tf.Variable):
+        if new_mask.shape != self._mask.shape:
+            raise ValueError("New mask must have the same shape")
+        self._mask = tf.Variable(new_mask, trainable=False)
 
     def set_rank_capacity(self, capacity: Optional[int] = None):
         """
@@ -66,7 +69,7 @@ class LowRankLayer(Layer):
             self._allocate_weights(-1)
             self.kernels[-1].assign(eff_weights)
             return
-        self._mask = [True] * capacity
+        self._mask = tf.Variable([1.0] * capacity, trainable=False)
         self._allocate_weights(self.rank_capacity)
         u, s, v = np.linalg.svd(eff_weights, full_matrices=False)
         u = u[:, : self.rank_capacity]
@@ -98,7 +101,7 @@ class LowRankLayer(Layer):
             return self.kernels[-1]
         else:
             u, v = self.kernels[self.rank_capacity]
-            return u @ np.diag(self._mask) @ v
+            return u @ tf.linalg.diag(self._mask) @ v
 
     @property
     def trainable_weights(self):
