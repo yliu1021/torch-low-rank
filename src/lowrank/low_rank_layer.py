@@ -54,8 +54,7 @@ class LowRankLayer(Layer):
 
     def set_rank_capacity(self, capacity: Optional[int] = None):
         """
-        Sets the new rank and creates the appropriate weights (without actually removing singular
-        vectors). Call `commit_rank` to actually remove the singular vector.
+        Performs a SVD and shrink the size of the U and V matrices.
         :param capacity: The capacity
         """
         assert self.num_inputs is not None, "Layer needs to be built first"
@@ -99,9 +98,11 @@ class LowRankLayer(Layer):
         if self._mask is None:
             # we can't mask here
             return self.kernels[-1]
-        else:
+        elif len(self._mask.shape) == 1:
             u, v = self.kernels[self.rank_capacity]
             return u @ tf.linalg.diag(self._mask) @ v
+        else:
+            return self.kernels[-1] * self._mask
 
     @property
     def trainable_weights(self):
