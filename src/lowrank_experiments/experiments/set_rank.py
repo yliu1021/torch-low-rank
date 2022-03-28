@@ -37,11 +37,21 @@ def main(args):
     (x_train, y_train), (x_test, y_test) = lowrank_experiments.data.load_data(
         args.dataset, args.fast
     )
-    model = lowrank_experiments.model.get_lr_model(
-        x_train.shape[1:],
-        num_classes=y_train.shape[1],
-        initial_ranks=[-1, -1, -1, -1, -1],  # start full rank
-    )
+
+    if args.model == 'default':
+        model = lowrank_experiments.model.get_lr_model(
+            x_train.shape[1:],
+            num_classes=y_train.shape[1],
+            initial_ranks=None
+        )
+    elif args.model == 'vgg16':
+        model = lowrank_experiments.model.get_lr_vgg16(
+            x_train.shape[1:],
+            num_classes=y_train.shape[1],
+            initial_ranks=None
+        )
+    else:
+        raise NotImplementedError(args.model + " is not supported currently.")
 
     model.compile(
         optimizer=optimizers.RMSprop(0.001),
@@ -121,6 +131,7 @@ def main(args):
 PRUNERS = ["Magnitude", "SNIP", "Alignment"]
 DATASETS = ["cifar10", "cifar100"]
 PRUNING_SCOPES = ["global", "local"]
+MODELS = ['default', 'vgg16']
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate singular vector rankings")
@@ -148,6 +159,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--no_gpu", action="store_true", default=False, help="Disable GPU"
+    )
+    parser.add_argument(
+        '--model', choices=MODELS, help="Model to run experiments with"
     )
     args = parser.parse_args()
 

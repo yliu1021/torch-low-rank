@@ -22,4 +22,5 @@ set_rank:
       default: False
     no_gpu:
       default: False
-    
+    model:
+      default: 'default'
