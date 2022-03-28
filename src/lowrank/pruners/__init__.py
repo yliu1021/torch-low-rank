@@ -128,6 +128,10 @@ def create_mask(
 ):
     """
     Helper function that creates mask given
+    :param length: Length of bool vector
+    :param indices: Indices to set to true (if inverted=False i.e. default) and rest set to false
+    :param inverted: set to false (default) default behavior, set to true - element-wise not
+    :returns: bool vector with only variables at indices set to true if inverted=False (default)
     """
     mask = [(x in indices) for x in range(length)]
     if inverted:
