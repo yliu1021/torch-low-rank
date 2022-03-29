@@ -30,3 +30,10 @@ guild push gist:sjoshi804/low_rank_pruning_results.md
 ```bash
 guild pull gist:sjoshi804/low_rank_pruning_results.md
 ```
+
+## Testing
+
+Running a vgg11 training run on CIFAR10 for 50 epochs (no pruning)
+```bash
+python src/lowrank_experiments/experiments/set_rank.py --dataset=cifar10 --pruner=Magnitude --prune_epoch=50 --total_epochs=50 --batch_size=128 --sparsity=0.25 --pruning_scope=local --no_gpu --model=vgg11
+```
