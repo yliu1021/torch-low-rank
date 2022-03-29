@@ -27,18 +27,18 @@ class AlignmentPruner(AbstractPrunerBase):
         for layer_ind, layer in enumerate(self.layers_to_prune):
             print(f"Pruning layer: {layer_ind}")
             layer_scores = []
-            self.set_mask_on_layer(layer, create_mask(layer.rank_capacity, []))
+            self._set_mask_on_layer(layer, create_mask(layer.rank_capacity, []))
             all_ones_input = tf.convert_to_tensor(
                 [tf.ones(self.data_x.shape[1:])], dtype=np.float64
             )
             baseline_output_activation = self.model.call(all_ones_input)
             for i in range(layer.rank_capacity):
-                self.set_mask_on_layer(layer, create_mask(layer.rank_capacity, [i]))
+                self._set_mask_on_layer(layer, create_mask(layer.rank_capacity, [i]))
                 sv_output_activation = self.model.call(all_ones_input)
                 layer_scores.append(
                     kl_divergence(baseline_output_activation, sv_output_activation)
                 )
-            self.set_mask_on_layer(
+            self._set_mask_on_layer(
                 layer, create_mask(layer.rank_capacity, [], inverted=True)
             )
             scores.append(layer_scores)

@@ -173,9 +173,10 @@ if __name__ == "__main__":
 
     if not args.no_gpu:
         gpus = tf.config.list_physical_devices("GPU")
-        gpu = random.choice(gpus)
-        tf.config.experimental.set_memory_growth(gpu, True)
-        tf.config.set_visible_devices(gpu, "GPU")
+        if len(gpus) > 0:
+            gpu = random.choice(gpus)
+            tf.config.experimental.set_memory_growth(gpu, True)
+            tf.config.set_visible_devices(gpu, "GPU")
 
     # Preprocess arguments
     if args.pruning_scope == "global":

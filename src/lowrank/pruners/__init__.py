@@ -51,7 +51,7 @@ class AbstractPrunerBase:
             filter(lambda x: isinstance(x, LowRankLayer), self.model.layers)
         )
 
-    def compute_scores(self) -> "list[list[int | float]]":
+    def compute_scores(self) -> "list[np.ndarray]":
         """
         Computes and returns scores for the singular vectors in each layer.
         - High Score = Important Singular Vector
@@ -63,21 +63,16 @@ class AbstractPrunerBase:
         """
         Calls the `compute_mask` method and actually sets the ranks
         """
-
         for layer in self.layers_to_prune:
             if layer.rank_capacity is None:
                 layer.set_rank_capacity(layer.max_rank)
-
         masks = self.create_masks()
-
         if len(masks) != len(self.layers_to_prune):
             raise ValueError("Computed mask does not match length of model layers")
         for mask, layer in zip(masks, self.layers_to_prune):
-            assert layer.rank_capacity == len(mask), (
-                "Computed mask should be the same length as " "rank capacity"
-            )
             layer.set_mask(mask)
-            layer.squeeze_rank_capacity()
+            if len(mask.shape) == 1:  # svd pruning
+                layer.squeeze_rank_capacity()
         self.model._reset_compile_cache()  # ensure model is recompiled
 
     def create_masks(self):
@@ -85,37 +80,31 @@ class AbstractPrunerBase:
         Create masks for the pruning method.
         Calls compute scores which is implemented by the subclass overriding the base Pruner class.
         """
+        # list of ndarrays, each corresponding to each layer
         scores = self.compute_scores()
-        masks = []
-
+        assert len(scores) == len(self.layers_to_prune), "Number of scores should equal number of layers we're trying to prune"
         thresholds = []
         if self.scope == PruningScope.LOCAL:
             for i in range(len(self.layers_to_prune)):
-                sorted_layer_scores = sorted(scores[i])
-                num_to_drop = int(len(scores[i]) * self.sparsity)
+                sorted_layer_scores = sorted(scores[i].flatten())
+                num_to_drop = int(len(sorted_layer_scores) * self.sparsity)
                 thresholds.append(sorted_layer_scores[num_to_drop])
         elif self.scope == PruningScope.GLOBAL:
-            flattened_sorted_scores = sorted(
-                [score for layer_scores in scores for score in layer_scores]
-            )
+            flattened_sorted_scores = sorted(np.concatenate([score.flatten() for score in scores]))
             num_to_drop = int(len(flattened_sorted_scores) * self.sparsity)
             thresholds = [flattened_sorted_scores[num_to_drop]] * len(
                 self.layers_to_prune
             )
         else:
-            raise NotImplementedError(str(self.scope) + " is not supported yet.")
-
-        for i in range(len(self.layers_to_prune)):
-            indices_to_keep = np.where(np.array(scores[i]) >= thresholds[i])[0]
-            masks.append(create_mask(len(scores[i]), indices_to_keep))
-
+            raise NotImplementedError(f"{self.scope} is not supported yet.")
+        masks = [score >= threshold for score, threshold in zip(scores, thresholds)]
         return masks
 
-    def set_mask_on_layer(self, layer: LowRankLayer, mask: tf.Variable):
+    def _set_mask_on_layer(self, layer: LowRankLayer, mask: tf.Variable):
         layer.set_mask(mask)
         self.model._reset_compile_cache()
 
-    def set_rank_capacity_on_layer(
+    def _set_rank_capacity_on_layer(
         self, layer: LowRankLayer, capacity: Optional[int] = None
     ):
         layer.set_rank_capacity(capacity)

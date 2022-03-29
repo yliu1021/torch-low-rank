@@ -12,7 +12,7 @@ class SnipPruner(AbstractPrunerBase):
     Implements compute score to score singular vectors using SNIP Method.
     """
 
-    def compute_scores(self) -> "list[list[int | float]]":
+    def compute_scores(self) -> "list[np.ndarray]":
         """
         Score = loss if masking out the singular vector
         Intuition = if loss when masking out the singular vector is high,
@@ -24,7 +24,7 @@ class SnipPruner(AbstractPrunerBase):
         with tf.GradientTape(watch_accessed_variables=False) as grad_tape:
             for layer in self.layers_to_prune:
                 # Set mask to all ones to evaluate gradient at $c = 1$
-                self.set_mask_on_layer(layer, create_mask(layer.rank_capacity, [], inverted=True))
+                self._set_mask_on_layer(layer, create_mask(layer.rank_capacity, [], inverted=True))
                 grad_tape.watch(layer._mask)
                 logits = self.model(self.data_x)
                 loss = self.loss(self.data_y, logits)

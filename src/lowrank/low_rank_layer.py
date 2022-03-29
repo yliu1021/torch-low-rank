@@ -19,7 +19,7 @@ class LowRankLayer(Layer):
         if rank == -1:
             self._mask: Optional[tf.Variable] = None
         else:
-            self._mask: Optional[tf.Variable] = tf.Variable([0.0] * rank)
+            self._mask: Optional[tf.Variable] = tf.Variable([1.0] * rank, trainable=False)
         self.activation = activations.get(activation)
         self.num_inputs: Optional[int] = None
         self.num_outputs: Optional[int] = None
@@ -39,18 +39,22 @@ class LowRankLayer(Layer):
         if len(self._mask.shape) == 1:
             return self._mask.shape[0]
         else:
-            raise NotImplementedError("This else was added to account for 2d mask for weight pruning.")
+            return None  # masking weights imply full rank
 
     @property
     def rank(self) -> int:
         if self._mask is None:
             return self.max_rank
-        return sum(self._mask)
+        if len(self._mask.shape) == 1:
+            return sum(self._mask)
+        else:
+            return self.max_rank
 
     def set_mask(self, new_mask: tf.Variable):
-        if new_mask.shape != self._mask.shape:
-            raise ValueError("New mask must have the same shape")
-        self._mask = tf.Variable(new_mask, trainable=False)
+        if self._mask is None:
+            self._mask = tf.Variable(new_mask, trainable=False)
+        else:
+            self._mask.assign(new_mask, read_value=False)
 
     def set_rank_capacity(self, capacity: Optional[int] = None):
         """
@@ -85,7 +89,7 @@ class LowRankLayer(Layer):
         if self.rank_capacity is None:
             # rank -1 layers cannot be squeezed because we have no mask
             return
-        if all(self._mask):
+        if np.array(self._mask > 0).all():
             return
         self.set_rank_capacity(self.rank)
 
