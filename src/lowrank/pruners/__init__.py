@@ -3,7 +3,6 @@ Pruner Base Class Implementation and other useful package wide code
 """
 import enum
 from typing import Optional
-from venv import create
 
 import numpy as np
 import tensorflow as tf

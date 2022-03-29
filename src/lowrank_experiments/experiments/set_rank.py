@@ -11,7 +11,7 @@ from tensorflow.keras import callbacks, losses, metrics, models, optimizers
 
 import lowrank_experiments.data
 import lowrank_experiments.model
-from lowrank.pruners import PruningScope, alignment_pruner, mag_pruner, snip_pruner
+from lowrank.pruners import PruningScope, alignment_pruner, mag_pruner, snip_pruner, weight_mag_pruner
 
 
 def calc_num_weights(model: models.Model) -> int:
@@ -103,6 +103,14 @@ def main(args):
             data=(x_train, y_train),
             batch_size=args.batch_size,
         )
+    elif args.pruner == "WeightMagnitude":
+        pruner = weight_mag_pruner.WeightMagPruner(
+            model=model,
+            scope=args.pruning_scope,
+            sparsity=args.sparsity,
+            data=(x_train, y_train),
+            batch_size=args.batch_size
+        )
     pruner.prune()
 
     print("After pruning")
@@ -128,7 +136,7 @@ def main(args):
     model.evaluate(x_test, y_test)
 
 
-PRUNERS = ["Magnitude", "SNIP", "Alignment"]
+PRUNERS = ["Magnitude", "SNIP", "Alignment", "WeightMagnitude"]
 DATASETS = ["cifar10", "cifar100"]
 PRUNING_SCOPES = ["global", "local"]
 MODELS = ["default", "vgg11", "vgg16"]
