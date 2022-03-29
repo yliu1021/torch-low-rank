@@ -29,7 +29,7 @@ class AlignmentPruner(AbstractPrunerBase):
             layer_scores = []
             self._set_mask_on_layer(layer, create_mask(layer.rank_capacity, []))
             all_ones_input = tf.convert_to_tensor(
-                [tf.ones(self.data_x.shape[1:])], dtype=np.float64
+                [tf.zeros(self.data_x.shape[1:])], dtype=np.float64
             )
             baseline_output_activation = self.model.call(all_ones_input)
             for i in range(layer.rank_capacity):
