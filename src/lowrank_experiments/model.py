@@ -28,7 +28,7 @@ def get_lr_model(
 
     :returns: Model with 4 LRConv layers with no initial rank constraint, followed by a LRDense layer with no initial rank constraint and a standard dense layer
     """
-    if initial_ranks == None:
+    if initial_ranks is None:
         initial_ranks = [-1] * 5
 
     if len(initial_ranks) != 5:

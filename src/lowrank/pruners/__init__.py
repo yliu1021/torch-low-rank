@@ -70,6 +70,7 @@ class AbstractPrunerBase:
         if len(masks) != len(self.layers_to_prune):
             raise ValueError("Computed mask does not match length of model layers")
         for mask, layer in zip(masks, self.layers_to_prune):
+            print(layer._mask)
             layer.set_mask(mask)
             if len(mask.shape) == 1:  # svd pruning
                 layer.squeeze_rank_capacity()
