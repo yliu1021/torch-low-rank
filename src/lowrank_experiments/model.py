@@ -12,6 +12,7 @@ from tensorflow.keras.layers import (
     MaxPool2D,
 )
 from tensorflow.keras.models import Sequential
+from tensorflow.keras.applications import vgg16
 
 from lowrank import LRConv2D, LRDense
 
@@ -98,7 +99,6 @@ def get_lr_vgg16(
             Flatten(),
             LRDense(4096, rank=initial_ranks[13], activation="relu"),
             LRDense(4096, rank=initial_ranks[14], activation="relu"),
-            LRDense(1000, rank=initial_ranks[15], activation="relu"),
             Dense(num_classes, activation="softmax"),
         ]
     )
@@ -143,7 +143,6 @@ def get_lr_vgg11(
             Flatten(),
             LRDense(4096, rank=initial_ranks[8], activation="relu"),
             LRDense(4096, rank=initial_ranks[9], activation="relu"),
-            LRDense(1000, rank=initial_ranks[10], activation="relu"),
             Dense(num_classes, activation="softmax"),
         ]
     )

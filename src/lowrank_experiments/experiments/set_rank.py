@@ -60,7 +60,7 @@ def main(args):
         raise NotImplementedError(args.model + " is not supported currently.")
 
     model.compile(
-        optimizer=optimizers.RMSprop(0.0001),
+        optimizer=optimizers.RMSprop(0.008),
         loss=losses.CategoricalCrossentropy(),
         metrics=[metrics.CategoricalAccuracy()],
     )
