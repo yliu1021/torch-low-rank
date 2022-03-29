@@ -82,7 +82,9 @@ class AbstractPrunerBase:
         """
         # list of ndarrays, each corresponding to each layer
         scores = self.compute_scores()
-        assert len(scores) == len(self.layers_to_prune), "Number of scores should equal number of layers we're trying to prune"
+        assert len(scores) == len(
+            self.layers_to_prune
+        ), "Number of scores should equal number of layers we're trying to prune"
         thresholds = []
         if self.scope == PruningScope.LOCAL:
             for i in range(len(self.layers_to_prune)):
@@ -90,7 +92,9 @@ class AbstractPrunerBase:
                 num_to_drop = int(len(sorted_layer_scores) * self.sparsity)
                 thresholds.append(sorted_layer_scores[num_to_drop])
         elif self.scope == PruningScope.GLOBAL:
-            flattened_sorted_scores = sorted(np.concatenate([score.flatten() for score in scores]))
+            flattened_sorted_scores = sorted(
+                np.concatenate([score.flatten() for score in scores])
+            )
             num_to_drop = int(len(flattened_sorted_scores) * self.sparsity)
             thresholds = [flattened_sorted_scores[num_to_drop]] * len(
                 self.layers_to_prune

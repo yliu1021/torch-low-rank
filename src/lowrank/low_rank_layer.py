@@ -19,7 +19,9 @@ class LowRankLayer(Layer):
         if rank == -1:
             self._mask: Optional[tf.Variable] = None
         else:
-            self._mask: Optional[tf.Variable] = tf.Variable([1.0] * rank, trainable=False)
+            self._mask: Optional[tf.Variable] = tf.Variable(
+                [1.0] * rank, trainable=False
+            )
         self.activation = activations.get(activation)
         self.num_inputs: Optional[int] = None
         self.num_outputs: Optional[int] = None

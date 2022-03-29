@@ -7,7 +7,7 @@ import pathlib
 import random
 
 import tensorflow as tf
-from tensorflow.keras import callbacks, losses, metrics, optimizers, models
+from tensorflow.keras import callbacks, losses, metrics, models, optimizers
 
 import lowrank_experiments.data
 import lowrank_experiments.model
@@ -38,23 +38,17 @@ def main(args):
         args.dataset, args.fast
     )
 
-    if args.model == 'default':
+    if args.model == "default":
         model = lowrank_experiments.model.get_lr_model(
-            x_train.shape[1:],
-            num_classes=y_train.shape[1],
-            initial_ranks=None
+            x_train.shape[1:], num_classes=y_train.shape[1], initial_ranks=None
         )
-    elif args.model == 'vgg11':
+    elif args.model == "vgg11":
         model = lowrank_experiments.model.get_lr_vgg11(
-            x_train.shape[1:],
-            num_classes=y_train.shape[1],
-            initial_ranks=None
+            x_train.shape[1:], num_classes=y_train.shape[1], initial_ranks=None
         )
-    elif args.model == 'vgg16':
+    elif args.model == "vgg16":
         model = lowrank_experiments.model.get_lr_vgg16(
-            x_train.shape[1:],
-            num_classes=y_train.shape[1],
-            initial_ranks=None
+            x_train.shape[1:], num_classes=y_train.shape[1], initial_ranks=None
         )
     else:
         raise NotImplementedError(args.model + " is not supported currently.")
@@ -113,7 +107,7 @@ def main(args):
 
     print("After pruning")
     loss, acc = model.evaluate(x_test, y_test)
-    
+
     with tensorboard_metrics_writer.as_default(step=args.prune_epoch):
         post_prune_size = calc_num_weights(model)
         tf.summary.scalar(name="model_size", data=post_prune_size)
@@ -137,7 +131,7 @@ def main(args):
 PRUNERS = ["Magnitude", "SNIP", "Alignment"]
 DATASETS = ["cifar10", "cifar100"]
 PRUNING_SCOPES = ["global", "local"]
-MODELS = ['default', 'vgg11', 'vgg16']
+MODELS = ["default", "vgg11", "vgg16"]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate singular vector rankings")
@@ -166,9 +160,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--no_gpu", action="store_true", default=False, help="Disable GPU"
     )
-    parser.add_argument(
-        '--model', choices=MODELS, help="Model to run experiments with"
-    )
+    parser.add_argument("--model", choices=MODELS, help="Model to run experiments with")
     args = parser.parse_args()
 
     if not args.no_gpu:

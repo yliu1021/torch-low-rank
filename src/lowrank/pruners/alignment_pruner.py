@@ -2,8 +2,8 @@
 Alignment Pruner (Defined in overleaf)
 """
 
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 
 from lowrank.pruners import AbstractPrunerBase, create_mask
 
@@ -44,6 +44,7 @@ class AlignmentPruner(AbstractPrunerBase):
             scores.append(layer_scores)
         return scores
 
+
 def kl_divergence(p, q):
     """
     Safe implementation of KL Divergence, using https://stats.stackexchange.com/questions/362860/kl-divergence-between-which-distributions-could-be-infinity
@@ -59,8 +60,7 @@ def kl_divergence(p, q):
         if p[x] == 0:
             continue
         if q[x] == 0:
-            kl = float('inf')
+            kl = float("inf")
             break
         kl += p[x] * np.log2(p[x] / q[x])
     return kl
-        
