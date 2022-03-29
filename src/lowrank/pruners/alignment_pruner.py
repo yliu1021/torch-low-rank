@@ -41,8 +41,8 @@ class AlignmentPruner(AbstractPrunerBase):
             self._set_mask_on_layer(
                 layer, create_mask(layer.rank_capacity, [], inverted=True)
             )
-            scores.append(layer_scores)
-        return np.array(scores)
+            scores.append(np.array(layer_scores))
+        return scores
 
 
 def kl_divergence(p, q):
