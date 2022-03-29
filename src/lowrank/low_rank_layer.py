@@ -112,7 +112,7 @@ class LowRankLayer(Layer):
 
     @property
     def trainable_weights(self):
-        if self.rank_capacity == None:
+        if self.rank_capacity is None:
             weights = [self.kernels[-1]]
         else:
             u, v = self.kernels[self.rank_capacity]
