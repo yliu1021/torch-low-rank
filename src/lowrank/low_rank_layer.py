@@ -41,14 +41,14 @@ class LowRankLayer(Layer):
         if len(self._mask.shape) == 1:
             return self._mask.shape[0]
         else:
-            return None  # masking weights imply full rank
+            return None
 
     @property
     def rank(self) -> int:
         if self._mask is None:
             return self.max_rank
         if len(self._mask.shape) == 1:
-            return sum(self._mask)
+            return int(sum(self._mask.numpy()))
         else:
             return self.max_rank
 
