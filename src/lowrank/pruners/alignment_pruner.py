@@ -15,7 +15,7 @@ class AlignmentPruner(AbstractPrunerBase):
     the baseline
     """
 
-    def compute_scores(self) -> "list[list[int | float]]":
+    def compute_scores(self) -> "list[np.ndarray]":
         """
         Score = Magnitude of the vector difference between output of model when passed all 1s
         (with singular vector zeroed out and not)
@@ -28,13 +28,13 @@ class AlignmentPruner(AbstractPrunerBase):
             print(f"Pruning layer: {layer_ind}")
             layer_scores = []
             self._set_mask_on_layer(layer, create_mask(layer.rank_capacity, []))
-            all_ones_input = tf.convert_to_tensor(
+            sample_input = tf.convert_to_tensor(
                 [tf.zeros(self.data_x.shape[1:])], dtype=np.float64
             )
-            baseline_output_activation = self.model.call(all_ones_input)
+            baseline_output_activation = self.model.call(sample_input)
             for i in range(layer.rank_capacity):
                 self._set_mask_on_layer(layer, create_mask(layer.rank_capacity, [i]))
-                sv_output_activation = self.model.call(all_ones_input)
+                sv_output_activation = self.model(sample_input)
                 layer_scores.append(
                     kl_divergence(baseline_output_activation, sv_output_activation)
                 )
@@ -42,7 +42,7 @@ class AlignmentPruner(AbstractPrunerBase):
                 layer, create_mask(layer.rank_capacity, [], inverted=True)
             )
             scores.append(layer_scores)
-        return scores
+        return np.array(scores)
 
 
 def kl_divergence(p, q):
