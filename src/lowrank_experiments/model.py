@@ -66,7 +66,7 @@ def get_lr_vgg16(
 
     :returns: VGG16
     """
-    if initial_ranks == None:
+    if initial_ranks is None:
         initial_ranks = [-1] * 16
 
     if len(initial_ranks) != 16:
@@ -116,7 +116,7 @@ def get_lr_vgg11(
 
     :returns: VGG11
     """
-    if initial_ranks == None:
+    if initial_ranks is None:
         initial_ranks = [-1] * 11
 
     if len(initial_ranks) != 11:
