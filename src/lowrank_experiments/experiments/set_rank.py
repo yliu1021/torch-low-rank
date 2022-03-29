@@ -91,7 +91,7 @@ def main(args):
             model=model,
             scope=args.pruning_scope,
             sparsity=args.sparsity,
-            data=(x_train[:256], y_train[:256]),
+            data=(x_train[:2048], y_train[:2048]),
             batch_size=args.batch_size,
             loss=losses.CategoricalCrossentropy(),
         )
