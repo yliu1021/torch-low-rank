@@ -54,9 +54,9 @@ class LowRankLayer(Layer):
 
     def set_mask(self, new_mask: tf.Variable):
         if self._mask is None:
-            self._mask = tf.Variable(new_mask, trainable=False)
+            self._mask = tf.Variable(new_mask, trainable=False, dtype=tf.float32)
         else:
-            self._mask.assign(new_mask, read_value=False)
+            self._mask = tf.Variable(new_mask, trainable=False, dtype=tf.float32)
 
     def set_rank_capacity(self, capacity: Optional[int] = None):
         """

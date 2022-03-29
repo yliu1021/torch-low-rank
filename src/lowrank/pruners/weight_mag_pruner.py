@@ -16,5 +16,5 @@ class WeightMagPruner(AbstractPrunerBase):
     def compute_scores(self) -> list[np.ndarray]:
         scores = []
         for layer in self.layers_to_prune:
-            scores.append(layer.eff_weight().numpy().abs())
+            scores.append(np.abs(layer.eff_weight().numpy()))
         return scores
