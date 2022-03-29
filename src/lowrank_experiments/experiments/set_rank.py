@@ -11,7 +11,13 @@ from tensorflow.keras import callbacks, losses, metrics, models, optimizers
 
 import lowrank_experiments.data
 import lowrank_experiments.model
-from lowrank.pruners import PruningScope, alignment_pruner, mag_pruner, snip_pruner, weight_mag_pruner
+from lowrank.pruners import (
+    PruningScope,
+    alignment_pruner,
+    mag_pruner,
+    snip_pruner,
+    weight_mag_pruner,
+)
 
 
 def calc_num_weights(model: models.Model) -> int:
@@ -109,7 +115,7 @@ def main(args):
             scope=args.pruning_scope,
             sparsity=args.sparsity,
             data=(x_train, y_train),
-            batch_size=args.batch_size
+            batch_size=args.batch_size,
         )
     pruner.prune()
 
