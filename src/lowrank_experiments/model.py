@@ -146,3 +146,15 @@ def get_lr_vgg11(
             Dense(num_classes, activation="softmax"),
         ]
     )
+
+
+def get_vgg16(
+        input_shape: List[int], num_classes: int, initial_ranks: List[int] = None
+):
+    return vgg16.VGG16(
+        include_top=True,
+        weights=None,
+        input_shape=input_shape,
+        pooling="max",
+        classes=num_classes,
+    )

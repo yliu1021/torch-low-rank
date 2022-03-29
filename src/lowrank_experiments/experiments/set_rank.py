@@ -56,6 +56,10 @@ def main(args):
         model = lowrank_experiments.model.get_lr_vgg16(
             x_train.shape[1:], num_classes=y_train.shape[1], initial_ranks=None
         )
+    elif args.model == "vgg16_normal":
+        model = lowrank_experiments.model.get_vgg16(
+            x_train.shape[1:], num_classes=y_train.shape[1], initial_ranks=None
+        )
     else:
         raise NotImplementedError(args.model + " is not supported currently.")
 
