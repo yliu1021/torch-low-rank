@@ -68,7 +68,7 @@ def get_lr_vgg16(
     :param input_shape: list of integers with input shape
     :param num_classes: number of classes of output
     :param initial_ranks: list specifying initial ranks for each LRLayer (if none, each layer starts out full rank)
-
+    :param weight_decay: l2 reg term
     :returns: VGG16
     """
     if initial_ranks is None:
@@ -221,7 +221,7 @@ def get_lr_vgg11(
     :param input_shape: list of integers with input shape
     :param num_classes: number of classes of output
     :param initial_ranks: list specifying initial ranks for each LRLayer (if none, each layer starts out full rank)
-
+    :param weight_decay: l2 reg term
     :returns: VGG11
     """
     if initial_ranks is None:
