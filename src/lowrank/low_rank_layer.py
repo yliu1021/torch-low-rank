@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import activations
 from tensorflow.keras.initializers import GlorotUniform
+from tensorflow.keras import regularizers
 from tensorflow.keras.layers import Layer
 
 
@@ -136,6 +137,7 @@ class LowRankLayer(Layer):
                 name=f"kernel_{rank}",
                 shape=(self.num_inputs, self.num_outputs),
                 initializer=GlorotUniform(),
+                regularizer=regularizers.l2(1e-4),
             )
             return
         self.kernels[rank] = (
@@ -143,10 +145,12 @@ class LowRankLayer(Layer):
                 name=f"kernel_{rank}_u",
                 shape=(self.num_inputs, rank),
                 initializer=GlorotUniform(),
+                regularizer=regularizers.l2(1e-4),
             ),
             self.add_weight(
                 name=f"kernel_{rank}_v",
                 shape=(rank, self.num_outputs),
                 initializer=GlorotUniform(),
+                regularizer=regularizers.l2(1e-4),
             ),
         )
