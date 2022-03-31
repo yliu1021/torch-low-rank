@@ -64,7 +64,8 @@ def main(args):
         raise NotImplementedError(args.model + " is not supported currently.")
 
     model.compile(
-        optimizer=optimizers.RMSprop(0.001),
+        optimizer=optimizers.SGD(args.lr, momentum=0.9),
+        # optimizer=optimizers.Adam(args.lr),
         loss=losses.CategoricalCrossentropy(),
         metrics=[metrics.CategoricalAccuracy()],
     )
@@ -75,7 +76,10 @@ def main(args):
         batch_size=args.batch_size,
         epochs=args.prune_epoch,
         validation_data=(x_test, y_test),
-        callbacks=[callbacks.TensorBoard(log_dir=tensorboard_log_dir)],
+        callbacks=[
+            callbacks.TensorBoard(log_dir=tensorboard_log_dir),
+            callbacks.ReduceLROnPlateau(patience=10)
+        ],
     )
 
     print("Before pruning:")
@@ -139,7 +143,10 @@ def main(args):
         epochs=args.total_epochs,
         validation_data=(x_test, y_test),
         initial_epoch=args.prune_epoch,
-        callbacks=[callbacks.TensorBoard(log_dir=tensorboard_log_dir)],
+        callbacks=[
+            callbacks.TensorBoard(log_dir=tensorboard_log_dir),
+            callbacks.ReduceLROnPlateau(patience=5)
+        ],
     )
 
     print("End of training")
@@ -149,7 +156,7 @@ def main(args):
 PRUNERS = ["Magnitude", "SNIP", "Alignment", "WeightMagnitude"]
 DATASETS = ["cifar10", "cifar100"]
 PRUNING_SCOPES = ["global", "local"]
-MODELS = ["default", "vgg11", "vgg16"]
+MODELS = ["default", "vgg11", "vgg16", "vgg16_normal"]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate singular vector rankings")
@@ -177,6 +184,11 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--no_gpu", action="store_true", default=False, help="Disable GPU"
+    )
+    parser.add_argument(
+        "--lr",
+        type=float,
+        help="Learning rate"
     )
     parser.add_argument("--model", choices=MODELS, help="Model to run experiments with")
     args = parser.parse_args()

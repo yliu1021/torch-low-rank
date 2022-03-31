@@ -12,7 +12,10 @@ Dataset = Tuple[np.ndarray, np.ndarray]
 
 
 def _normalize_x(x: np.ndarray) -> np.ndarray:
-    return x.astype(np.float32) / 255.0
+    x = x.astype(np.float32) / 255.0
+    x -= x.mean(axis=(0,1,2))
+    x /= x.std(axis=(0,1,2))
+    return x
 
 
 def _one_hot_y(y: np.ndarray) -> np.ndarray:
