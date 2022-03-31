@@ -8,6 +8,7 @@ import random
 
 import tensorflow as tf
 from tensorflow.keras import callbacks, losses, metrics, models, optimizers
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 import lowrank_experiments.data
 import lowrank_experiments.model
@@ -43,6 +44,19 @@ def main(args):
     (x_train, y_train), (x_test, y_test) = lowrank_experiments.data.load_data(
         args.dataset, args.fast
     )
+    # taken from https://github.com/geifmany/cifar-vgg/blob/master/cifar10vgg.py
+    datagen = ImageDataGenerator(
+        featurewise_center=False,  # set input mean to 0 over the dataset
+        samplewise_center=False,  # set each sample mean to 0
+        featurewise_std_normalization=False,  # divide inputs by std of the dataset
+        samplewise_std_normalization=False,  # divide each input by its std
+        zca_whitening=False,  # apply ZCA whitening
+        rotation_range=15,  # randomly rotate images in the range (degrees, 0 to 180)
+        width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
+        height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
+        horizontal_flip=True,  # randomly flip images
+        vertical_flip=False)  # randomly flip images
+    datagen.fit(x_train)
 
     if args.model == "default":
         model = lowrank_experiments.model.get_lr_model(
@@ -78,9 +92,7 @@ def main(args):
     )
 
     model.fit(
-        x_train,
-        y_train,
-        batch_size=args.batch_size,
+        datagen.flow(x_train, y_train, batch_size=args.batch_size),
         epochs=args.prune_epoch,
         validation_data=(x_test, y_test),
         callbacks=[
@@ -144,15 +156,13 @@ def main(args):
         tf.summary.scalar(name="postprune_acc", data=acc)
 
     model.fit(
-        x_train,
-        y_train,
-        batch_size=args.batch_size,
+        datagen.flow(x_train, y_train, batch_size=args.batch_size),
         epochs=args.total_epochs,
         validation_data=(x_test, y_test),
         initial_epoch=args.prune_epoch,
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
-            callbacks.ReduceLROnPlateau(patience=5),
+            callbacks.ReduceLROnPlateau(patience=10),
         ],
     )
 
