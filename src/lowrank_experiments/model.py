@@ -11,6 +11,7 @@ from tensorflow.keras.layers import (
     InputLayer,
     MaxPool2D,
     Dropout,
+    BatchNormalization
 )
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.applications import vgg16
@@ -90,6 +91,7 @@ def get_lr_vgg16(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             LRConv2D(
                 64,
                 3,
@@ -98,6 +100,7 @@ def get_lr_vgg16(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
             LRConv2D(
                 128,
@@ -107,6 +110,7 @@ def get_lr_vgg16(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             LRConv2D(
                 128,
                 3,
@@ -115,6 +119,7 @@ def get_lr_vgg16(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
             LRConv2D(
                 256,
@@ -124,6 +129,7 @@ def get_lr_vgg16(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             LRConv2D(
                 256,
                 3,
@@ -132,6 +138,7 @@ def get_lr_vgg16(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             LRConv2D(
                 256,
                 3,
@@ -140,6 +147,7 @@ def get_lr_vgg16(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
             LRConv2D(
                 512,
@@ -149,6 +157,7 @@ def get_lr_vgg16(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             LRConv2D(
                 512,
                 3,
@@ -157,6 +166,7 @@ def get_lr_vgg16(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             LRConv2D(
                 512,
                 3,
@@ -165,6 +175,7 @@ def get_lr_vgg16(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
             LRConv2D(
                 512,
@@ -174,6 +185,7 @@ def get_lr_vgg16(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             LRConv2D(
                 512,
                 3,
@@ -182,6 +194,7 @@ def get_lr_vgg16(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             LRConv2D(
                 512,
                 3,
@@ -190,6 +203,7 @@ def get_lr_vgg16(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
             Flatten(),
             LRDense(
@@ -198,12 +212,14 @@ def get_lr_vgg16(
                 activation="relu",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             LRDense(
                 4096,
                 rank=initial_ranks[14],
                 activation="relu",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             Dense(num_classes, activation="softmax"),
         ]
     )
@@ -243,6 +259,7 @@ def get_lr_vgg11(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
             LRConv2D(
                 128,
@@ -252,6 +269,7 @@ def get_lr_vgg11(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
             LRConv2D(
                 256,
@@ -261,6 +279,7 @@ def get_lr_vgg11(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             LRConv2D(
                 256,
                 3,
@@ -269,6 +288,7 @@ def get_lr_vgg11(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
             LRConv2D(
                 512,
@@ -278,6 +298,7 @@ def get_lr_vgg11(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             LRConv2D(
                 512,
                 3,
@@ -286,6 +307,7 @@ def get_lr_vgg11(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
             LRConv2D(
                 512,
@@ -295,6 +317,7 @@ def get_lr_vgg11(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             LRConv2D(
                 512,
                 3,
@@ -303,6 +326,7 @@ def get_lr_vgg11(
                 padding="same",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
             Flatten(),
             LRDense(
@@ -311,12 +335,14 @@ def get_lr_vgg11(
                 activation="relu",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             LRDense(
                 4096,
                 rank=initial_ranks[9],
                 activation="relu",
                 weight_decay=weight_decay,
             ),
+            BatchNormalization(),
             Dense(num_classes, activation="softmax"),
         ]
     )

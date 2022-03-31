@@ -49,6 +49,7 @@ def main(args):
             x_train.shape[1:], num_classes=y_train.shape[1], initial_ranks=None
         )
     elif args.model == "vgg11":
+        print(args)
         model = lowrank_experiments.model.get_lr_vgg11(
             x_train.shape[1:],
             num_classes=y_train.shape[1],
