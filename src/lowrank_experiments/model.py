@@ -57,7 +57,10 @@ def get_lr_model(
 
 
 def get_lr_vgg16(
-    input_shape: List[int], num_classes: int, initial_ranks: List[int] = None
+    input_shape: List[int],
+    num_classes: int,
+    initial_ranks: List[int] = None,
+    weight_decay: float = 0,
 ):
     """
     Returns VGG16 Low Rank Compatible
@@ -79,34 +82,138 @@ def get_lr_vgg16(
     return Sequential(
         [
             InputLayer(input_shape=input_shape),
-            LRConv2D(64, 3, rank=initial_ranks[0], activation="relu", padding="same"),
-            LRConv2D(64, 3, rank=initial_ranks[1], activation="relu", padding="same"),
+            LRConv2D(
+                64,
+                3,
+                rank=initial_ranks[0],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
+            LRConv2D(
+                64,
+                3,
+                rank=initial_ranks[1],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
-            LRConv2D(128, 3, rank=initial_ranks[2], activation="relu", padding="same"),
-            LRConv2D(128, 3, rank=initial_ranks[3], activation="relu", padding="same"),
+            LRConv2D(
+                128,
+                3,
+                rank=initial_ranks[2],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
+            LRConv2D(
+                128,
+                3,
+                rank=initial_ranks[3],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
-            LRConv2D(256, 3, rank=initial_ranks[4], activation="relu", padding="same"),
-            LRConv2D(256, 3, rank=initial_ranks[5], activation="relu", padding="same"),
-            LRConv2D(256, 3, rank=initial_ranks[6], activation="relu", padding="same"),
+            LRConv2D(
+                256,
+                3,
+                rank=initial_ranks[4],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
+            LRConv2D(
+                256,
+                3,
+                rank=initial_ranks[5],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
+            LRConv2D(
+                256,
+                3,
+                rank=initial_ranks[6],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
-            LRConv2D(512, 3, rank=initial_ranks[7], activation="relu", padding="same"),
-            LRConv2D(512, 3, rank=initial_ranks[8], activation="relu", padding="same"),
-            LRConv2D(512, 3, rank=initial_ranks[9], activation="relu", padding="same"),
+            LRConv2D(
+                512,
+                3,
+                rank=initial_ranks[7],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
+            LRConv2D(
+                512,
+                3,
+                rank=initial_ranks[8],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
+            LRConv2D(
+                512,
+                3,
+                rank=initial_ranks[9],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
-            LRConv2D(512, 3, rank=initial_ranks[10], activation="relu", padding="same"),
-            LRConv2D(512, 3, rank=initial_ranks[11], activation="relu", padding="same"),
-            LRConv2D(512, 3, rank=initial_ranks[12], activation="relu", padding="same"),
+            LRConv2D(
+                512,
+                3,
+                rank=initial_ranks[10],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
+            LRConv2D(
+                512,
+                3,
+                rank=initial_ranks[11],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
+            LRConv2D(
+                512,
+                3,
+                rank=initial_ranks[12],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
             Flatten(),
-            LRDense(4096, rank=initial_ranks[13], activation="relu"),
-            LRDense(4096, rank=initial_ranks[14], activation="relu"),
+            LRDense(
+                4096,
+                rank=initial_ranks[13],
+                activation="relu",
+                weight_decay=weight_decay,
+            ),
+            LRDense(
+                4096,
+                rank=initial_ranks[14],
+                activation="relu",
+                weight_decay=weight_decay,
+            ),
             Dense(num_classes, activation="softmax"),
         ]
     )
 
 
 def get_lr_vgg11(
-    input_shape: List[int], num_classes: int, initial_ranks: List[int] = None
+    input_shape: List[int],
+    num_classes: int,
+    initial_ranks: List[int] = None,
+    weight_decay: float = 0,
 ):
     """
     Returns VGG11 Low Rank Compatible
@@ -128,29 +235,95 @@ def get_lr_vgg11(
     return Sequential(
         [
             InputLayer(input_shape=input_shape),
-            LRConv2D(64, 3, rank=initial_ranks[0], activation="relu", padding="same"),
+            LRConv2D(
+                64,
+                3,
+                rank=initial_ranks[0],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
-            LRConv2D(128, 3, rank=initial_ranks[1], activation="relu", padding="same"),
+            LRConv2D(
+                128,
+                3,
+                rank=initial_ranks[1],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
-            LRConv2D(256, 3, rank=initial_ranks[2], activation="relu", padding="same"),
-            LRConv2D(256, 3, rank=initial_ranks[3], activation="relu", padding="same"),
+            LRConv2D(
+                256,
+                3,
+                rank=initial_ranks[2],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
+            LRConv2D(
+                256,
+                3,
+                rank=initial_ranks[3],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
-            LRConv2D(512, 3, rank=initial_ranks[4], activation="relu", padding="same"),
-            LRConv2D(512, 3, rank=initial_ranks[5], activation="relu", padding="same"),
+            LRConv2D(
+                512,
+                3,
+                rank=initial_ranks[4],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
+            LRConv2D(
+                512,
+                3,
+                rank=initial_ranks[5],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
-            LRConv2D(512, 3, rank=initial_ranks[6], activation="relu", padding="same"),
-            LRConv2D(512, 3, rank=initial_ranks[7], activation="relu", padding="same"),
+            LRConv2D(
+                512,
+                3,
+                rank=initial_ranks[6],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
+            LRConv2D(
+                512,
+                3,
+                rank=initial_ranks[7],
+                activation="relu",
+                padding="same",
+                weight_decay=weight_decay,
+            ),
             MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
             Flatten(),
-            LRDense(4096, rank=initial_ranks[8], activation="relu"),
-            LRDense(4096, rank=initial_ranks[9], activation="relu"),
+            LRDense(
+                4096,
+                rank=initial_ranks[8],
+                activation="relu",
+                weight_decay=weight_decay,
+            ),
+            LRDense(
+                4096,
+                rank=initial_ranks[9],
+                activation="relu",
+                weight_decay=weight_decay,
+            ),
             Dense(num_classes, activation="softmax"),
         ]
     )
 
 
 def get_vgg16(
-        input_shape: List[int], num_classes: int, initial_ranks: List[int] = None
+    input_shape: List[int], num_classes: int, initial_ranks: List[int] = None
 ):
     return vgg16.VGG16(
         include_top=True,

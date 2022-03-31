@@ -7,7 +7,13 @@ from .low_rank_layer import LowRankLayer
 
 
 class LRDense(LowRankLayer):
-    def __init__(self, num_outputs: int, rank: int, activation: Optional[str] = None):
+    def __init__(
+        self,
+        num_outputs: int,
+        rank: int,
+        activation: Optional[str] = None,
+        weight_decay: float = 0,
+    ):
         """
         Creates a low rank dense layer with a given rank and (optionally) an activation.
         Args:
@@ -16,7 +22,7 @@ class LRDense(LowRankLayer):
             activation (:obj:`str`, optional): an optional activation to pass. Values can be "relu",
             "softmax", or "sigmoid"
         """
-        super().__init__(rank, activation)
+        super().__init__(rank, activation, weight_decay)
         self.num_outputs = num_outputs
 
     def build(self, input_shape):
@@ -45,8 +51,9 @@ class LRConv2D(LowRankLayer):
         strides: int = 1,
         activation: Optional[str] = None,
         padding: str = "same",
+        weight_decay: float = 0,
     ):
-        super().__init__(rank, activation)
+        super().__init__(rank, activation, weight_decay)
         self.num_outputs = filters
         if isinstance(kernel_size, int):
             kernel_size = (kernel_size, kernel_size)

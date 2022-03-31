@@ -9,11 +9,18 @@ from tensorflow.keras.layers import Layer
 
 
 class LowRankLayer(Layer):
-    def __init__(self, rank: int, activation: Optional[str] = None, **kwargs):
+    def __init__(
+        self,
+        rank: int,
+        activation: Optional[str] = None,
+        weight_decay: float = 1e-4,
+        **kwargs,
+    ):
         """
         Creates a low rank layer with a given rank and (optionally) an activation.
         :param rank: the rank of the layer. Specify -1 for full rank
         :param activation: an optional activation to pass. Values can be "relu", "softmax",
+        :param weight_decay: the L2 reg term
         or "sigmoid"
         """
         super().__init__(**kwargs)
@@ -30,6 +37,7 @@ class LowRankLayer(Layer):
             int, Union[tf.Variable, Tuple[tf.Variable, tf.Variable]]
         ] = {}
         self.bias: Optional[tf.Variable] = None
+        self.weight_decay = weight_decay
 
     @property
     def max_rank(self) -> int:
@@ -137,7 +145,7 @@ class LowRankLayer(Layer):
                 name=f"kernel_{rank}",
                 shape=(self.num_inputs, self.num_outputs),
                 initializer=GlorotUniform(),
-                regularizer=regularizers.l2(1e-4),
+                regularizer=regularizers.l2(self.weight_decay),
             )
             return
         self.kernels[rank] = (
@@ -145,12 +153,12 @@ class LowRankLayer(Layer):
                 name=f"kernel_{rank}_u",
                 shape=(self.num_inputs, rank),
                 initializer=GlorotUniform(),
-                regularizer=regularizers.l2(1e-4),
+                regularizer=regularizers.l2(self.weight_decay),
             ),
             self.add_weight(
                 name=f"kernel_{rank}_v",
                 shape=(rank, self.num_outputs),
                 initializer=GlorotUniform(),
-                regularizer=regularizers.l2(1e-4),
+                regularizer=regularizers.l2(self.weight_decay),
             ),
         )

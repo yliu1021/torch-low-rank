@@ -50,11 +50,17 @@ def main(args):
         )
     elif args.model == "vgg11":
         model = lowrank_experiments.model.get_lr_vgg11(
-            x_train.shape[1:], num_classes=y_train.shape[1], initial_ranks=None
+            x_train.shape[1:],
+            num_classes=y_train.shape[1],
+            initial_ranks=None,
+            weight_decay=args.l2,
         )
     elif args.model == "vgg16":
         model = lowrank_experiments.model.get_lr_vgg16(
-            x_train.shape[1:], num_classes=y_train.shape[1], initial_ranks=None
+            x_train.shape[1:],
+            num_classes=y_train.shape[1],
+            initial_ranks=None,
+            weight_decay=args.l2,
         )
     elif args.model == "vgg16_normal":
         model = lowrank_experiments.model.get_vgg16(
@@ -78,7 +84,7 @@ def main(args):
         validation_data=(x_test, y_test),
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
-            callbacks.ReduceLROnPlateau(patience=10)
+            callbacks.ReduceLROnPlateau(patience=10),
         ],
     )
 
@@ -145,7 +151,7 @@ def main(args):
         initial_epoch=args.prune_epoch,
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
-            callbacks.ReduceLROnPlateau(patience=5)
+            callbacks.ReduceLROnPlateau(patience=5),
         ],
     )
 
@@ -185,11 +191,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--no_gpu", action="store_true", default=False, help="Disable GPU"
     )
-    parser.add_argument(
-        "--lr",
-        type=float,
-        help="Learning rate"
-    )
+    parser.add_argument("--lr", type=float, help="Learning rate")
+    parser.add_argument("--l2", type=float, default=0, help="L2 regularization term")
     parser.add_argument("--model", choices=MODELS, help="Model to run experiments with")
     args = parser.parse_args()
 
