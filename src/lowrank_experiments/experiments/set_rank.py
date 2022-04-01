@@ -85,7 +85,7 @@ def main(args):
         raise NotImplementedError(args.model + " is not supported currently.")
 
     model.compile(
-        optimizer=optimizers.SGD(args.lr, momentum=0.9),
+        optimizer=optimizers.SGD(args.lr, decay=1e-6, momentum=0.9, nesterov=True),
         # optimizer=optimizers.Adam(args.lr),
         loss=losses.CategoricalCrossentropy(),
         metrics=[metrics.CategoricalAccuracy()],
@@ -97,7 +97,7 @@ def main(args):
         validation_data=(x_test, y_test),
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
-            callbacks.ReduceLROnPlateau(patience=10),
+            callbacks.LearningRateScheduler(lambda epoch: args.lr * (0.5 ** (epoch // 20)))
         ],
     )
 
@@ -162,7 +162,7 @@ def main(args):
         initial_epoch=args.prune_epoch,
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
-            callbacks.ReduceLROnPlateau(patience=10),
+            callbacks.LearningRateScheduler(lambda epoch: args.lr * (0.5 ** (epoch // 20)))
         ],
     )
 
