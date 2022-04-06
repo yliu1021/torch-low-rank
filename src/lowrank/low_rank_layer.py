@@ -148,17 +148,17 @@ class LowRankLayer(Layer):
                 regularizer=regularizers.l2(self.weight_decay),
             )
             return
-        self.kernels[rank] = (
-            self.add_weight(
-                name=f"kernel_{rank}_u",
-                shape=(self.num_inputs, rank),
-                initializer=GlorotUniform(),
-                regularizer=regularizers.l2(self.weight_decay),
-            ),
-            self.add_weight(
-                name=f"kernel_{rank}_v",
-                shape=(rank, self.num_outputs),
-                initializer=GlorotUniform(),
-                regularizer=regularizers.l2(self.weight_decay),
-            ),
+        u = self.add_weight(
+            name=f"kernel_{rank}_u",
+            shape=(self.num_inputs, rank),
+            initializer=GlorotUniform(),
+            # regularizer=regularizers.l2(self.weight_decay),
         )
+        v = self.add_weight(
+            name=f"kernel_{rank}_v",
+            shape=(rank, self.num_outputs),
+            initializer=GlorotUniform(),
+            # regularizer=regularizers.l2(self.weight_decay),
+        )
+        self.add_loss(self.weight_decay * tf.norm(u @ v))
+        self.kernels[rank] = (u, v)

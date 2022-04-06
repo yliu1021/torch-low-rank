@@ -88,7 +88,10 @@ def main(args):
         optimizer=optimizers.SGD(args.lr, decay=1e-6, momentum=0.9, nesterov=True),
         # optimizer=optimizers.Adam(args.lr),
         loss=losses.CategoricalCrossentropy(),
-        metrics=[metrics.CategoricalAccuracy()],
+        metrics=[
+            metrics.CategoricalAccuracy(),
+            metrics.CategoricalCrossentropy(),
+        ],
     )
 
     model.fit(
@@ -102,13 +105,14 @@ def main(args):
     )
 
     print("Before pruning:")
-    (loss, acc) = model.evaluate(x_test, y_test)
+    loss, acc, cross_entropy = model.evaluate(x_test, y_test)
 
     with tensorboard_metrics_writer.as_default(step=args.prune_epoch - 1):
         pre_prune_size = calc_num_weights(model)
         tf.summary.scalar(name="model_size", data=pre_prune_size)
         tf.summary.scalar(name="preprune_loss", data=loss)
         tf.summary.scalar(name="preprune_acc", data=acc)
+        tf.summary.scalar(name="preprune_cross_entropy", data=cross_entropy)
 
     # prune
     pruner = None
@@ -124,7 +128,7 @@ def main(args):
             model=model,
             scope=args.pruning_scope,
             sparsity=args.sparsity,
-            data=(x_train[:2048], y_train[:2048]),
+            data=(x_train[:256], y_train[:256]),
             batch_size=args.batch_size,
             loss=losses.CategoricalCrossentropy(),
         )
@@ -147,13 +151,14 @@ def main(args):
     pruner.prune()
 
     print("After pruning")
-    loss, acc = model.evaluate(x_test, y_test)
+    loss, acc, cross_entropy = model.evaluate(x_test, y_test)
 
     with tensorboard_metrics_writer.as_default(step=args.prune_epoch):
         post_prune_size = calc_num_weights(model)
         tf.summary.scalar(name="model_size", data=post_prune_size)
         tf.summary.scalar(name="postprune_loss", data=loss)
         tf.summary.scalar(name="postprune_acc", data=acc)
+        tf.summary.scalar(name="postprune_cross_entropy", data=cross_entropy)
 
     model.fit(
         datagen.flow(x_train, y_train, batch_size=args.batch_size),
@@ -162,7 +167,7 @@ def main(args):
         initial_epoch=args.prune_epoch,
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
-            callbacks.LearningRateScheduler(lambda epoch: args.lr * (0.5 ** (epoch // 20)))
+            callbacks.LearningRateScheduler(lambda epoch: args.lr / 2 * (0.5 ** (epoch // 20)))
         ],
     )
 

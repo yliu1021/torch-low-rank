@@ -21,7 +21,7 @@ set_rank:
     l2:
       default: 0.0005
     lr:
-      default: 0.1
+      default: 0.01
     fast:
       default: False
     no_gpu:

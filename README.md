@@ -18,7 +18,7 @@ for i in {1..10}; do guild run queue --background -y; done
 ```
 2. Queue up staged runs
 ```bash
-guild run set_rank prune_epoch=[1,2,5,10] pruner=[Magnitude,SNIP,Alignment] pruning_scope=[local,global] sparsity=[0.25,0.5,0.75] total_epochs=50 --trials=216 --stage-trials
+guild run set_rank prune_epoch=[0,10,20,50] pruner=[Magnitude,Alignment,WeightMagnitude] pruning_scope=[local,global] sparsity=[0.25,0.5,0.75] total_epochs=128 lr=[0.01,0.05] l2=[0.0005,0.00005] model=vgg11 --stage-trials
 ```
 
 ## Push / Pull Results
@@ -35,5 +35,5 @@ guild pull gist:sjoshi804/low_rank_pruning_results.md
 
 Running a vgg11 training run on CIFAR10 for 50 epochs (no pruning)
 ```bash
-python src/lowrank_experiments/experiments/set_rank.py --dataset=cifar10 --pruner=Magnitude --prune_epoch=50 --total_epochs=50 --batch_size=128 --sparsity=0.25 --pruning_scope=local --lr=0.01 --model=vgg11
+python src/lowrank_experiments/experiments/set_rank.py --dataset=cifar10 --pruner=Alignment --prune_epoch=5 --total_epochs=50 --batch_size=128 --sparsity=0.25 --pruning_scope=local --lr=0.01 --l2=0.0005 --model=vgg11
 ```
