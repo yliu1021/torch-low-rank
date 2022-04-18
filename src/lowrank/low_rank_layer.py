@@ -2,9 +2,8 @@ from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import activations
+from tensorflow.keras import activations, regularizers
 from tensorflow.keras.initializers import GlorotUniform
-from tensorflow.keras import regularizers
 from tensorflow.keras.layers import Layer
 
 

@@ -71,7 +71,7 @@ def main(
                 ),
             ],
             initial_epoch=i,
-            epochs=i+1,
+            epochs=i + 1,
         )
         model.save(f"model_save_{i}")
 

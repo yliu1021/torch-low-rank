@@ -164,7 +164,7 @@ def main(args):
 PRUNERS = ["Magnitude", "SNIP", "Alignment", "WeightMagnitude"]
 DATASETS = ["cifar10", "cifar100"]
 PRUNING_SCOPES = ["global", "local"]
-MODELS = ["default", "vgg11", "vgg16", "vgg16_normal"]
+MODELS = ["default", "vgg11", "vgg16", "vgg16_normal", "vgg19"]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate singular vector rankings")

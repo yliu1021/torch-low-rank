@@ -4,17 +4,17 @@ Module containing models
 
 from typing import List
 
+from tensorflow.keras.applications import vgg16
 from tensorflow.keras.layers import (
     AveragePooling2D,
+    BatchNormalization,
     Dense,
+    Dropout,
     Flatten,
     InputLayer,
     MaxPool2D,
-    Dropout,
-    BatchNormalization,
 )
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.applications import vgg16
 
 from lowrank import LRConv2D, LRDense
 
@@ -55,6 +55,60 @@ def get_lr_model(
             Dense(num_classes, activation="softmax"),
         ]
     )
+
+
+def get_lr_vgg19(
+    input_shape: List[int],
+    num_classes: int,
+    initial_ranks: List[int] = None,
+    weight_decay: float = 0,
+):
+    if initial_ranks is None:
+        initial_ranks = [-1] * 19
+    if len(initial_ranks) != 19:
+        raise ValueError(
+            f"Must specify 19 initial ranks. Given {len(initial_ranks)} instead"
+        )
+    layers = []
+    layer_ind = 0
+    for num_filters_blocks in [[64] * 3, [128] * 2, [256] * 4, [512] * 4, [512] * 4]:
+        for num_filters in num_filters_blocks:
+            layers.extend(
+                [
+                    LRConv2D(
+                        num_filters,
+                        3,
+                        rank=initial_ranks[layer_ind],
+                        activation="relu",
+                        padding="same",
+                        weight_decay=weight_decay,
+                    ),
+                    BatchNormalization(),
+                ]
+            )
+            layer_ind += 1
+        layers.append(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))
+    layers.extend(
+        [
+            Flatten(),
+            LRDense(
+                4096,
+                rank=initial_ranks[-3],
+                activation="relu",
+                weight_decay=weight_decay,
+            ),
+            BatchNormalization(),
+            LRDense(
+                4096,
+                rank=initial_ranks[-2],
+                activation="relu",
+                weight_decay=weight_decay,
+            ),
+            BatchNormalization(),
+            Dense(num_classes, activation="softmax"),
+        ]
+    )
+    return Sequential([InputLayer(input_shape=input_shape), *layers])
 
 
 def get_lr_vgg16(
@@ -385,6 +439,13 @@ def get_model(
         )
     elif model_name == "vgg16_normal":
         model = get_vgg16(input_shape, num_classes=num_classes)
+    elif model_name == "vgg19":
+        model = get_lr_vgg19(
+            input_shape,
+            num_classes=num_classes,
+            initial_ranks=initial_ranks,
+            weight_decay=weight_decay,
+        )
     else:
         raise NotImplementedError(model_name + " is not supported currently.")
     return model
