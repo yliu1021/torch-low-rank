@@ -12,6 +12,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 import lowrank_experiments.data
 import lowrank_experiments.model
+from lowrank.low_rank_layer import LowRankLayer
 from lowrank.pruners import (
     PruningScope,
     alignment_pruner,
@@ -26,8 +27,18 @@ def calc_num_weights(model: models.Model) -> int:
     Calculates the number of trainable weights in a model
     """
     num_weights = 0
-    for weight in model.trainable_weights:
-        num_weights += tf.size(weight)
+    for layer in model.layers:
+        if isinstance(layer, LowRankLayer):
+            if layer._mask is None:
+                # we can't mask here
+                num_weights += tf.size(layer.kernels[-1])
+            elif len(layer._mask.shape) == 1:
+                u, v = layer.kernels[layer.rank_capacity]
+                sparsity = tf.reduce_sum(layer._mask) / tf.size(layer._mask)
+                num_weights += (tf.size(u) + tf.size(v)) * sparsity
+            else:
+                sparsity = tf.reduce_sum(layer._mask) / tf.size(layer._mask)
+                num_weights += tf.size(layer.kernes[-1]) * sparsity
     return num_weights
 
 
