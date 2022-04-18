@@ -65,7 +65,7 @@ class AbstractPrunerBase:
         for layer in self.layers_to_prune:
             if layer.rank_capacity is None:
                 layer.set_rank_capacity(layer.max_rank)
-        masks = self.create_masks()
+        masks = self._create_masks()
         if len(masks) != len(self.layers_to_prune):
             raise ValueError("Computed mask does not match length of model layers")
         for mask, layer in zip(masks, self.layers_to_prune):
@@ -74,7 +74,7 @@ class AbstractPrunerBase:
                 layer.squeeze_rank_capacity()
         self.model._reset_compile_cache()  # ensure model is recompiled
 
-    def create_masks(self):
+    def _create_masks(self):
         """
         Create masks for the pruning method.
         Calls compute scores which is implemented by the subclass overriding the base Pruner class.

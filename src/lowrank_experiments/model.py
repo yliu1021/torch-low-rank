@@ -11,7 +11,7 @@ from tensorflow.keras.layers import (
     InputLayer,
     MaxPool2D,
     Dropout,
-    BatchNormalization
+    BatchNormalization,
 )
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.applications import vgg16
@@ -348,9 +348,7 @@ def get_lr_vgg11(
     )
 
 
-def get_vgg16(
-    input_shape: List[int], num_classes: int, initial_ranks: List[int] = None
-):
+def get_vgg16(input_shape: List[int], num_classes: int):
     return vgg16.VGG16(
         include_top=True,
         weights=None,
@@ -358,3 +356,35 @@ def get_vgg16(
         pooling="max",
         classes=num_classes,
     )
+
+
+def get_model(
+    model_name: str,
+    input_shape: List[int],
+    num_classes: int,
+    initial_ranks: List[int] = None,
+    weight_decay: float = 0,
+):
+    if model_name == "default":
+        model = get_lr_model(
+            input_shape, num_classes=num_classes, initial_ranks=initial_ranks
+        )
+    elif model_name == "vgg11":
+        model = get_lr_vgg11(
+            input_shape,
+            num_classes=num_classes,
+            initial_ranks=initial_ranks,
+            weight_decay=weight_decay,
+        )
+    elif model_name == "vgg16":
+        model = get_lr_vgg16(
+            input_shape,
+            num_classes=num_classes,
+            initial_ranks=initial_ranks,
+            weight_decay=weight_decay,
+        )
+    elif model_name == "vgg16_normal":
+        model = get_vgg16(input_shape, num_classes=num_classes)
+    else:
+        raise NotImplementedError(model_name + " is not supported currently.")
+    return model

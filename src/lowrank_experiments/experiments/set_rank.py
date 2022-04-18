@@ -55,35 +55,17 @@ def main(args):
         width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
         height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
         horizontal_flip=True,  # randomly flip images
-        vertical_flip=False)  # randomly flip images
+        vertical_flip=False,
+    )  # randomly flip images
     datagen.fit(x_train)
 
-    if args.model == "default":
-        model = lowrank_experiments.model.get_lr_model(
-            x_train.shape[1:], num_classes=y_train.shape[1], initial_ranks=None
-        )
-    elif args.model == "vgg11":
-        print(args)
-        model = lowrank_experiments.model.get_lr_vgg11(
-            x_train.shape[1:],
-            num_classes=y_train.shape[1],
-            initial_ranks=None,
-            weight_decay=args.l2,
-        )
-    elif args.model == "vgg16":
-        model = lowrank_experiments.model.get_lr_vgg16(
-            x_train.shape[1:],
-            num_classes=y_train.shape[1],
-            initial_ranks=None,
-            weight_decay=args.l2,
-        )
-    elif args.model == "vgg16_normal":
-        model = lowrank_experiments.model.get_vgg16(
-            x_train.shape[1:], num_classes=y_train.shape[1], initial_ranks=None
-        )
-    else:
-        raise NotImplementedError(args.model + " is not supported currently.")
-
+    model = lowrank_experiments.model.get_model(
+        args.model,
+        x_train.shape[1:],
+        y_train.shape[1],
+        initial_ranks=None,
+        weight_decay=args.l2,
+    )
     model.compile(
         optimizer=optimizers.SGD(args.lr, decay=1e-6, momentum=0.9, nesterov=True),
         # optimizer=optimizers.Adam(args.lr),
@@ -100,7 +82,9 @@ def main(args):
         validation_data=(x_test, y_test),
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
-            callbacks.LearningRateScheduler(lambda epoch: args.lr * (0.5 ** (epoch // 20)))
+            callbacks.LearningRateScheduler(
+                lambda epoch: args.lr * (0.5 ** (epoch // 20))
+            ),
         ],
     )
 
@@ -167,7 +151,9 @@ def main(args):
         initial_epoch=args.prune_epoch,
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
-            callbacks.LearningRateScheduler(lambda epoch: args.lr / 2 * (0.5 ** (epoch // 20)))
+            callbacks.LearningRateScheduler(
+                lambda epoch: args.lr / 2 * (0.5 ** (epoch // 20))
+            ),
         ],
     )
 

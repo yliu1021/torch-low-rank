@@ -133,6 +133,7 @@ class LowRankLayer(Layer):
     def get_config(self):
         config = super().get_config()
         config.update({"rank": self.rank, "activation": self.activation})
+        return config
 
     def _allocate_weights(self, rank: int):
         """
