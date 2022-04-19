@@ -27,9 +27,8 @@ class LRDense(LowRankLayer):
 
     def build(self, input_shape):
         self.num_inputs = int(input_shape[-1])
-        self._allocate_weights(
-            self.rank_capacity if self.rank_capacity is not None else -1
-        )
+        self._allocate_weights(-1)
+        self._allocate_weights(self.max_rank)
         self.bias = self.add_weight(
             name="bias", shape=(self.num_outputs,), initializer=Zeros()
         )
@@ -67,9 +66,8 @@ class LRConv2D(LowRankLayer):
         h, w = self.kernel_size
         num_in_channels = input_shape[-1]
         self.num_inputs = h * w * num_in_channels
-        self._allocate_weights(
-            self.rank_capacity if self.rank_capacity is not None else -1
-        )
+        self._allocate_weights(-1)
+        self._allocate_weights(self.max_rank)
         self.bias = self.add_weight(
             name="bias", shape=(self.num_outputs,), initializer=Zeros()
         )
