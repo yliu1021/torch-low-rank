@@ -30,15 +30,14 @@ def calc_num_weights(model: models.Model) -> int:
     for layer in model.layers:
         if isinstance(layer, LowRankLayer):
             if layer._mask is None:
-                # we can't mask here
-                num_weights += tf.size(layer.kernels[-1])
-            elif len(layer._mask.shape) == 1:
-                u, v = layer.kernels[layer.rank_capacity]
-                sparsity = tf.reduce_sum(layer._mask) / tf.size(layer._mask)
-                num_weights += (tf.size(u) + tf.size(v)) * sparsity
+                num_weights += tf.size(layer.kernel_w)
             else:
                 sparsity = tf.reduce_sum(layer._mask) / tf.size(layer._mask)
-                num_weights += tf.size(layer.kernes[-1]) * sparsity
+                if len(layer._mask.shape) == 1:
+                    u, v = layer.kernel_uv
+                    num_weights += (tf.size(u) + tf.size(v)) * sparsity
+                else:
+                    num_weights += tf.size(layer.kernel_w) * sparsity
     return num_weights
 
 
