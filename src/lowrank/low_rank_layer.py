@@ -44,6 +44,7 @@ class LowRankLayer(Layer):
     @property
     def rank_capacity(self) -> Optional[int]:
         # DEPRECATED
+        raise RuntimeError("Rank capacity is deprecated")
         if self._mask is None:
             return None
         if len(self._mask.shape) == 1:
@@ -99,6 +100,7 @@ class LowRankLayer(Layer):
         Removes unneeded singular vectors. I.e. removes singular vectors that are masked out
         """
         # DEPRECATED
+        raise RuntimeError("Squeeze rank capacity is deprecated")
         if self.rank_capacity is None:
             # rank -1 layers cannot be squeezed because we have no mask
             return
