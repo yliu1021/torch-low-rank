@@ -75,8 +75,6 @@ class LowRankLayer(Layer):
         if capacity is not None and capacity != self.max_rank:
             raise ValueError("Setting rank capacity to no full rank is deprecated")
         assert self.num_inputs is not None, "Layer needs to be built first"
-        if self.rank_capacity == capacity:
-            raise ValueError("Setting capacity to current capacity")
         if capacity > self.max_rank:
             raise ValueError("Rank capacity must be less than or equal to max rank.")
         eff_weights = self.eff_weight()
@@ -86,11 +84,11 @@ class LowRankLayer(Layer):
             self.kernel_w.assign(eff_weights)
             return
         self._mask = tf.Variable([1.0] * capacity, trainable=False)
-        self._allocate_weights(self.rank_capacity)
+        self._allocate_weights(self.max_rank)
         u, s, v = np.linalg.svd(eff_weights, full_matrices=False)
-        u = u[:, : self.rank_capacity]
-        s = s[: self.rank_capacity] ** 0.5
-        v = v[: self.rank_capacity, :]
+        u = u[:, : self.max_rank]
+        s = s[: self.max_rank] ** 0.5
+        v = v[: self.max_rank, :]
         kernel_u, kernel_v = self.kernel_uv
         kernel_u.assign(u * s)
         kernel_v.assign(s[:, None] * v)
