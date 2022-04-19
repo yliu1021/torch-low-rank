@@ -63,8 +63,7 @@ class AbstractPrunerBase:
         Calls the `compute_mask` method and actually sets the ranks
         """
         for layer in self.layers_to_prune:
-            if layer.rank_capacity is None:
-                layer.set_rank_capacity(layer.max_rank)
+            layer.set_rank_capacity(layer.max_rank)
         masks = self._create_masks()
         if len(masks) != len(self.layers_to_prune):
             raise ValueError("Computed mask does not match length of model layers")
