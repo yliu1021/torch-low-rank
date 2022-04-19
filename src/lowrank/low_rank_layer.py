@@ -32,9 +32,8 @@ class LowRankLayer(Layer):
         self.activation = activations.get(activation)
         self.num_inputs: Optional[int] = None
         self.num_outputs: Optional[int] = None
-        self.kernels: Dict[
-            int, Union[tf.Variable, Tuple[tf.Variable, tf.Variable]]
-        ] = {}
+        self.kernel_w: Optional[tf.Variable] = None
+        self.kernel_uv: Optional[Tuple[tf.Variable, tf.Variable]] = None
         self.bias: Optional[tf.Variable] = None
         self.weight_decay = weight_decay
 
@@ -44,6 +43,7 @@ class LowRankLayer(Layer):
 
     @property
     def rank_capacity(self) -> Optional[int]:
+        # DEPRECATED
         if self._mask is None:
             return None
         if len(self._mask.shape) == 1:
@@ -71,6 +71,8 @@ class LowRankLayer(Layer):
         Performs a SVD and shrink the size of the U and V matrices.
         :param capacity: The capacity
         """
+        if capacity is not None and capacity != self.max_rank:
+            raise ValueError("Setting rank capacity to no full rank is deprecated")
         assert self.num_inputs is not None, "Layer needs to be built first"
         if self.rank_capacity == capacity:
             raise ValueError("Setting capacity to current capacity")
@@ -80,7 +82,7 @@ class LowRankLayer(Layer):
         if capacity is None:
             self._mask = None
             self._allocate_weights(-1)
-            self.kernels[-1].assign(eff_weights)
+            self.kernel_w.assign(eff_weights)
             return
         self._mask = tf.Variable([1.0] * capacity, trainable=False)
         self._allocate_weights(self.rank_capacity)
@@ -88,7 +90,7 @@ class LowRankLayer(Layer):
         u = u[:, : self.rank_capacity]
         s = s[: self.rank_capacity] ** 0.5
         v = v[: self.rank_capacity, :]
-        kernel_u, kernel_v = self.kernels[self.rank_capacity]
+        kernel_u, kernel_v = self.kernel_uv
         kernel_u.assign(u * s)
         kernel_v.assign(s[:, None] * v)
 
@@ -96,6 +98,7 @@ class LowRankLayer(Layer):
         """
         Removes unneeded singular vectors. I.e. removes singular vectors that are masked out
         """
+        # DEPRECATED
         if self.rank_capacity is None:
             # rank -1 layers cannot be squeezed because we have no mask
             return
@@ -111,19 +114,19 @@ class LowRankLayer(Layer):
         """
         if self._mask is None:
             # we can't mask here
-            return self.kernels[-1]
+            return self.kernel_w
         elif len(self._mask.shape) == 1:
-            u, v = self.kernels[self.rank_capacity]
+            u, v = self.kernel_uv
             return u @ tf.linalg.diag(self._mask) @ v
         else:
-            return self.kernels[-1] * self._mask
+            return self.kernel_w * self._mask
 
     @property
     def trainable_weights(self):
         if self.rank_capacity is None:
-            weights = [self.kernels[-1]]
+            weights = [self.kernel_w]
         else:
-            u, v = self.kernels[self.rank_capacity]
+            u, v = self.kernel_uv
             weights = [u, v]
         if self.bias is not None:
             weights.append(self.bias)
@@ -138,15 +141,15 @@ class LowRankLayer(Layer):
         """
         Creates tensorflow weights for a given rank and fills them with glorot uniform.
         """
-        if rank in self.kernels:
-            return
-        if rank == -1:
-            self.kernels[rank] = self.add_weight(
+        if rank == -1 and self.kernel_w is None:
+            self.kernel_w = self.add_weight(
                 name=f"kernel_{rank}",
                 shape=(self.num_inputs, self.num_outputs),
                 initializer=GlorotUniform(),
                 regularizer=regularizers.l2(self.weight_decay),
             )
+            return
+        if self.kernel_uv is not None:
             return
         u = self.add_weight(
             name=f"kernel_{rank}_u",
@@ -161,4 +164,4 @@ class LowRankLayer(Layer):
             # regularizer=regularizers.l2(self.weight_decay),
         )
         self.add_loss(self.weight_decay * tf.norm(u @ v))
-        self.kernels[rank] = (u, v)
+        self.kernel_uv = (u, v)
