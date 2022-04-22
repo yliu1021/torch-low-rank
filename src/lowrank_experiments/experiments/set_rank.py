@@ -35,13 +35,13 @@ def calc_num_weights(model: models.Model) -> int:
                 sparsity = float(tf.reduce_sum(layer.mask)) / float(tf.size(layer.mask))
                 if layer.svd_masking_mode:
                     u, v = layer.kernel_uv
-                    num_weights += (tf.size(u) + tf.size(v)) * sparsity
+                    num_weights += (float(tf.size(u)) + float(tf.size(v))) * sparsity
                 else:
                     assert (
                         layer.weight_masking_mode
                     ), "Layer must be in weight masking mode"
-                    num_weights += tf.size(layer.kernel_w) * sparsity
-    return num_weights
+                    num_weights += float(tf.size(layer.kernel_w)) * sparsity
+    return int(num_weights)
 
 
 def main(args):
