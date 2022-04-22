@@ -41,6 +41,6 @@ class SnipPruner(AbstractPrunerBase):
             grads = grad_tape.gradient(
                 loss, [layer.mask for layer in self.layers_to_prune]
             )
-            grads_tot.append(grads)
+            grads_tot.append([np.array(grad) for grad in grads])
         final_grads = reduce(lambda x, y: [a + b for a, b in zip(x, y)], grads_tot)
         return final_grads
