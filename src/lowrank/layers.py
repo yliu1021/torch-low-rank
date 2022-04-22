@@ -10,7 +10,6 @@ class LRDense(LowRankLayer):
     def __init__(
         self,
         num_outputs: int,
-        rank: int,
         activation: Optional[str] = None,
         weight_decay: float = 0,
     ):
@@ -22,13 +21,12 @@ class LRDense(LowRankLayer):
             activation (:obj:`str`, optional): an optional activation to pass. Values can be "relu",
             "softmax", or "sigmoid"
         """
-        super().__init__(rank, activation, weight_decay)
+        super().__init__(activation, weight_decay)
         self.num_outputs = num_outputs
 
     def build(self, input_shape):
         self.num_inputs = int(input_shape[-1])
-        self._allocate_weights(-1)
-        self._allocate_weights(self.max_rank)
+        self._build_weights()
         self.bias = self.add_weight(
             name="bias", shape=(self.num_outputs,), initializer=Zeros()
         )
@@ -40,19 +38,23 @@ class LRDense(LowRankLayer):
         pre_act = inputs @ self.eff_weight() + self.bias
         return self.activation(pre_act)
 
+    def get_config(self):
+        config = super().get_config()
+        config.update({"num_outputs": self.num_outputs})
+        return config
+
 
 class LRConv2D(LowRankLayer):
     def __init__(
         self,
         filters: int,
         kernel_size: Union[int, Tuple[int, int]],
-        rank: int,
         strides: int = 1,
         activation: Optional[str] = None,
         padding: str = "same",
         weight_decay: float = 0,
     ):
-        super().__init__(rank, activation, weight_decay)
+        super().__init__(activation, weight_decay)
         self.num_outputs = filters
         if isinstance(kernel_size, int):
             kernel_size = (kernel_size, kernel_size)
@@ -66,8 +68,7 @@ class LRConv2D(LowRankLayer):
         h, w = self.kernel_size
         num_in_channels = input_shape[-1]
         self.num_inputs = h * w * num_in_channels
-        self._allocate_weights(-1)
-        self._allocate_weights(self.max_rank)
+        self._build_weights()
         self.bias = self.add_weight(
             name="bias", shape=(self.num_outputs,), initializer=Zeros()
         )
@@ -82,3 +83,15 @@ class LRConv2D(LowRankLayer):
         weights = tf.reshape(weights, shape=(h, w, num_in_channels, self.num_outputs))
         pre_act = tf.nn.conv2d(inputs, weights, self.strides, self.padding) + self.bias
         return self.activation(pre_act)
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "filters": self.num_outputs,
+                "kernel_size": self.kernel_size,
+                "strides": self.strides,
+                "padding": self.padding,
+            }
+        )
+        return config

@@ -10,122 +10,143 @@ from tensorflow.keras.layers import Layer
 class LowRankLayer(Layer):
     def __init__(
         self,
-        rank: int,
         activation: Optional[str] = None,
         weight_decay: float = 1e-4,
         **kwargs,
     ):
         """
-        Creates a low rank layer with a given rank and (optionally) an activation.
-        :param rank: the rank of the layer. Specify -1 for full rank
-        :param activation: an optional activation to pass. Values can be "relu", "softmax",
-        :param weight_decay: the L2 reg term
-        or "sigmoid"
+        Creates a LRLayer that starts in full rank mode.
+        :param activation: activation function to apply
+        :param weight_decay: L2 weight decay
         """
         super().__init__(**kwargs)
-        if rank == -1:
-            self._mask: Optional[tf.Variable] = None
-        else:
-            self._mask: Optional[tf.Variable] = tf.Variable(
-                [1.0] * rank, trainable=False
-            )
         self.activation = activations.get(activation)
+        self.weight_decay = weight_decay
+        # start in full rank mode
+        self._mask: Optional[tf.Variable] = None
+        # properties to be created after layer is built
         self.num_inputs: Optional[int] = None
         self.num_outputs: Optional[int] = None
         self.kernel_w: Optional[tf.Variable] = None
         self.kernel_uv: Optional[Tuple[tf.Variable, tf.Variable]] = None
         self.bias: Optional[tf.Variable] = None
-        self.weight_decay = weight_decay
 
     @property
     def max_rank(self) -> int:
+        """
+        The maximum possible rank this layer can have
+        :return: the max rank
+        """
         return min(self.num_outputs, self.num_inputs)
 
     @property
-    def rank_capacity(self) -> Optional[int]:
-        # DEPRECATED
-        raise RuntimeError("Rank capacity is deprecated")
-        if self._mask is None:
-            return None
-        if len(self._mask.shape) == 1:
-            return self._mask.shape[0]
-        else:
-            return None
+    def full_rank_mode(self) -> bool:
+        """
+        LRLayers can express the kernel using a single W matrix or UV matrix tuple. Full rank mode
+        refers to when the layer is using W (with no mask because sparse matrices are low rank)
+        :return: True if using W matrix with no mask. False if using UV tuple (masked or not)
+        """
+        return self._mask is None
+
+    @property
+    def svd_masking_mode(self) -> bool:
+        """
+        Returns True iff we're masking in singular vectors
+        :return: True iff masking singular vectors, False otherwise
+        """
+        return self._mask is not None and len(self._mask.shape) == 1
+
+    @property
+    def weight_masking_mode(self) -> bool:
+        """
+        Returns True iff we're masking weights
+        :return: True iff masking weights, False otherwise
+        """
+        return self._mask is not None and len(self._mask.shape) != 1
+
+    # we can assume that *exactly one* property to be true at all times:
+    # 1. `full_rank_mode`,
+    # 2. `svd_masking_mode`,
+    # 3. `weight_masking_mode`
 
     @property
     def rank(self) -> int:
-        if self._mask is None:
+        """
+        The rank of the layer if in low rank mode.
+        :return: The number of unmasked singular vectors if in low rank mode. Returns max rank
+        otherwise.
+        """
+        if self.full_rank_mode:
             return self.max_rank
-        if len(self._mask.shape) == 1:
+        if self.svd_masking_mode:
             return int(sum(self._mask.numpy()))
-        else:
+        if self.weight_masking_mode:
+            # TODO: it's debatable that a sparse matrix is not full rank technically
             return self.max_rank
+        raise RuntimeError("Invalid layer state")
 
-    def set_mask(self, new_mask: tf.Variable):
-        if self._mask is None:
-            self._mask = tf.Variable(new_mask, trainable=False, dtype=tf.float32)
+    @property
+    def mask(self) -> Optional[tf.Variable]:
+        return self._mask
+
+    @mask.setter
+    def mask(self, new_mask: Optional[Union[tf.Variable, np.ndarray]]):
+        """
+        Sets a new mask, the shape of which determines masking mode. Setting to None reverts to
+        full rank mode
+        :param new_mask:
+        :return:
+        """
+        # optimization technique to avoid redundant eff_weight and SVD calculation
+        if self.svd_masking_mode and len(new_mask.shape) == 1:
+            self._mask.assign(new_mask, read_value=True)
+            return
+        if self.weight_masking_mode and len(new_mask.shape) == 2:
+            self._mask.assign(new_mask, read_value=True)
+            return
+        eff_weights = self.eff_weight()
+        if new_mask is None:
+            self._mask = None
         else:
             self._mask = tf.Variable(new_mask, trainable=False, dtype=tf.float32)
-
-    def set_rank_capacity(self, capacity: Optional[int] = None):
-        """
-        Performs a SVD and shrink the size of the U and V matrices.
-        :param capacity: The capacity
-        """
-        if capacity is not None and capacity != self.max_rank:
-            raise ValueError("Setting rank capacity to no full rank is deprecated")
-        assert self.num_inputs is not None, "Layer needs to be built first"
-        if capacity > self.max_rank:
-            raise ValueError("Rank capacity must be less than or equal to max rank.")
-        eff_weights = self.eff_weight()
-        if capacity is None:
-            self._mask = None
-            self._allocate_weights(-1)
-            self.kernel_w.assign(eff_weights)
-            return
-        self._mask = tf.Variable([1.0] * capacity, trainable=False)
-        self._allocate_weights(self.max_rank)
-        u, s, v = np.linalg.svd(eff_weights, full_matrices=False)
-        u = u[:, : self.max_rank]
-        s = s[: self.max_rank] ** 0.5
-        v = v[: self.max_rank, :]
-        kernel_u, kernel_v = self.kernel_uv
-        kernel_u.assign(u * s)
-        kernel_v.assign(s[:, None] * v)
-
-    def squeeze_rank_capacity(self):
-        """
-        Removes unneeded singular vectors. I.e. removes singular vectors that are masked out
-        """
-        # DEPRECATED
-        raise RuntimeError("Squeeze rank capacity is deprecated")
-        if self.rank_capacity is None:
-            # rank -1 layers cannot be squeezed because we have no mask
-            return
-        if np.array(self._mask > 0).all():
-            return
-        self.set_rank_capacity(self.rank)
+        if self.full_rank_mode or self.weight_masking_mode:
+            self.kernel_w.assign(eff_weights, read_value=True)
+        elif self.svd_masking_mode:
+            u, s, v = np.linalg.svd(eff_weights, full_matrices=False)
+            s = np.diag(s)
+            u = u @ (s**0.5)
+            v = (s**0.5) @ v
+            u_weights, v_weights = self.kernel_uv
+            u_weights.assign(u, read_value=True)
+            v_weights.assign(v, read_value=True)
+        else:
+            raise RuntimeError("Invalid layer state")
 
     def eff_weight(self) -> tf.Variable:
         """
-        Return the effective weights of the layer.
+        Return the effective weights of the layer (with masking).
         If the layer is in SVD form, return U @ V
         :return: effective weights
         """
-        if self._mask is None:
-            # we can't mask here
+        if not self.built:
+            raise RuntimeError(
+                "Layer must be built first before calling effective weights"
+            )
+        if self.full_rank_mode:
             return self.kernel_w
-        elif len(self._mask.shape) == 1:
+        if self.svd_masking_mode:
             u, v = self.kernel_uv
             return u @ tf.linalg.diag(self._mask) @ v
-        else:
+        if self.weight_masking_mode:
             return self.kernel_w * self._mask
+        raise RuntimeError("Invalid layer state")
 
     @property
     def trainable_weights(self):
-        if self._mask is None:
+        if self.full_rank_mode or self.weight_masking_mode:
             weights = [self.kernel_w]
         else:
+            assert self.svd_masking_mode, "Must be in svd masking mode"
             u, v = self.kernel_uv
             weights = [u, v]
         if self.bias is not None:
@@ -134,34 +155,32 @@ class LowRankLayer(Layer):
 
     def get_config(self):
         config = super().get_config()
-        config.update({"rank": self.rank, "activation": self.activation})
+        config.update(
+            {"activation": self.activation, "weight_decay": self.weight_decay}
+        )
         return config
 
-    def _allocate_weights(self, rank: int):
+    def _build_weights(self):
         """
-        Creates tensorflow weights for a given rank and fills them with glorot uniform.
+        Allocate tensorflow weights after layer is built
         """
-        if rank == -1 and self.kernel_w is None:
+        if self.kernel_w is None:
             self.kernel_w = self.add_weight(
-                name=f"kernel_{rank}",
+                name="kernel_w",
                 shape=(self.num_inputs, self.num_outputs),
                 initializer=GlorotUniform(),
                 regularizer=regularizers.l2(self.weight_decay),
             )
-            return
-        if self.kernel_uv is not None:
-            return
-        u = self.add_weight(
-            name=f"kernel_{rank}_u",
-            shape=(self.num_inputs, rank),
-            initializer=GlorotUniform(),
-            # regularizer=regularizers.l2(self.weight_decay),
-        )
-        v = self.add_weight(
-            name=f"kernel_{rank}_v",
-            shape=(rank, self.num_outputs),
-            initializer=GlorotUniform(),
-            # regularizer=regularizers.l2(self.weight_decay),
-        )
-        self.add_loss(self.weight_decay * tf.norm(u @ v))
-        self.kernel_uv = (u, v)
+        if self.kernel_uv is None:
+            u = self.add_weight(
+                name=f"kernel_u",
+                shape=(self.num_inputs, self.max_rank),
+                initializer=GlorotUniform(),
+            )
+            v = self.add_weight(
+                name=f"kernel_v",
+                shape=(self.max_rank, self.num_outputs),
+                initializer=GlorotUniform(),
+            )
+            self.add_loss(self.weight_decay * tf.norm(u @ v))
+            self.kernel_uv = (u, v)

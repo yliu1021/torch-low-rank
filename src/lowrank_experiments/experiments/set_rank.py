@@ -29,14 +29,19 @@ def calc_num_weights(model: models.Model) -> int:
     num_weights = 0
     for layer in model.layers:
         if isinstance(layer, LowRankLayer):
-            if layer._mask is None:
+            if layer.full_rank_mode:
                 num_weights += tf.size(layer.kernel_w)
             else:
-                sparsity = tf.reduce_sum(layer._mask) / tf.size(layer._mask)
-                if len(layer._mask.shape) == 1:
+                sparsity = (
+                    tf.reduce_sum(layer.mask).numpy() / tf.size(layer.mask).numpy()
+                )
+                if layer.svd_masking_mode:
                     u, v = layer.kernel_uv
                     num_weights += (tf.size(u) + tf.size(v)) * sparsity
                 else:
+                    assert (
+                        layer.weight_masking_mode
+                    ), "Layer must be in weight masking mode"
                     num_weights += tf.size(layer.kernel_w) * sparsity
     return num_weights
 
@@ -73,7 +78,6 @@ def main(args):
         args.model,
         x_train.shape[1:],
         y_train.shape[1],
-        initial_ranks=None,
         weight_decay=args.l2,
     )
     model.compile(
@@ -85,7 +89,6 @@ def main(args):
             metrics.CategoricalCrossentropy(),
         ],
     )
-
     model.fit(
         datagen.flow(x_train, y_train, batch_size=args.batch_size),
         epochs=args.prune_epoch,
@@ -109,7 +112,6 @@ def main(args):
         tf.summary.scalar(name="preprune_cross_entropy", data=cross_entropy)
 
     # prune
-    pruner = None
     if args.pruner == "Magnitude":
         pruner = mag_pruner.MagPruner(
             model=model,
@@ -142,6 +144,8 @@ def main(args):
             data=(x_train, y_train),
             batch_size=args.batch_size,
         )
+    else:
+        raise ValueError(f"Invalid pruner: {args.pruner}")
     pruner.prune()
 
     print("After pruning")

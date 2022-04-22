@@ -2,7 +2,7 @@
 Pruner Base Class Implementation and other useful package wide code
 """
 import enum
-from typing import Optional
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import tensorflow as tf
@@ -32,7 +32,7 @@ class AbstractPrunerBase:
         model: models.Sequential,
         scope: PruningScope,
         sparsity: float,
-        data: "Optional[tuple[np.ndarray, np.ndarray]]" = None,
+        data: Optional[Tuple[np.ndarray, np.ndarray]] = None,
         batch_size: int = 64,
         loss: Optional[losses.Loss] = None,
     ):
@@ -46,11 +46,11 @@ class AbstractPrunerBase:
             self.data_x, self.data_y = data
         self.batch_size = batch_size
         self.loss = loss
-        self.layers_to_prune: list[LowRankLayer] = list(
+        self.layers_to_prune: List[LowRankLayer] = list(
             filter(lambda x: isinstance(x, LowRankLayer), self.model.layers)
         )
 
-    def compute_scores(self) -> "list[np.ndarray]":
+    def compute_scores(self) -> List[np.ndarray]:
         """
         Computes and returns scores for the singular vectors in each layer.
         - High Score = Important Singular Vector
@@ -62,18 +62,14 @@ class AbstractPrunerBase:
         """
         Calls the `compute_mask` method and actually sets the ranks
         """
-        for layer in self.layers_to_prune:
-            layer.set_rank_capacity(layer.max_rank)
-        masks = self._create_masks()
+        masks = self._compute_masks()
         if len(masks) != len(self.layers_to_prune):
             raise ValueError("Computed mask does not match length of model layers")
         for mask, layer in zip(masks, self.layers_to_prune):
-            layer.set_mask(mask)
-            # if len(mask.shape) == 1:  # svd pruning
-            #     layer.squeeze_rank_capacity()
+            layer.mask = mask
         self.model._reset_compile_cache()  # ensure model is recompiled
 
-    def _create_masks(self):
+    def _compute_masks(self):
         """
         Create masks for the pruning method.
         Calls compute scores which is implemented by the subclass overriding the base Pruner class.
@@ -83,8 +79,8 @@ class AbstractPrunerBase:
         assert len(scores) == len(
             self.layers_to_prune
         ), "Number of scores should equal number of layers we're trying to prune"
-        thresholds = []
         if self.scope == PruningScope.LOCAL:
+            thresholds = []
             for i in range(len(self.layers_to_prune)):
                 sorted_layer_scores = sorted(scores[i].flatten())
                 num_to_drop = int(len(sorted_layer_scores) * self.sparsity)
@@ -102,10 +98,6 @@ class AbstractPrunerBase:
         masks = [score >= threshold for score, threshold in zip(scores, thresholds)]
         return masks
 
-    def _set_mask_on_layer(self, layer: LowRankLayer, mask: tf.Variable):
-        layer.set_mask(mask)
-        self.model._reset_compile_cache()
-
     def _set_rank_capacity_on_layer(
         self, layer: LowRankLayer, capacity: Optional[int] = None
     ):
@@ -115,7 +107,7 @@ class AbstractPrunerBase:
 
 def create_mask(
     length: int,
-    indices: "list[int]",
+    indices: List[int],
     inverted: bool = False,
 ):
     """
@@ -128,4 +120,4 @@ def create_mask(
     mask = [float(x in indices) for x in range(length)]
     if inverted:
         mask = [(1 - x) for x in mask]
-    return tf.Variable(mask, trainable=False)
+    return np.array(mask)
