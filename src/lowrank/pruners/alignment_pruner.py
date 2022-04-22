@@ -26,6 +26,7 @@ class AlignmentPruner(AbstractPrunerBase):
         assert self.data_x is not None, "Data x is none, cannot infer input shape"
         for layer in self.layers_to_prune:
             layer.mask = np.ones(layer.max_rank)
+        self.model._reset_compile_cache()
         scores = []
         data_ind = np.random.choice(len(self.data_x), 64, replace=False)
         data_x = self.data_x[data_ind]
