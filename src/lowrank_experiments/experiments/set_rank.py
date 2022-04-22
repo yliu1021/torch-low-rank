@@ -106,6 +106,7 @@ def main(args):
 
     with tensorboard_metrics_writer.as_default(step=args.prune_epoch - 1):
         pre_prune_size = calc_num_weights(model)
+        print(f"{pre_prune_size =}")
         tf.summary.scalar(name="model_size", data=pre_prune_size)
         tf.summary.scalar(name="preprune_loss", data=loss)
         tf.summary.scalar(name="preprune_acc", data=acc)
@@ -153,6 +154,7 @@ def main(args):
 
     with tensorboard_metrics_writer.as_default(step=args.prune_epoch):
         post_prune_size = calc_num_weights(model)
+        print(f"{post_prune_size =}")
         tf.summary.scalar(name="model_size", data=post_prune_size)
         tf.summary.scalar(name="postprune_loss", data=loss)
         tf.summary.scalar(name="postprune_acc", data=acc)

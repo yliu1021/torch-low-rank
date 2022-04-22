@@ -29,6 +29,7 @@ class AlignmentPruner(AbstractPrunerBase):
         scores = []
         data_ind = np.random.choice(len(self.data_x), 64, replace=False)
         data_x = self.data_x[data_ind]
+        print("Getting baseline output")
         baseline_output = self.model(data_x)
         for layer_ind, layer in enumerate(self.layers_to_prune):
             print(f"Pruning layer {layer_ind}")
