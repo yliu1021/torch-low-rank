@@ -24,6 +24,7 @@ class LowRankLayer(Layer):
         self.weight_decay = weight_decay
         # start in full rank mode
         self._mask: Optional[tf.Variable] = None
+        self.freeze_v = False
         # properties to be created after layer is built
         self.num_inputs: Optional[int] = None
         self.num_outputs: Optional[int] = None
@@ -148,7 +149,9 @@ class LowRankLayer(Layer):
         else:
             assert self.svd_masking_mode, "Must be in svd masking mode"
             u, v = self.kernel_uv
-            weights = [u, v]
+            weights = [u]
+            if not self.freeze_v:
+                weights.append(v)
         if self.bias is not None:
             weights.append(self.bias)
         return weights
