@@ -9,6 +9,7 @@ import random
 import tensorflow as tf
 from tensorflow.keras import callbacks, losses, metrics, models, optimizers
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras import layers
 
 import lowrank_experiments.data
 import lowrank_experiments.model
@@ -94,7 +95,7 @@ def main(args):
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
             callbacks.LearningRateScheduler(
-                lambda epoch: args.lr * (0.5 ** (epoch // 20))
+                lambda epoch: args.lr * (0.1 ** (epoch // 60))
             ),
         ],
     )
@@ -158,6 +159,9 @@ def main(args):
         tf.summary.scalar(name="postprune_acc", data=acc)
         tf.summary.scalar(name="postprune_cross_entropy", data=cross_entropy)
 
+    # Train just the batch norm layers for a bit
+    for layer in model.layers:
+        layer.trainable = isinstance(layer, layers.BatchNormalization)
     model.fit(
         datagen.flow(x_train, y_train, batch_size=args.batch_size),
         epochs=args.total_epochs,
@@ -166,7 +170,22 @@ def main(args):
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
             callbacks.LearningRateScheduler(
-                lambda epoch: args.lr / 4 * (0.5 ** (epoch // 20))
+                lambda epoch: args.lr / 4 * (0.1 ** (epoch // 60))
+            ),
+        ],
+    )
+    for layer in model.layers:
+        layer.trainable = True
+
+    model.fit(
+        datagen.flow(x_train, y_train, batch_size=args.batch_size),
+        epochs=args.total_epochs,
+        validation_data=(x_test, y_test),
+        initial_epoch=args.prune_epoch,
+        callbacks=[
+            callbacks.TensorBoard(log_dir=tensorboard_log_dir),
+            callbacks.LearningRateScheduler(
+                lambda epoch: args.lr / 4 * (0.1 ** (epoch // 60))
             ),
         ],
     )
