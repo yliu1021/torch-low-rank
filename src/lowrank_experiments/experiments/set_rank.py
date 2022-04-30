@@ -213,7 +213,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.no_gpu:
-        gpus = tf.config.list_physical_devices("GPU")
+        gpus = tf.config.list_physical_devices("GPU")[:4]
         if len(gpus) > 0:
             gpu = random.choice(gpus)
             tf.config.experimental.set_memory_growth(gpu, True)

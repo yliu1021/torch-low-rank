@@ -18,7 +18,7 @@ for i in {1..10}; do guild run queue --background -y; done
 ```
 2. Queue up staged runs
 ```bash
-guild run set_rank prune_epoch=[0,10,20,50] pruner=[Magnitude,Alignment,WeightMagnitude] pruning_scope=[local,global] sparsity=[0.25,0.5,0.75] total_epochs=128 lr=[0.01,0.05] l2=[0.0005,0.00005] model=vgg11 --stage-trials
+guild run set_rank prune_epoch=[0,10,20,50] pruner=[Magnitude,Alignment,WeightMagnitude,SNIP] pruning_scope=[local,global] sparsity=[0.75,0.9,0.95,0.98] total_epochs=128 lr=[0.01,0.05] l2=[0.0005,0.00005] model=vgg19 --stage-trials --tag="vgg19_2"
 ```
 
 ## Push / Pull Results
