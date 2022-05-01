@@ -164,7 +164,7 @@ def main(args):
         layer.trainable = isinstance(layer, layers.BatchNormalization)
     model.fit(
         datagen.flow(x_train, y_train, batch_size=args.batch_size),
-        epochs=args.total_epochs,
+        epochs=args.prune_epoch + 2,
         validation_data=(x_test, y_test),
         initial_epoch=args.prune_epoch,
         callbacks=[
