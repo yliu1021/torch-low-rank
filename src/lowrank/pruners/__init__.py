@@ -73,6 +73,7 @@ class AbstractPrunerBase:
         """
         Create masks for the pruning method.
         Calls compute scores which is implemented by the subclass overriding the base Pruner class.
+        Creates mask to drop lowest scores in accordance with sparsity ratio.
         """
         # list of ndarrays, each corresponding to each layer
         scores = self.compute_scores()

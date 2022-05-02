@@ -16,6 +16,7 @@ import lowrank_experiments.model
 from lowrank.low_rank_layer import LowRankLayer
 from lowrank.pruners import (
     PruningScope,
+    alignment_pruner_gradient_based,
     alignment_pruner_loss_based,
     mag_pruner,
     snip_pruner,
@@ -128,12 +129,21 @@ def main(args):
             batch_size=args.batch_size,
             loss=losses.CategoricalCrossentropy(),
         )
-    elif args.pruner == "Alignment":
+    elif args.pruner == "Alignment_Loss":
         pruner = alignment_pruner_loss_based.AlignmentPrunerLossBased(
             model=model,
             scope=args.pruning_scope,
             sparsity=args.sparsity,
             data=(x_train, y_train),
+            batch_size=args.batch_size,
+        )
+    elif args.pruner == "Alignment_Gradient":
+        pruner = alignment_pruner_gradient_based.AlignmentPrunerGradientBased(
+            model=model,
+            scope=args.pruning_scope,
+            sparsity=args.sparsity,
+            data=(x_train, y_train),
+            loss=losses.CategoricalCrossentropy(reduction='sum'),
             batch_size=args.batch_size,
         )
     elif args.pruner == "WeightMagnitude":
@@ -194,7 +204,7 @@ def main(args):
     model.evaluate(x_test, y_test)
 
 
-PRUNERS = ["Magnitude", "SNIP", "Alignment", "WeightMagnitude"]
+PRUNERS = ["Magnitude", "SNIP", "Alignment_Loss", "Alignment_Gradient", "WeightMagnitude"]
 DATASETS = ["cifar10", "cifar100"]
 PRUNING_SCOPES = ["global", "local"]
 MODELS = ["default", "vgg11", "vgg16", "vgg16_normal", "vgg19"]

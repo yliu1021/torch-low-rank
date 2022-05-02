@@ -33,7 +33,7 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
         print("Getting baseline output")
         baseline_output = self.model(data_x)
         for layer_ind, layer in enumerate(self.layers_to_prune):
-            print(f"Pruning layer {layer_ind}")
+            print(f"Pruning low rank layer {layer_ind}")
             layer_scores = []
             for sv_ind in range(layer.max_rank):
                 # for each singular vector, mask it out and compute new output
