@@ -16,7 +16,7 @@ import lowrank_experiments.model
 from lowrank.low_rank_layer import LowRankLayer
 from lowrank.pruners import (
     PruningScope,
-    alignment_pruner,
+    alignment_pruner_loss_based,
     mag_pruner,
     snip_pruner,
     weight_mag_pruner,
@@ -129,7 +129,7 @@ def main(args):
             loss=losses.CategoricalCrossentropy(),
         )
     elif args.pruner == "Alignment":
-        pruner = alignment_pruner.AlignmentPruner(
+        pruner = alignment_pruner_loss_based.AlignmentPrunerLossBased(
             model=model,
             scope=args.pruning_scope,
             sparsity=args.sparsity,
