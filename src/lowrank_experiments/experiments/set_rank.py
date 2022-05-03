@@ -136,6 +136,7 @@ def main(args):
             sparsity=args.sparsity,
             data=(x_train, y_train),
             batch_size=args.batch_size,
+            prune_iterations=args.prune_iterations
         )
     elif args.pruner == "Alignment_Gradient":
         pruner = alignment_pruner_gradient_based.AlignmentPrunerGradientBased(
@@ -145,6 +146,7 @@ def main(args):
             data=(x_train, y_train),
             loss=losses.CategoricalCrossentropy(reduction='sum'),
             batch_size=args.batch_size,
+            prune_iterations=args.prune_iterations
         )
     elif args.pruner == "WeightMagnitude":
         pruner = weight_mag_pruner.WeightMagPruner(
@@ -156,6 +158,7 @@ def main(args):
         )
     else:
         raise ValueError(f"Invalid pruner: {args.pruner}")
+
     pruner.prune()
 
     print("After pruning")
@@ -239,6 +242,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, help="Learning rate")
     parser.add_argument("--l2", type=float, default=0, help="L2 regularization term")
     parser.add_argument("--model", choices=MODELS, help="Model to run experiments with")
+    parser.add_argument("--prune_iterations", type=int, help="Number of iterations to prune over")
     args = parser.parse_args()
 
     if not args.no_gpu:
