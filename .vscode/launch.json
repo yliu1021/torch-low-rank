@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "args": ["--dataset", "cifar10", "--model", "default", "--pruner", "Alignment_Loss", "--prune_epoch", "1", "--sparsity", "0.9", "--batch_size", "128", "--fast", "--pruning_scope", "local", "--lr", "0.1", "--total_epochs", "2"],
+            "args": ["--dataset", "cifar10", "--model", "default", "--pruner", "Alignment_Loss", "--prune_epoch", "1", "--sparsity", "0.9", "--batch_size", "128", "--fast", "--pruning_scope", "local", "--lr", "0.1", "--total_epochs", "2", "--prune_iterations", "1"],
             "console": "integratedTerminal",
             "justMyCode": true
         }
