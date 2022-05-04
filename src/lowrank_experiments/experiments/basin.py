@@ -14,7 +14,7 @@ import lowrank_experiments.data
 import lowrank_experiments.model
 from lowrank.pruners import (
     PruningScope,
-    alignment_pruner,
+    alignment_pruner_loss_based,
     mag_pruner,
     snip_pruner,
     weight_mag_pruner,

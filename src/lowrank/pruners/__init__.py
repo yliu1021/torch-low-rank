@@ -35,6 +35,7 @@ class AbstractPrunerBase:
         data: Optional[Tuple[np.ndarray, np.ndarray]] = None,
         batch_size: int = 64,
         loss: Optional[losses.Loss] = None,
+        prune_iterations = 1
     ):
         self.model = model
         self.scope = scope
@@ -49,6 +50,7 @@ class AbstractPrunerBase:
         self.layers_to_prune: List[LowRankLayer] = list(
             filter(lambda x: isinstance(x, LowRankLayer), self.model.layers)
         )
+        self.prune_iterations = prune_iterations
 
     def compute_scores(self) -> List[np.ndarray]:
         """
@@ -62,17 +64,22 @@ class AbstractPrunerBase:
         """
         Calls the `compute_mask` method and actually sets the ranks
         """
-        masks = self._compute_masks()
-        if len(masks) != len(self.layers_to_prune):
-            raise ValueError("Computed mask does not match length of model layers")
-        for mask, layer in zip(masks, self.layers_to_prune):
-            layer.mask = mask
-        self.model._reset_compile_cache()  # ensure model is recompiled
+        sparsity_per_iteration = np.cumsum([self.sparsity / self.prune_iterations] * self.prune_iterations)
+        for prune_iteration in range(self.prune_iterations):
+            print("Prune Iteration: " + str(prune_iteration + 1) + "/" + str(self.prune_iterations))
+            self.sparsity = sparsity_per_iteration[prune_iteration]
+            masks = self._compute_masks()
+            if len(masks) != len(self.layers_to_prune):
+                raise ValueError("Computed mask does not match length of model layers")
+            for mask, layer in zip(masks, self.layers_to_prune):
+                layer.mask = mask
+            self.model._reset_compile_cache()  # ensure model is recompiled
 
     def _compute_masks(self):
         """
         Create masks for the pruning method.
         Calls compute scores which is implemented by the subclass overriding the base Pruner class.
+        Creates mask to drop lowest scores in accordance with sparsity ratio.
         """
         # list of ndarrays, each corresponding to each layer
         scores = self.compute_scores()

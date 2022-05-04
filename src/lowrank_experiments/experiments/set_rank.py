@@ -16,7 +16,8 @@ import lowrank_experiments.model
 from lowrank.low_rank_layer import LowRankLayer
 from lowrank.pruners import (
     PruningScope,
-    alignment_pruner,
+    alignment_pruner_gradient_based,
+    alignment_pruner_loss_based,
     mag_pruner,
     snip_pruner,
     weight_mag_pruner,
@@ -128,13 +129,24 @@ def main(args):
             batch_size=args.batch_size,
             loss=losses.CategoricalCrossentropy(),
         )
-    elif args.pruner == "Alignment":
-        pruner = alignment_pruner.AlignmentPruner(
+    elif args.pruner == "Alignment_Loss":
+        pruner = alignment_pruner_loss_based.AlignmentPrunerLossBased(
             model=model,
             scope=args.pruning_scope,
             sparsity=args.sparsity,
             data=(x_train, y_train),
             batch_size=args.batch_size,
+            prune_iterations=args.prune_iterations
+        )
+    elif args.pruner == "Alignment_Gradient":
+        pruner = alignment_pruner_gradient_based.AlignmentPrunerGradientBased(
+            model=model,
+            scope=args.pruning_scope,
+            sparsity=args.sparsity,
+            data=(x_train, y_train),
+            loss=losses.CategoricalCrossentropy(reduction='sum'),
+            batch_size=args.batch_size,
+            prune_iterations=args.prune_iterations
         )
     elif args.pruner == "WeightMagnitude":
         pruner = weight_mag_pruner.WeightMagPruner(
@@ -146,6 +158,7 @@ def main(args):
         )
     else:
         raise ValueError(f"Invalid pruner: {args.pruner}")
+
     pruner.prune()
 
     print("After pruning")
@@ -194,7 +207,7 @@ def main(args):
     model.evaluate(x_test, y_test)
 
 
-PRUNERS = ["Magnitude", "SNIP", "Alignment", "WeightMagnitude"]
+PRUNERS = ["Magnitude", "SNIP", "Alignment_Loss", "Alignment_Gradient", "WeightMagnitude"]
 DATASETS = ["cifar10", "cifar100"]
 PRUNING_SCOPES = ["global", "local"]
 MODELS = ["default", "vgg11", "vgg16", "vgg16_normal", "vgg19"]
@@ -229,6 +242,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, help="Learning rate")
     parser.add_argument("--l2", type=float, default=0, help="L2 regularization term")
     parser.add_argument("--model", choices=MODELS, help="Model to run experiments with")
+    parser.add_argument("--prune_iterations", type=int, help="Number of iterations to prune over")
     args = parser.parse_args()
 
     if not args.no_gpu:
