@@ -1,15 +1,15 @@
 """
-Alignment Pruner (Defined in overleaf)
+Alignment Pruner Loss Based
 """
 from typing import List
 
 import numpy as np
-from tensorflow.keras.metrics import KLDivergence
+import tensorflow as tf
 
 from lowrank.pruners import AbstractPrunerBase, create_mask
 
 
-class AlignmentPruner(AbstractPrunerBase):
+class AlignmentPrunerLossBased(AbstractPrunerBase):
     """
     Alignment pruners scores singular vectors based on how
     much each singular vector perturbs the model output from
@@ -33,7 +33,7 @@ class AlignmentPruner(AbstractPrunerBase):
         print("Getting baseline output")
         baseline_output = self.model(data_x)
         for layer_ind, layer in enumerate(self.layers_to_prune):
-            print(f"Pruning layer {layer_ind}")
+            print(f"Pruning low rank layer {layer_ind}")
             layer_scores = []
             for sv_ind in range(layer.max_rank):
                 # for each singular vector, mask it out and compute new output
@@ -43,9 +43,7 @@ class AlignmentPruner(AbstractPrunerBase):
                 layer.mask = new_mask
                 self.model._reset_compile_cache()
                 new_output = self.model(data_x)
-                divergence = KLDivergence()
-                divergence.update_state(baseline_output, new_output)
-                layer_scores.append(divergence.result().numpy())
+                layer_scores.append(tf.norm(tf.math.subtract(baseline_output, new_output)))
                 layer.mask = np.ones(layer.max_rank)
                 self.model._reset_compile_cache()
             print()
