@@ -12,7 +12,7 @@ from tensorflow.keras.layers import (
     Dropout,
     Flatten,
     InputLayer,
-    MaxPool2D,
+    MaxPool2D
 )
 from tensorflow.keras.models import Sequential
 
@@ -220,12 +220,14 @@ def get_lr_vgg16(
                 activation="relu",
                 weight_decay=weight_decay,
             ),
+            Dropout(0.5),
             BatchNormalization(),
             LRDense(
                 4096,
                 activation="relu",
                 weight_decay=weight_decay,
             ),
+            Dropout(0.5),
             BatchNormalization(),
             LRDense(num_classes, activation="softmax", weight_decay=weight_decay),
         ]
@@ -323,12 +325,14 @@ def get_lr_vgg11(
                 activation="relu",
                 weight_decay=weight_decay,
             ),
+            Dropout(0.5),
             BatchNormalization(),
             LRDense(
                 4096,
                 activation="relu",
                 weight_decay=weight_decay,
             ),
+            Dropout(0.5),
             BatchNormalization(),
             Dense(num_classes, activation="softmax"),
         ]
