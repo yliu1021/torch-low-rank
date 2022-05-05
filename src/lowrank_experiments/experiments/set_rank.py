@@ -81,7 +81,7 @@ def main(args):
         weight_decay=args.l2,
     )
     model.compile(
-        optimizer=optimizers.SGD(args.lr, decay=1e-4, momentum=0.9, nesterov=True),
+        optimizer=optimizers.SGD(args.lr, decay=5.0e-4, momentum=0.9, nesterov=False),
         # optimizer=optimizers.Adam(args.lr),
         loss=losses.CategoricalCrossentropy(),
         metrics=[
@@ -96,7 +96,7 @@ def main(args):
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
             callbacks.LearningRateScheduler(
-                lambda epoch: args.lr * (0.1 ** (epoch // 90))
+                lambda epoch: args.lr * (0.1 ** (epoch // 30))
             ),
         ],
     )
