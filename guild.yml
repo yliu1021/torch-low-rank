@@ -30,3 +30,5 @@ set_rank:
       description: "GPU to use"
     l2:
       description: "weight decay"
+    post_prune_lr_multiplier:
+      default: 0.25

@@ -198,7 +198,7 @@ def main(args):
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
             callbacks.LearningRateScheduler(
-                lambda epoch: args.lr / 4 * (0.5 ** (epoch // 30))
+                lambda epoch: args.lr * args.post_prune_lr_multiplier * (0.5 ** ((epoch - args.prune_epoch) // 30))
             ),
         ],
     )
@@ -245,6 +245,7 @@ if __name__ == "__main__":
     parser.add_argument("--l2", type=float, default=0, help="L2 regularization term")
     parser.add_argument("--model", choices=MODELS, help="Model to run experiments with")
     parser.add_argument("--prune_iterations", type=int, help="Number of iterations to prune over")
+    parser.add_argument("--post_prune_lr_multiplier", type=float, default=1.0, help="Factor by which lr")
     args = parser.parse_args()
 
     if not args.no_gpu:
