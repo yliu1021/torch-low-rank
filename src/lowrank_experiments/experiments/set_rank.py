@@ -250,9 +250,10 @@ if __name__ == "__main__":
     if not args.no_gpu:
         gpus = tf.config.list_physical_devices("GPU")[:4]
         if len(gpus) > 0:
-            gpu = random.choice(gpus)
             if args.gpu is not None: # if gpu specified, override random choice
                 gpu = gpus[args.gpu]
+            else:
+                gpu = random.choice(gpus)
             tf.config.experimental.set_memory_growth(gpu, True)
             tf.config.set_visible_devices(gpu, "GPU")
 
