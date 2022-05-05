@@ -190,6 +190,7 @@ def main(args):
     for layer in model.layers:
         layer.trainable = True
 
+    rewind_epochs_for_lr = args.prune_epoch if args.rewind_epochs_for_lr else 0
     model.fit(
         datagen.flow(x_train, y_train, batch_size=args.batch_size),
         epochs=args.total_epochs,
@@ -198,7 +199,7 @@ def main(args):
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
             callbacks.LearningRateScheduler(
-                lambda epoch: args.lr * args.post_prune_lr_multiplier * (0.5 ** ((epoch - args.prune_epoch) // 30))
+                lambda epoch: args.lr * args.post_prune_lr_multiplier * (0.5 ** ((epoch - rewind_epochs_for_lr) // 30))
             ),
         ],
     )
@@ -246,6 +247,7 @@ if __name__ == "__main__":
     parser.add_argument("--model", choices=MODELS, help="Model to run experiments with")
     parser.add_argument("--prune_iterations", type=int, help="Number of iterations to prune over")
     parser.add_argument("--post_prune_lr_multiplier", type=float, default=1.0, help="Factor by which lr")
+    parser.add_argument("--rewind_lr", action=store_true, help="Rewind LR to epoch - prune_epoch")
     args = parser.parse_args()
 
     if not args.no_gpu:

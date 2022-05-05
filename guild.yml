@@ -32,3 +32,5 @@ set_rank:
       description: "weight decay"
     post_prune_lr_multiplier:
       default: 0.25
+    rewind_lr:
+      default: True
