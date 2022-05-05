@@ -18,10 +18,8 @@ set_rank:
       default: 0.5
     pruning_scope:
       default: local
-    l2:
-      default: 0.0005
     lr:
-      default: 0.01
+      default: 0.05
     fast:
       default: False
     no_gpu:
@@ -29,4 +27,6 @@ set_rank:
     model:
       default: 'default'
     gpu:
-    
+      description: "GPU to use"
+    l2:
+      description: "weight decay"
