@@ -239,6 +239,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--no_gpu", action="store_true", default=False, help="Disable GPU"
     )
+    parser.add_argument(
+        "--gpu", type=int, help="GPU to run on")
     parser.add_argument("--lr", type=float, help="Learning rate")
     parser.add_argument("--l2", type=float, default=0, help="L2 regularization term")
     parser.add_argument("--model", choices=MODELS, help="Model to run experiments with")
@@ -249,6 +251,8 @@ if __name__ == "__main__":
         gpus = tf.config.list_physical_devices("GPU")[:4]
         if len(gpus) > 0:
             gpu = random.choice(gpus)
+            if args.gpu is not None: # if gpu specified, override random choice
+                gpu = gpus[args.gpu]
             tf.config.experimental.set_memory_growth(gpu, True)
             tf.config.set_visible_devices(gpu, "GPU")
 
