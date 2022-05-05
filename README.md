@@ -33,7 +33,17 @@ guild pull gist:sjoshi804/low_rank_pruning_results.md
 
 ## Testing
 
+### Using Guild
+
+VGG16 - CIFAR10
+
+```bash 
+guild run set_rank dataset=cifar10 pruner=Alignment_Loss prune_epoch=300 total_epochs=301 batch_size=256 sparsity=0.95 pruning_scope=global lr=0.05 model=vgg16 lr_scheduler_step_size=60 gpu=0
+```
+
+### Without Guild 
 Running a vgg11 training run on CIFAR10 for 50 epochs (no pruning)
 ```bash
 python src/lowrank_experiments/experiments/set_rank.py --dataset=cifar10 --pruner=Alignment_Loss --prune_epoch=160 --total_epochs=200 --batch_size=256 --sparsity=0.95 --pruning_scope=global --lr=0.05 --l2=0.0005 --model=vgg16
 ```
+
