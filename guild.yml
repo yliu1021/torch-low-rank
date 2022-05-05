@@ -34,3 +34,5 @@ set_rank:
       default: 0.25
     rewind_lr:
       default: True
+    lr_scheduler_step_size:
+      default: 30
