@@ -186,7 +186,7 @@ def main(args):
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
             callbacks.LearningRateScheduler(
-                lambda epoch: args.lr * args.post_prune_lr_multiplier * (0.5 ** ((epoch - rewind_epochs_for_lr)// args.lr_scheduler_step_size))
+                lambda epoch: args.lr * args.post_prune_lr_multiplier * (0.5 ** ((epoch - rewind_epochs_for_lr) // args.lr_scheduler_step_size))
             ),
         ],
     )
