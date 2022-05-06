@@ -31,7 +31,7 @@ class LowRankLayer(nn.Module):
         # Copy over weights
         self.original_weights_shape = deepcopy(layer.weight.shape)
         if len(self.original_weights_shape) > 2:
-            self.w = torch.reshape(layer.w, ())
+            self.w = torch.reshape(layer.weight, (self.in_channels * self.kernel_size[0] * self.kernel_size[1], self.out_channels))
         else:
             self.w = layer.weight
         self.bias = nn.Parameter(layer.bias)
