@@ -17,3 +17,4 @@ build/
 tests_old/
 logs_*
 remotes
+data/
