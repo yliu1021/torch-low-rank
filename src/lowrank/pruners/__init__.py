@@ -35,7 +35,7 @@ class AbstractPrunerBase:
         data: Optional[Tuple[np.ndarray, np.ndarray]] = None,
         batch_size: int = 64,
         loss: Optional[losses.Loss] = None,
-        prune_iterations = 1
+        prune_iterations=1,
     ):
         self.model = model
         self.scope = scope
@@ -64,9 +64,16 @@ class AbstractPrunerBase:
         """
         Calls the `compute_mask` method and actually sets the ranks
         """
-        sparsity_per_iteration = np.cumsum([self.sparsity / self.prune_iterations] * self.prune_iterations)
+        sparsity_per_iteration = np.cumsum(
+            [self.sparsity / self.prune_iterations] * self.prune_iterations
+        )
         for prune_iteration in range(self.prune_iterations):
-            print("Prune Iteration: " + str(prune_iteration + 1) + "/" + str(self.prune_iterations))
+            print(
+                "Prune Iteration: "
+                + str(prune_iteration + 1)
+                + "/"
+                + str(self.prune_iterations)
+            )
             self.sparsity = sparsity_per_iteration[prune_iteration]
             masks = self._compute_masks()
             if len(masks) != len(self.layers_to_prune):

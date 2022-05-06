@@ -12,7 +12,7 @@ from tensorflow.keras.layers import (
     Dropout,
     Flatten,
     InputLayer,
-    MaxPool2D
+    MaxPool2D,
 )
 from tensorflow.keras.models import Sequential
 

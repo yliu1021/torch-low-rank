@@ -9,12 +9,14 @@ import random
 import tensorflow as tf
 from tensorflow.keras import callbacks, losses, metrics, models, optimizers
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras import layers
 
-import lowrank_experiments.data
+import lowrank_experiments.data_loader
 import lowrank_experiments.model
 from lowrank.low_rank_layer import LowRankLayer
 from lowrank.pruners import (
     PruningScope,
+    alignment_pruner_gradient_based,
     alignment_pruner_loss_based,
     mag_pruner,
     snip_pruner,
@@ -63,10 +65,10 @@ def main(args):
         samplewise_center=False,  # set each sample mean to 0
         featurewise_std_normalization=False,  # divide inputs by std of the dataset
         samplewise_std_normalization=False,  # divide each input by its std
-        zca_whitening=False,  # apply ZCA whitening
-        rotation_range=15,  # randomly rotate images in the range (degrees, 0 to 180)
-        width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
-        height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
+        # zca_whitening=False,  # apply ZCA whitening
+        # rotation_range=15,  # randomly rotate images in the range (degrees, 0 to 180)
+        width_shift_range=4,  # randomly shift images horizontally (fraction of total width)
+        height_shift_range=4,  # randomly shift images vertically (fraction of total height)
         horizontal_flip=True,  # randomly flip images
         vertical_flip=False,
     )  # randomly flip images
@@ -79,7 +81,7 @@ def main(args):
         weight_decay=args.l2,
     )
     model.compile(
-        optimizer=optimizers.SGD(args.lr, decay=1e-6, momentum=0.9, nesterov=True),
+        optimizer=optimizers.SGD(args.lr, decay=5.0e-4, momentum=0.9, nesterov=False),
         # optimizer=optimizers.Adam(args.lr),
         loss=losses.CategoricalCrossentropy(),
         metrics=[
@@ -94,7 +96,7 @@ def main(args):
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
             callbacks.LearningRateScheduler(
-                lambda epoch: args.lr * (0.5 ** (epoch // 20))
+                lambda epoch: args.lr * (0.5 ** (epoch // args.lr_scheduler_step_size))
             ),
         ],
     )
@@ -127,13 +129,24 @@ def main(args):
             batch_size=args.batch_size,
             loss=losses.CategoricalCrossentropy(),
         )
-    elif args.pruner == "Alignment":
+    elif args.pruner == "Alignment_Loss":
         pruner = alignment_pruner_loss_based.AlignmentPrunerLossBased(
             model=model,
             scope=args.pruning_scope,
             sparsity=args.sparsity,
             data=(x_train, y_train),
             batch_size=args.batch_size,
+            prune_iterations=args.prune_iterations,
+        )
+    elif args.pruner == "Alignment_Gradient":
+        pruner = alignment_pruner_gradient_based.AlignmentPrunerGradientBased(
+            model=model,
+            scope=args.pruning_scope,
+            sparsity=args.sparsity,
+            data=(x_train, y_train),
+            loss=losses.CategoricalCrossentropy(reduction="sum"),
+            batch_size=args.batch_size,
+            prune_iterations=args.prune_iterations,
         )
     elif args.pruner == "WeightMagnitude":
         pruner = weight_mag_pruner.WeightMagPruner(
@@ -145,14 +158,8 @@ def main(args):
         )
     else:
         raise ValueError(f"Invalid pruner: {args.pruner}")
-    pruner.prune()
 
-    # freeze the v matrices
-    for layer in model.layers:
-        if not isinstance(layer, LowRankLayer):
-            continue
-        layer.freeze_v = True
-    model._reset_compile_cache()
+    pruner.prune()
 
     print("After pruning")
     loss, acc, cross_entropy = model.evaluate(x_test, y_test)
@@ -165,6 +172,32 @@ def main(args):
         tf.summary.scalar(name="postprune_acc", data=acc)
         tf.summary.scalar(name="postprune_cross_entropy", data=cross_entropy)
 
+    # Train just the batch norm layers for a bit
+    for layer in model.layers:
+        layer.trainable = isinstance(layer, layers.BatchNormalization)
+
+    rewind_epochs_for_lr = args.prune_epoch if args.rewind_epochs_for_lr else 0
+
+    model.fit(
+        datagen.flow(x_train, y_train, batch_size=args.batch_size),
+        epochs=args.prune_epoch + 2,
+        validation_data=(x_test, y_test),
+        initial_epoch=args.prune_epoch,
+        callbacks=[
+            callbacks.TensorBoard(log_dir=tensorboard_log_dir),
+            callbacks.LearningRateScheduler(
+                lambda epoch: args.lr
+                * args.post_prune_lr_multiplier
+                * (
+                    0.5
+                    ** ((epoch - rewind_epochs_for_lr) // args.lr_scheduler_step_size)
+                )
+            ),
+        ],
+    )
+    for layer in model.layers:
+        layer.trainable = True
+
     model.fit(
         datagen.flow(x_train, y_train, batch_size=args.batch_size),
         epochs=args.total_epochs,
@@ -173,7 +206,12 @@ def main(args):
         callbacks=[
             callbacks.TensorBoard(log_dir=tensorboard_log_dir),
             callbacks.LearningRateScheduler(
-                lambda epoch: args.lr / 2 * (0.5 ** (epoch // 20))
+                lambda epoch: args.lr
+                * args.post_prune_lr_multiplier
+                * (
+                    0.5
+                    ** ((epoch - rewind_epochs_for_lr) // args.lr_scheduler_step_size)
+                )
             ),
         ],
     )
@@ -182,7 +220,13 @@ def main(args):
     model.evaluate(x_test, y_test)
 
 
-PRUNERS = ["Magnitude", "SNIP", "Alignment", "WeightMagnitude"]
+PRUNERS = [
+    "Magnitude",
+    "SNIP",
+    "Alignment_Loss",
+    "Alignment_Gradient",
+    "WeightMagnitude",
+]
 DATASETS = ["cifar10", "cifar100"]
 PRUNING_SCOPES = ["global", "local"]
 MODELS = ["default", "vgg11", "vgg16", "vgg16_normal", "vgg19"]
@@ -214,15 +258,34 @@ if __name__ == "__main__":
     parser.add_argument(
         "--no_gpu", action="store_true", default=False, help="Disable GPU"
     )
+    parser.add_argument("--gpu", type=int, help="GPU to run on")
     parser.add_argument("--lr", type=float, help="Learning rate")
     parser.add_argument("--l2", type=float, default=0, help="L2 regularization term")
     parser.add_argument("--model", choices=MODELS, help="Model to run experiments with")
+    parser.add_argument(
+        "--prune_iterations", type=int, help="Number of iterations to prune over"
+    )
+    parser.add_argument(
+        "--post_prune_lr_multiplier", type=float, default=1.0, help="Factor by which lr"
+    )
+    parser.add_argument(
+        "--rewind_lr", action="store_true", help="Rewind LR to epoch - prune_epoch"
+    )
+    parser.add_argument(
+        "--lr_scheduler_step_size",
+        type=int,
+        default=30,
+        help="Step to drop lr for step lr scheduler",
+    )
     args = parser.parse_args()
 
     if not args.no_gpu:
-        gpus = tf.config.list_physical_devices("GPU")
+        gpus = tf.config.list_physical_devices("GPU")[:4]
         if len(gpus) > 0:
-            gpu = random.choice(gpus)
+            if args.gpu is not None:  # if gpu specified, override random choice
+                gpu = gpus[args.gpu]
+            else:
+                gpu = random.choice(gpus)
             tf.config.experimental.set_memory_growth(gpu, True)
             tf.config.set_visible_devices(gpu, "GPU")
 
