@@ -5,9 +5,7 @@ import enum
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras import losses, models
-
+from torch import nn
 from lowrank.low_rank_layer import LowRankLayer
 
 
@@ -29,12 +27,12 @@ class AbstractPrunerBase:
 
     def __init__(
         self,
-        model: models.Sequential,
+        model: nn.Module,
         scope: PruningScope,
         sparsity: float,
         data: Optional[Tuple[np.ndarray, np.ndarray]] = None,
         batch_size: int = 64,
-        loss: Optional[losses.Loss] = None,
+        loss= None,
         prune_iterations=1,
     ):
         self.model = model
@@ -64,6 +62,8 @@ class AbstractPrunerBase:
         """
         Calls the `compute_mask` method and actually sets the ranks
         """
+
+        # Iterative pruning done by increasing desired sparsity every iteration
         sparsity_per_iteration = np.cumsum(
             [self.sparsity / self.prune_iterations] * self.prune_iterations
         )
@@ -79,8 +79,7 @@ class AbstractPrunerBase:
             if len(masks) != len(self.layers_to_prune):
                 raise ValueError("Computed mask does not match length of model layers")
             for mask, layer in zip(masks, self.layers_to_prune):
-                layer.mask = mask
-            self.model._reset_compile_cache()  # ensure model is recompiled
+                layer.mask = mask 
 
     def _compute_masks(self):
         """
@@ -109,15 +108,8 @@ class AbstractPrunerBase:
             )
         else:
             raise NotImplementedError(f"{self.scope} is not supported yet.")
-        masks = [score >= threshold for score, threshold in zip(scores, thresholds)]
+        masks = [float(score >= threshold) for score, threshold in zip(scores, thresholds)]
         return masks
-
-    def _set_rank_capacity_on_layer(
-        self, layer: LowRankLayer, capacity: Optional[int] = None
-    ):
-        layer.set_rank_capacity(capacity)
-        self.model._reset_compile_cache()
-
 
 def create_mask(
     length: int,
