@@ -1,6 +1,6 @@
+from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import ToTensor
-from torch.utils.data import DataLoader
 
 
 def get_data(name: str, batch_size: int = 128):

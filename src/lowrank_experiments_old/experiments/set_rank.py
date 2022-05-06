@@ -7,9 +7,8 @@ import pathlib
 import random
 
 import tensorflow as tf
-from tensorflow.keras import callbacks, losses, metrics, models, optimizers
+from tensorflow.keras import callbacks, layers, losses, metrics, models, optimizers
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras import layers
 
 import lowrank_experiments.data_loader
 import lowrank_experiments.model
