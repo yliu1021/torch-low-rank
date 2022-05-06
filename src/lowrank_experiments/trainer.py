@@ -1,6 +1,5 @@
 import torch
-from torch import optim
-from torch import nn
+from torch import nn, optim
 from torch.utils.data import DataLoader
 
 
@@ -13,7 +12,7 @@ def train(
     train: DataLoader,
     loss_fn,
     optimizer: optim.Optimizer,
-    device: str,
+    device,
 ):
     size = len(train.dataset)
     model.train()
@@ -37,7 +36,7 @@ def train(
     print()
 
 
-def test(model: nn.Module, test: DataLoader, loss_fn, device: str):
+def test(model: nn.Module, test: DataLoader, loss_fn, device):
     size = len(test.dataset)
     num_batches = len(test)
     model.eval()
