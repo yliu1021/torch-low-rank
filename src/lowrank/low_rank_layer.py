@@ -1,15 +1,15 @@
 from copy import deepcopy
 from typing import Optional
 import torch 
-from torch import TensorType, nn 
+from torch import TensorType, nn, tensor
 from torch.nn import functional as F
 
 class LowRankLayer(nn.Module):
     def __init__(self, layer: nn.Module):
+        super().__init__()
 
         # Copy over layer config
         self.layer_type = None
-        # Conv2D 
         if isinstance(layer, nn.Conv2d):
             self.in_channels = layer.in_channels
             self.out_channels = layer.out_channels
@@ -19,8 +19,7 @@ class LowRankLayer(nn.Module):
             self.dilation = layer.dilation
             self.groups = layer.groups
             self.padding_mode = layer.padding_mode
-            self.layer_type = nn.Conv2d
-        # Linear2D    
+            self.layer_type = nn.Conv2d 
         elif isinstance(layer, nn.Linear):
             self.in_features = layer.in_features
             self.out_features = layer.out_features
@@ -80,14 +79,16 @@ class LowRankLayer(nn.Module):
         """
         if new_mask is None:
             self._mask = None
-        else:
-            self._mask = nn.Parameter(new_mask, requires_grad=False)
-
-        if self.svd_masking_mode:
-            u, s, v = torch.svd(self.w, some=True)
+        elif len(new_mask.shape) == 1:
+            u, s, v = torch.linalg.svd(self.w, full_matrices=False)
+            assert new_mask.shape == s.shape, "Invalid shape for mask"
             s_sqrt = torch.diag(torch.sqrt(s))
             self.u = torch.matmul(u, s_sqrt)
             self.v = torch.matmul(s_sqrt, v)
+        elif len(self._mask.shape) == 2:
+            assert new_mask.shape == self.w.shape, "Invalid shape for mask"
+        
+        self._mask = new_mask
 
     def forward(self, x):
         # Compute effective weights
@@ -96,7 +97,7 @@ class LowRankLayer(nn.Module):
         elif self.weight_masking_mode:
             eff_weights = torch.mul(self.w, self.mask)
         else: 
-            eff_weights = torch.matmul(self.u, torch.matmul(self._mask, self.v))
+            eff_weights = self.u @ torch.diag(self._mask) @ self.v
         
         # Do actual forward pass
         if self.layer_type is nn.Linear:
@@ -119,4 +120,36 @@ class LowRankLayer(nn.Module):
             raise RuntimeError("Layer in bad state, layer type corrupted")
 
 
-        
+if __name__ == "__main__":
+    test_input = tensor([1., 1., 1.])
+
+    '''
+    Low Rank Linear Test 
+    '''
+    linear = nn.Linear(3, 5)
+    lr_linear = LowRankLayer(linear)
+
+    # Sanity check 
+    assert((linear.forward(test_input) == lr_linear.forward(test_input)).all())
+
+    # Low Rank Test
+    lr_linear.mask = tensor([1., 1., 0.])
+
+    lr_linear.forward(test_input)
+
+    '''
+    Conv2D Test 
+    '''
+
+    conv2d = nn.Conv2d(3, 3, (1, 1), 1)
+    lr_conv2d = LowRankLayer(conv2d)
+
+    test_input = tensor([[[1.]], [[1.]], [[1.]]])
+    
+    # Sanity check 
+    assert((lr_conv2d.forward(test_input) == conv2d.forward(test_input)).all())
+
+    # Low Rank Test
+    lr_conv2d.mask = tensor([1., 1., 0.])
+
+    lr_conv2d.forward(test_input)
