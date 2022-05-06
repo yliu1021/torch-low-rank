@@ -1,6 +1,8 @@
 from torch import nn
 from torchvision.models import vgg11
 
+import lowrank
+
 
 class BasicNet(nn.Module):
     def __init__(self):
