@@ -43,7 +43,9 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
                 layer.mask = new_mask
                 self.model._reset_compile_cache()
                 new_output = self.model(data_x)
-                layer_scores.append(tf.norm(tf.math.subtract(baseline_output, new_output)))
+                layer_scores.append(
+                    tf.norm(tf.math.subtract(baseline_output, new_output))
+                )
                 layer.mask = np.ones(layer.max_rank)
                 self.model._reset_compile_cache()
             print()

@@ -10,7 +10,7 @@ import tensorflow as tf
 from tensorflow.keras import callbacks, losses, metrics, models, optimizers
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-import lowrank_experiments.data
+import lowrank_experiments.data_loader
 import lowrank_experiments.model
 from lowrank.pruners import (
     PruningScope,
