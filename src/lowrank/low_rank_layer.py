@@ -30,14 +30,15 @@ class LowRankLayer(nn.Module):
         # Copy over weights
         self.original_weights_shape = deepcopy(layer.weight.shape)
         if len(self.original_weights_shape) > 2:
-            self.w = torch.reshape(layer.weight, (self.in_channels * self.kernel_size[0] * self.kernel_size[1], self.out_channels))
+            self.kernel_w = torch.reshape(layer.weight, (self.in_channels * self.kernel_size[0] * self.kernel_size[1], self.out_channels))
         else:
-            self.w = layer.weight
+            self.kernel_w = layer.weight
         self.bias = nn.Parameter(layer.bias)
 
         # Initialize other member variables
-        self.u = None 
-        self.v = None 
+        self.kernel_u = None 
+        self.kernel_v = None
+        self.kernel_uv = (self.kernel_u, self.kernel_v) 
         self._mask = None 
     
     @property
@@ -80,24 +81,24 @@ class LowRankLayer(nn.Module):
         if new_mask is None:
             self._mask = None
         elif len(new_mask.shape) == 1:
-            u, s, v = torch.linalg.svd(self.w, full_matrices=False)
+            u, s, v = torch.linalg.svd(self.kernel_w, full_matrices=False)
             assert new_mask.shape == s.shape, "Invalid shape for mask"
             s_sqrt = torch.diag(torch.sqrt(s))
-            self.u = torch.matmul(u, s_sqrt)
-            self.v = torch.matmul(s_sqrt, v)
+            self.kernel_u = torch.matmul(u, s_sqrt)
+            self.kernel_v = torch.matmul(s_sqrt, v)
         elif len(self._mask.shape) == 2:
-            assert new_mask.shape == self.w.shape, "Invalid shape for mask"
+            assert new_mask.shape == self.kernel_w.shape, "Invalid shape for mask"
         
         self._mask = new_mask
 
     def forward(self, x):
         # Compute effective weights
         if self.full_rank_mode:
-            eff_weights = self.w
+            eff_weights = self.kernel_w
         elif self.weight_masking_mode:
-            eff_weights = torch.mul(self.w, self.mask)
+            eff_weights = torch.mul(self.kernel_w, self.mask)
         else: 
-            eff_weights = self.u @ torch.diag(self._mask) @ self.v
+            eff_weights = self.kernel_u @ torch.diag(self._mask) @ self.kernel_v
         
         # Do actual forward pass
         if self.layer_type is nn.Linear:
