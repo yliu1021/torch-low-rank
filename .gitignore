@@ -1,5 +1,6 @@
 # IDE
 .idea/
+.vscode/
 
 # Python
 *.egg-info/
@@ -18,3 +19,4 @@ tests_old/
 logs_*
 remotes
 data/
+checkpoints/

@@ -5,8 +5,8 @@ import enum
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras import losses, models
+import torch
+from torch import nn
 
 from lowrank.low_rank_layer import LowRankLayer
 
@@ -29,26 +29,26 @@ class AbstractPrunerBase:
 
     def __init__(
         self,
-        model: models.Sequential,
+        device,
+        model: nn.Module,
         scope: PruningScope,
         sparsity: float,
-        data: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+        dataloader=None,
         batch_size: int = 64,
-        loss: Optional[losses.Loss] = None,
+        loss=None,
         prune_iterations=1,
     ):
+        self.device = device
         self.model = model
         self.scope = scope
         if sparsity < 0 or sparsity > 1:
             raise ValueError("Sparsity must be in the range [0, 1]")
         self.sparsity = sparsity
-        self.data = data
-        if self.data is not None:
-            self.data_x, self.data_y = data
+        self.dataloader = dataloader
         self.batch_size = batch_size
         self.loss = loss
         self.layers_to_prune: List[LowRankLayer] = list(
-            filter(lambda x: isinstance(x, LowRankLayer), self.model.layers)
+            filter(lambda x: isinstance(x, LowRankLayer), list(self.model.modules()))
         )
         self.prune_iterations = prune_iterations
 
@@ -64,6 +64,8 @@ class AbstractPrunerBase:
         """
         Calls the `compute_mask` method and actually sets the ranks
         """
+
+        # Iterative pruning done by increasing desired sparsity every iteration
         sparsity_per_iteration = np.cumsum(
             [self.sparsity / self.prune_iterations] * self.prune_iterations
         )
@@ -80,7 +82,6 @@ class AbstractPrunerBase:
                 raise ValueError("Computed mask does not match length of model layers")
             for mask, layer in zip(masks, self.layers_to_prune):
                 layer.mask = mask
-            self.model._reset_compile_cache()  # ensure model is recompiled
 
     def _compute_masks(self):
         """
@@ -109,14 +110,11 @@ class AbstractPrunerBase:
             )
         else:
             raise NotImplementedError(f"{self.scope} is not supported yet.")
-        masks = [score >= threshold for score, threshold in zip(scores, thresholds)]
+        masks = [
+            torch.tensor((score >= threshold).astype(np.float32), device=self.device)
+            for score, threshold in zip(scores, thresholds)
+        ]
         return masks
-
-    def _set_rank_capacity_on_layer(
-        self, layer: LowRankLayer, capacity: Optional[int] = None
-    ):
-        layer.set_rank_capacity(capacity)
-        self.model._reset_compile_cache()
 
 
 def create_mask(

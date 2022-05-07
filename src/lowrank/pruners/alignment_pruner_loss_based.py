@@ -4,9 +4,9 @@ Alignment Pruner Loss Based
 from typing import List
 
 import numpy as np
-import tensorflow as tf
+import torch
 
-from lowrank.pruners import AbstractPrunerBase, create_mask
+from lowrank.pruners import AbstractPrunerBase
 
 
 class AlignmentPrunerLossBased(AbstractPrunerBase):
@@ -23,31 +23,49 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
         Intuition = the singular vectors that change the output vector the most from baseline
         activation are the most important
         """
-        assert self.data_x is not None, "Data x is none, cannot infer input shape"
+        assert self.dataloader is not None, "No data loader provided"
+
+        # Sets mask to all ones to trigger svd
+        print("Setting mask to trigger SVD (if needed)")
         for layer in self.layers_to_prune:
-            layer.mask = np.ones(layer.max_rank)
-        self.model._reset_compile_cache()
+            if (
+                layer.mask is None
+            ):  # if mask already set, do not want to overwrite it (needed for iterative pruning)
+                layer.mask = torch.ones(layer.max_rank()).to(self.device)
+
         scores = []
-        data_ind = np.random.choice(len(self.data_x), 64, replace=False)
-        data_x = self.data_x[data_ind]
+
+        # Baseline Output
         print("Getting baseline output")
-        baseline_output = self.model(data_x)
+        X, _ = next(iter(self.dataloader))
+        X = X.to(self.device)
+        baseline_output = self.model(X)
+
         for layer_ind, layer in enumerate(self.layers_to_prune):
             print(f"Pruning low rank layer {layer_ind}")
+
             layer_scores = []
-            for sv_ind in range(layer.max_rank):
-                # for each singular vector, mask it out and compute new output
+            for sv_ind in range(layer.max_rank()):
+                # For each singular vector, mask it out and compute new output
                 print(f"\rEvaluting singular value {sv_ind}", end="", flush=True)
-                new_mask = np.ones(layer.max_rank)
-                new_mask[sv_ind] = 0
-                layer.mask = new_mask
-                self.model._reset_compile_cache()
-                new_output = self.model(data_x)
+
+                # Compute and apply additional mask
+                additional_mask = torch.ones(layer.max_rank()).to(self.device)
+                additional_mask[sv_ind] = 0
+                layer.additional_mask = additional_mask
+
+                # Compute network output -> determine score
+                new_output = self.model(X)
                 layer_scores.append(
-                    tf.norm(tf.math.subtract(baseline_output, new_output))
+                    torch.norm(
+                        torch.subtract(baseline_output, new_output).detach().cpu()
+                    )
                 )
-                layer.mask = np.ones(layer.max_rank)
-                self.model._reset_compile_cache()
+
+                # Clean up additional mask
+                layer.additional_mask = None
             print()
+
             scores.append(np.array(layer_scores))
+
         return scores

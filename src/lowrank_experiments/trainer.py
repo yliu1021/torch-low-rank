@@ -1,6 +1,5 @@
 import torch
-from torch import optim
-from torch import nn
+from torch import nn, optim
 from torch.utils.data import DataLoader
 
 
@@ -13,7 +12,7 @@ def train(
     train: DataLoader,
     loss_fn,
     optimizer: optim.Optimizer,
-    device: str,
+    device,
 ):
     size = len(train.dataset)
     model.train()
@@ -27,9 +26,7 @@ def train(
         loss.backward()
         optimizer.step()
         loss, current = loss.item(), batch * len(X)
-        acc = (1 - gamma) * acc + gamma * calc_num_correct(pred, y) / len(
-            y
-        )  # running avg
+        acc = (1 - gamma) * acc + gamma * calc_num_correct(pred, y) / len(y)
         print(
             f"\rLoss: {loss:>7f} Accuracy: {100*acc:>0.1f}% [{current:>5d}/{size:>5d}]",
             end="",
@@ -37,7 +34,7 @@ def train(
     print()
 
 
-def test(model: nn.Module, test: DataLoader, loss_fn, device: str):
+def test(model: nn.Module, test: DataLoader, loss_fn, device):
     size = len(test.dataset)
     num_batches = len(test)
     model.eval()

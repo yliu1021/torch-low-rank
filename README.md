@@ -44,6 +44,6 @@ guild run set_rank dataset=cifar10 pruner=Alignment_Loss prune_epoch=300 total_e
 ### Without Guild 
 Running a vgg11 training run on CIFAR10 for 50 epochs (no pruning)
 ```bash
-python src/lowrank_experiments/experiments/set_rank.py --dataset=cifar10 --pruner=Alignment_Loss --prune_epoch=160 --total_epochs=200 --batch_size=256 --sparsity=0.95 --pruning_scope=global --lr=0.05 --l2=0.0005 --model=vgg16
+python ./src/lowrank_experiments/main.py --dataset=cifar10 --preprune_epochs=5 --postprune_epochs=10 --lr_drop=4 --lr=0.05 --momentum=0.9 --weight_decay=5e-4 --batch_size=256 --device=cuda
 ```
 

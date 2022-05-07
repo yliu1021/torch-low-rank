@@ -1,20 +1,110 @@
-from torch import optim
-from torch import nn
+import argparse
+import pathlib
+
+import torch
+from torch import nn, optim
+from torch.optim import lr_scheduler
+
+from lowrank.pruners import PruningScope
+from lowrank.pruners.alignment_pruner_loss_based import AlignmentPrunerLossBased
 
 import data_loader
 import models
 import trainer
 
 
-def main():
-    train, test = data_loader.get_data("cifar10", batch_size=128)
-    model = models.vgg11(num_classes=10)
+def main(
+    dataset: str,
+    model_name: str,
+    preprune_epochs: int,
+    postprune_epochs: int,
+    lr_drops: list[int],
+    lr: float,
+    momentum: float,
+    weight_decay: float,
+    batch_size: int,
+    device,
+):
+    device = torch.device(device)
+
+    train, test, num_classes = data_loader.get_data(dataset, batch_size=batch_size)
+    model = models.all_models[model_name](batch_norm=True, num_classes=num_classes)
+    model = model.to(device=device)
+    model = models.convert_model_to_lr(model)
+
     loss_fn = nn.CrossEntropyLoss()
-    opt = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
-    for _ in range(5):
-        trainer.train(model, train, loss_fn, opt, device="cpu")
-        trainer.test(model, test, loss_fn, device="cpu")
+    opt = optim.SGD(
+        model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay
+    )
+    lr_schedule = lr_scheduler.MultiStepLR(opt, milestones=lr_drops, gamma=0.1)
+
+    checkpoint_dir = pathlib.Path("./checkpoints") / model_name
+    if checkpoint_dir.exists():
+        model.load_state_dict(torch.load(checkpoint_dir))
+        # sanity check by testing model performance
+        trainer.test(model, test, loss_fn, device=device)
+    else:
+        for epoch in range(preprune_epochs):
+            print(f"Pre-prune epoch {epoch+1} / {preprune_epochs}")
+            trainer.train(model, train, loss_fn, opt, device=device)
+            trainer.test(model, test, loss_fn, device=device)
+            lr_schedule.step()
+        print("Saving model")
+        torch.save(model.state_dict(), checkpoint_dir)
+
+    # Prune
+    pruner = AlignmentPrunerLossBased(
+        device=device,
+        model=models.convert_model_to_lr(model),
+        scope=PruningScope.GLOBAL,
+        sparsity=0.75,
+        dataloader=train,
+        loss=loss_fn,
+        prune_iterations=1,
+    )
+    pruner.prune()
+    model = model.to(device=device)
+
+    # reduce LR by 2 post prune
+    for g in opt.param_groups:
+        g["lr"] /= 2
+
+    for epoch in range(postprune_epochs):
+        print(f"Post-prune epoch {epoch+1} / {postprune_epochs}")
+        trainer.train(model, train, loss_fn, opt, device=device)
+        trainer.test(model, test, loss_fn, device=device)
+        lr_schedule.step()
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Runs a training session where a model is trained for some epochs, pruned, "
+        "then trained for some more epochs"
+    )
+    parser.add_argument(
+        "--model", type=str, choices=models.all_models.keys(), required=True
+    )
+    parser.add_argument(
+        "--dataset", type=str, choices=data_loader.loaders.keys(), required=True
+    )
+    parser.add_argument("--preprune_epochs", type=int)
+    parser.add_argument("--postprune_epochs", type=int)
+    parser.add_argument("--lr_drop", type=int, action="append")
+    parser.add_argument("--lr", type=float)
+    parser.add_argument("--momentum", type=float)
+    parser.add_argument("--weight_decay", type=float)
+    parser.add_argument("--batch_size", type=int)
+    parser.add_argument("--device", type=str, default="cpu")
+    args = parser.parse_args()
+    main(
+        model_name=args.model,
+        dataset=args.dataset,
+        preprune_epochs=args.preprune_epochs,
+        postprune_epochs=args.postprune_epochs,
+        lr_drops=sorted(args.lr_drop),
+        lr=args.lr,
+        momentum=args.momentum,
+        weight_decay=args.weight_decay,
+        batch_size=args.batch_size,
+        device=args.device,
+    )
