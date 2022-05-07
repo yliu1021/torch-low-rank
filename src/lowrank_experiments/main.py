@@ -47,6 +47,7 @@ def main(
 
     # Prune
     pruner = AlignmentPrunerLossBased(
+        device=device,
         model=models.convert_model_to_lr(model),
         scope=PruningScope.GLOBAL,
         sparsity=0.25,

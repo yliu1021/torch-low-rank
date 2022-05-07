@@ -28,6 +28,7 @@ class AbstractPrunerBase:
 
     def __init__(
         self,
+        device,
         model: nn.Module,
         scope: PruningScope,
         sparsity: float,
@@ -36,6 +37,7 @@ class AbstractPrunerBase:
         loss=None,
         prune_iterations=1,
     ):
+        self.device = device
         self.model = model
         self.scope = scope
         if sparsity < 0 or sparsity > 1:

@@ -31,14 +31,14 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
             if (
                 layer.mask is None
             ):  # if mask already set, do not want to overwrite it (needed for iterative pruning)
-                layer.mask = torch.ones(layer.max_rank()).to("cuda")
+                layer.mask = torch.ones(layer.max_rank()).to(self.device)
 
         scores = []
 
         # Baseline Output
         print("Getting baseline output")
         X, _ = next(iter(self.dataloader))
-        X = X.to("cuda")
+        X = X.to(self.device)
         baseline_output = self.model(X)
 
         for layer_ind, layer in enumerate(self.layers_to_prune):
@@ -50,7 +50,7 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
                 print(f"\rEvaluting singular value {sv_ind}", end="", flush=True)
 
                 # Compute and apply additional mask
-                additional_mask = torch.ones(layer.max_rank()).to("cuda")
+                additional_mask = torch.ones(layer.max_rank()).to(self.device)
                 additional_mask[sv_ind] = 0
                 layer.additional_mask = additional_mask
 
