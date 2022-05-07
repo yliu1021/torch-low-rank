@@ -25,7 +25,7 @@ class SnipPruner(AbstractPrunerBase):
         if self.dataloader is None or self.loss is None:
             raise ValueError("Snip pruner requires data and loss function.")
         for layer in self.layers_to_prune:
-            layer.mask = np.ones(layer.max_rank)
+            layer.mask = np.ones(layer.max_rank())
         self.model._reset_compile_cache()
         grads_tot = []
         for _ in range(16):

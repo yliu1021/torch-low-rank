@@ -75,9 +75,8 @@ class LowRankLayer(nn.Module):
         """
         return self._mask is not None and len(self._mask.shape) != 1
 
-    @property
     def max_rank(self) -> int:
-        return min(self.w.shape)
+        return min(self.kernel_w.shape)
 
     @property
     def mask(self) -> Optional[TensorType]:
@@ -121,7 +120,7 @@ class LowRankLayer(nn.Module):
         that the new additional mask is of the same shape as the current mask
         """
         if new_additional_mask is None:
-            self.additional_mask = None
+            self._additional_mask = None
         elif self._mask is None:
             raise ValueError("Cannot set additional mask with self.mask = None")
         elif new_additional_mask.shape != self._mask.shape:   

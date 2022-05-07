@@ -24,7 +24,7 @@ class AlignmentPrunerGradientBased(AbstractPrunerBase):
         """
         assert self.data_x is not None, "Data x is none, cannot infer input shape"
         for layer in self.layers_to_prune:
-            layer.mask = np.ones(layer.max_rank)
+            layer.mask = np.ones(layer.max_rank())
         self.model._reset_compile_cache()
         scores = []
         data_ind = np.random.choice(len(self.data_x), 64, replace=False)
@@ -42,7 +42,7 @@ class AlignmentPrunerGradientBased(AbstractPrunerBase):
                 baseline_loss = self.loss(data_y, y_pred)
             baseline_gradient = g.gradient(baseline_loss, w)
             u, v = layer.kernel_uv  # Get full u and v matrices - svd of w
-            for sv_ind in range(layer.max_rank):
+            for sv_ind in range(layer.max_rank()):
                 # for each singular vector, mask it out and compute new output
                 print(f"\rEvaluting singular value {sv_ind}", end="", flush=True)
                 u_prime_t = self.remove_row(tf.transpose(u), sv_ind)

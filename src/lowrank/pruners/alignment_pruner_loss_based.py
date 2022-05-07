@@ -27,25 +27,26 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
         print("Setting mask to trigger SVD (if needed)")
         for layer in self.layers_to_prune:
             if layer.mask is None: # if mask already set, do not want to overwrite it (needed for iterative pruning)
-                layer.mask = np.ones(layer.max_rank, dtype=float)
+                layer.mask = torch.ones(layer.max_rank()).to('cuda')
 
         scores = []
 
         # Baseline Output
         print("Getting baseline output")
         X, _ = next(iter(self.dataloader))
-        baseline_output = self.model(X.to('cuda'))
+        X = X.to('cuda')
+        baseline_output = self.model(X)
 
         for layer_ind, layer in enumerate(self.layers_to_prune):
             print(f"Pruning low rank layer {layer_ind}")
             
             layer_scores = []
-            for sv_ind in range(layer.max_rank):
+            for sv_ind in range(layer.max_rank()):
                 # For each singular vector, mask it out and compute new output
                 print(f"\rEvaluting singular value {sv_ind}", end="", flush=True)
                 
                 # Compute and apply additional mask
-                additional_mask = np.ones(layer.max_rank, dtype=float)
+                additional_mask = torch.ones(layer.max_rank()).to('cuda')
                 additional_mask[sv_ind] = 0
                 layer.additional_mask = additional_mask
 

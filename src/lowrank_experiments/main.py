@@ -12,7 +12,7 @@ from lowrank.pruners.alignment_pruner_loss_based import AlignmentPrunerLossBased
 
 def main(preprune_epochs: int, postprune_epochs: int, lr_drops: list[int], device):
     device = torch.device(device)
-    train_dataloader, test_dataloader = data_loader.get_data("cifar10", batch_size=128)
+    train_dataloader, test_dataloader = data_loader.get_data("cifar10", batch_size=32)
     model = models.pytorch.vgg11(num_classes=10)
     model.to(device=device)
     loss_fn = nn.CrossEntropyLoss()
@@ -27,7 +27,7 @@ def main(preprune_epochs: int, postprune_epochs: int, lr_drops: list[int], devic
 
     # Prune
     pruner = AlignmentPrunerLossBased(
-        model=models.convert_module_to_lr(model),
+        model=models.convert_model_to_lr(model),
         scope=PruningScope.GLOBAL,
         sparsity=0.25,
         dataloader=train_dataloader,
@@ -48,4 +48,4 @@ def main(preprune_epochs: int, postprune_epochs: int, lr_drops: list[int], devic
 
 
 if __name__ == "__main__":
-    main(preprune_epochs=1, postprune_epochs=1, lr_drops=[10], device='cuda')
+    main(preprune_epochs=0, postprune_epochs=1, lr_drops=[10], device='cuda')
