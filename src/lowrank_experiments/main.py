@@ -13,7 +13,7 @@ from lowrank.pruners.alignment_pruner_loss_based import AlignmentPrunerLossBased
 def main(preprune_epochs: int, postprune_epochs: int, lr_drops: list[int], device):
     device = torch.device(device)
     train_dataloader, test_dataloader = data_loader.get_data("cifar10", batch_size=32)
-    model = models.pytorch.vgg11(num_classes=10)
+    model = models.vgg11(batch_norm=False, num_classes=10)
     model.to(device=device)
     loss_fn = nn.CrossEntropyLoss()
     opt = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
