@@ -25,13 +25,11 @@ def main(
     device,
 ):
     device = torch.device(device)
-    print(f"Running on device: {device}")
 
     train, test, num_classes = data_loader.get_data(dataset, batch_size=batch_size)
     model = models.vgg11(batch_norm=True, num_classes=num_classes)
-    model = models.convert_model_to_lr(model)
     model = model.to(device=device)
-    print("Using cuda:", next(model.parameters()).is_cuda)
+    model = models.convert_model_to_lr(model)
 
     loss_fn = nn.CrossEntropyLoss()
     opt = optim.SGD(
@@ -40,7 +38,7 @@ def main(
     lr_schedule = lr_scheduler.MultiStepLR(opt, milestones=lr_drops, gamma=0.1)
 
     for epoch in range(preprune_epochs):
-        print(f"Pre-prune epoch {epoch}")
+        print(f"Pre-prune epoch {epoch+1} / {preprune_epochs}")
         trainer.train(model, train, loss_fn, opt, device=device)
         trainer.test(model, test, loss_fn, device=device)
         lr_schedule.step()
@@ -63,7 +61,7 @@ def main(
         g["lr"] /= 2
 
     for epoch in range(postprune_epochs):
-        print(f"Pre-prune epoch {epoch}")
+        print(f"Pre-prune epoch {epoch+1} / {postprune_epochs}")
         trainer.train(model, train, loss_fn, opt, device=device)
         trainer.test(model, test, loss_fn, device=device)
         lr_schedule.step()
