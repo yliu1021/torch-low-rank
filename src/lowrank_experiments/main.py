@@ -95,12 +95,16 @@ if __name__ == "__main__":
     )
     parser.add_argument("--preprune_epochs", type=int)
     parser.add_argument("--postprune_epochs", type=int)
-    parser.add_argument("--lr_drop", type=list)
-    parser.add_argument("--lr", default=0.05, type=float)
-    parser.add_argument("--momentum", default=0.9, type=float)
-    parser.add_argument("--weight_decay", default=5.0e-4, type=float)
-    parser.add_argument("--batch_size", default=64, type=int)
-    parser.add_argument("--device", choices=["cpu"] + ["cuda:" + str(i) for i in range(torch.cuda.device_count())], default="cpu")
+    parser.add_argument("--lr_drop", type=int, action="append")
+    parser.add_argument("--lr", type=float)
+    parser.add_argument("--momentum", type=float)
+    parser.add_argument("--weight_decay", type=float)
+    parser.add_argument("--batch_size", type=int)
+    parser.add_argument(
+        "--device",
+        choices=["cpu"] + ["cuda:" + str(i) for i in range(torch.cuda.device_count())],
+        default="cpu",
+    )
     args = parser.parse_args()
     main(
         model_name=args.model,
