@@ -1,14 +1,14 @@
 import argparse
 
-import data_loader
-from lowrank.pruners import PruningScope
-import models
 import torch
-import trainer
 from torch import nn, optim
 from torch.optim import lr_scheduler
 
-from lowrank.pruners.alignment_pruner_loss_based import AlignmentPrunerLossBased
+from lowrank.pruners import PruningScope
+from lowrank.pruners.alignment_pruner_loss_based import \
+    AlignmentPrunerLossBased
+
+from . import data_loader, models, trainer
 
 
 def main(
@@ -23,10 +23,14 @@ def main(
     device,
 ):
     device = torch.device(device)
+    print(f"Running on device: {device}")
+
     train, test, num_classes = data_loader.get_data(dataset, batch_size=batch_size)
     model = models.vgg11(batch_norm=True, num_classes=num_classes)
-    models.convert_model_to_lr(model)
+    model = models.convert_model_to_lr(model)
     model = model.to(device=device)
+    print("Using cuda:", next(model.parameters()).is_cuda)
+
     loss_fn = nn.CrossEntropyLoss()
     opt = optim.SGD(
         model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay

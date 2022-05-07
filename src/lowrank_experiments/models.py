@@ -1,7 +1,9 @@
-from typing import Union, List, Dict, Any, cast
-from lowrank.low_rank_layer import LowRankLayer
+from typing import Any, Dict, List, Union, cast
+
 import torch
 import torch.nn as nn
+
+from lowrank.low_rank_layer import LowRankLayer
 
 
 class VGG(nn.Module):
@@ -154,7 +156,7 @@ def convert_model_to_lr(model: nn.Module):
     """
     Recursively modifies a module in place to replace instances of conv2d and linear modules into
     low rank alternatives
-    :param module: the module to convert
+    :param model: the module to convert
     :return:
     """
     if isinstance(model, (nn.Linear, nn.Conv2d)):
