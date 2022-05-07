@@ -46,7 +46,6 @@ class LowRankLayer(nn.Module):
         # Initialize other member variables
         self.kernel_u = None
         self.kernel_v = None
-        self.kernel_uv = (self.kernel_u, self.kernel_v)
         self.eff_weights = None
         self._mask = None
         self._additional_mask = None
