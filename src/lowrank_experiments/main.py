@@ -8,7 +8,9 @@ from lowrank.pruners import PruningScope
 from lowrank.pruners.alignment_pruner_loss_based import \
     AlignmentPrunerLossBased
 
-from . import data_loader, models, trainer
+import data_loader
+import models
+import trainer
 
 
 def main(
