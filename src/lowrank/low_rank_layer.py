@@ -47,6 +47,7 @@ class LowRankLayer(nn.Module):
         self.kernel_u = None
         self.kernel_v = None
         self.kernel_uv = (self.kernel_u, self.kernel_v)
+        self.eff_weights = None
         self._mask = None
         self._additional_mask = None
 
@@ -105,6 +106,8 @@ class LowRankLayer(nn.Module):
         self._additional_mask = None 
 
         self._mask = new_mask
+
+        self.recompute_eff_weights()
         
     @property
     def additional_mask(self) -> Optional[TensorType]:
@@ -128,7 +131,9 @@ class LowRankLayer(nn.Module):
         
         self._additional_mask = new_additional_mask
 
-    def forward(self, x):
+        self.recompute_eff_weights()
+
+    def recompute_eff_weights(self):
         # Determine final mask 
         if self._additional_mask is not None:
             mask = torch.mul(self._mask, self._additional_mask)
@@ -137,19 +142,23 @@ class LowRankLayer(nn.Module):
 
         # Compute effective weights
         if self.full_rank_mode:
-            eff_weights = self.kernel_w
+            self.eff_weights = self.kernel_w
         elif self.weight_masking_mode:
-            eff_weights = torch.mul(self.kernel_w, mask)
+            self.eff_weights = torch.mul(self.kernel_w, mask)
         else:
-            eff_weights = self.kernel_u @ torch.diag(mask) @ self.kernel_v
+            self.eff_weights = self.kernel_u @ torch.diag(mask) @ self.kernel_v
+
+    def forward(self, x):
+        if self.eff_weights == None:
+            self.recompute_eff_weights()
 
         # Do actual forward pass
         if self.layer_type is nn.Linear:
-            return F.linear(input=x, weight=eff_weights, bias=self.bias)
+            return F.linear(input=x, weight=self.eff_weights, bias=self.bias)
         elif self.layer_type is nn.Conv2d:
             return F.conv2d(
                 input=x,
-                weight=torch.reshape(eff_weights, self.original_weights_shape),
+                weight=torch.reshape(self.eff_weights, self.original_weights_shape),
                 bias=self.bias,
                 stride=self.stride,
                 padding=self.padding,

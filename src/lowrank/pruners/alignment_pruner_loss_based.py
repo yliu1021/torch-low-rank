@@ -53,7 +53,7 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
                 # Compute network output -> determine score
                 new_output = self.model(X)
                 layer_scores.append(
-                    torch.norm(torch.subtract(baseline_output, new_output))
+                    torch.norm(torch.subtract(baseline_output, new_output).detach().cpu())
                 )
 
                 # Clean up additional mask
