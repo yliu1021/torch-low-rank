@@ -49,6 +49,7 @@ def main(
         prune_iterations=1,
     )
     pruner.prune()
+    model = model.to(device=device)
 
     # reduce LR by 2 post prune
     for g in opt.param_groups:
