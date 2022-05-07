@@ -152,6 +152,9 @@ def vgg19(batch_norm: bool, **kwargs: Any) -> VGG:
     return _vgg("E", batch_norm, **kwargs)
 
 
+all_models = {"vgg11": vgg11, "vgg13": vgg13, "vgg16": vgg16, "vgg19": vgg19}
+
+
 def convert_model_to_lr(model: nn.Module):
     """
     Recursively modifies a module in place to replace instances of conv2d and linear modules into

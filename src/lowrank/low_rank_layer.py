@@ -145,7 +145,9 @@ class LowRankLayer(nn.Module):
         elif self.weight_masking_mode:
             self.eff_weights = torch.mul(self.kernel_w, mask)
         else:
-            self.eff_weights = self.kernel_u @ torch.diag(mask) @ self.kernel_v
+            self.eff_weights = nn.Parameter(
+                self.kernel_u @ torch.diag(mask) @ self.kernel_v
+            )
 
     def forward(self, x):
         if self.eff_weights == None:

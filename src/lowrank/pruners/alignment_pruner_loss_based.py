@@ -64,6 +64,7 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
 
                 # Clean up additional mask
                 layer.additional_mask = None
+            print()
 
             scores.append(np.array(layer_scores))
 

@@ -5,6 +5,7 @@ import enum
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
+import torch
 from torch import nn
 
 from lowrank.low_rank_layer import LowRankLayer
@@ -110,7 +111,8 @@ class AbstractPrunerBase:
         else:
             raise NotImplementedError(f"{self.scope} is not supported yet.")
         masks = [
-            float(score >= threshold) for score, threshold in zip(scores, thresholds)
+            torch.tensor((score >= threshold).astype(np.float32), device=self.device)
+            for score, threshold in zip(scores, thresholds)
         ]
         return masks
 
