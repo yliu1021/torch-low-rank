@@ -22,9 +22,8 @@ def main(
     device,
 ):
     device = torch.device(device)
-
-    train, test = data_loader.get_data(dataset, batch_size=batch_size)
-    model = models.vgg11(batch_norm=True, num_classes=10)
+    train, test, num_classes = data_loader.get_data(dataset, batch_size=batch_size)
+    model = models.vgg11(batch_norm=True, num_classes=num_classes)
     models.convert_model_to_lr(model)
     model.to(device=device)
     loss_fn = nn.CrossEntropyLoss()
