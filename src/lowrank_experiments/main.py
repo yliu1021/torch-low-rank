@@ -1,5 +1,6 @@
 import argparse
 import pathlib
+import os
 
 import torch
 from torch import nn, optim
@@ -30,7 +31,6 @@ def main(
     train, test, num_classes = data_loader.get_data(dataset, batch_size=batch_size)
     model = models.all_models[model_name](batch_norm=True, num_classes=num_classes)
     model = model.to(device=device)
-    model = models.convert_model_to_lr(model)
 
     loss_fn = nn.CrossEntropyLoss()
     opt = optim.SGD(
@@ -38,19 +38,25 @@ def main(
     )
     lr_schedule = lr_scheduler.MultiStepLR(opt, milestones=lr_drops, gamma=0.1)
 
-    checkpoint_dir = pathlib.Path("./checkpoints") / model_name
-    if checkpoint_dir.exists():
-        model.load_state_dict(torch.load(checkpoint_dir))
+    checkpoint_dir = pathlib.Path("./checkpoints")
+    if not checkpoint_dir.exists():
+        os.makedirs(checkpoint_dir)
+
+    checkpoint_model = checkpoint_dir / model_name
+    if checkpoint_model.exists():
+        print("Model found. Loading from checkpoint.")
+        model.load_state_dict(torch.load(checkpoint_model))
         # sanity check by testing model performance
         trainer.test(model, test, loss_fn, device=device)
     else:
+        print("Model NOT FOUND. Retraining.")
         for epoch in range(preprune_epochs):
             print(f"Pre-prune epoch {epoch+1} / {preprune_epochs}")
             trainer.train(model, train, loss_fn, opt, device=device)
             trainer.test(model, test, loss_fn, device=device)
             lr_schedule.step()
         print("Saving model")
-        torch.save(model.state_dict(), checkpoint_dir)
+        torch.save(model.state_dict(), checkpoint_model)
 
     # Prune
     pruner = AlignmentPrunerLossBased(
@@ -89,11 +95,11 @@ if __name__ == "__main__":
     )
     parser.add_argument("--preprune_epochs", type=int)
     parser.add_argument("--postprune_epochs", type=int)
-    parser.add_argument("--lr_drop", type=int, action="append")
-    parser.add_argument("--lr", type=float)
-    parser.add_argument("--momentum", type=float)
-    parser.add_argument("--weight_decay", type=float)
-    parser.add_argument("--batch_size", type=int)
+    parser.add_argument("--lr_drop", type=list)
+    parser.add_argument("--lr", default=0.05, type=float)
+    parser.add_argument("--momentum", default=0.9, type=float)
+    parser.add_argument("--weight_decay", default=5.0e-4, type=float)
+    parser.add_argument("--batch_size", default=64, type=int)
     parser.add_argument("--device", choices=["cpu"] + ["cuda:" + str(i) for i in range(torch.cuda.device_count())], default="cpu")
     args = parser.parse_args()
     main(
