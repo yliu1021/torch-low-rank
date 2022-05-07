@@ -26,7 +26,7 @@ def main(
     train, test, num_classes = data_loader.get_data(dataset, batch_size=batch_size)
     model = models.vgg11(batch_norm=True, num_classes=num_classes)
     models.convert_model_to_lr(model)
-    model.to(device=device)
+    model = model.to(device=device)
     loss_fn = nn.CrossEntropyLoss()
     opt = optim.SGD(
         model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay
