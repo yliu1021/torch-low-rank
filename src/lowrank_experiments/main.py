@@ -11,6 +11,7 @@ from torch.optim import lr_scheduler
 from lowrank.pruners.alignment_pruner_loss_based import AlignmentPrunerLossBased
 
 def main(
+    dataset: str,
     preprune_epochs: int,
     postprune_epochs: int,
     lr_drops: list[int],
@@ -21,10 +22,10 @@ def main(
     device,
 ):
     device = torch.device(device)
-    train, test = data_loader.get_data("cifar10", batch_size=batch_size)
+
+    train, test = data_loader.get_data(dataset, batch_size=batch_size)
     model = models.vgg11(batch_norm=True, num_classes=10)
     models.convert_model_to_lr(model)
-
     model.to(device=device)
     loss_fn = nn.CrossEntropyLoss()
     opt = optim.SGD(
@@ -65,6 +66,7 @@ if __name__ == "__main__":
         description="Runs a training session where a model is trained for some epochs, pruned, "
         "then trained for some more epochs"
     )
+    parser.add_argument("--dataset", type=str, choices=data_loader.loaders.keys(), required=True)
     parser.add_argument("--preprune_epochs", type=int)
     parser.add_argument("--postprune_epochs", type=int)
     parser.add_argument("--lr_drop", type=int, action="append")
@@ -75,6 +77,7 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, default="cpu")
     args = parser.parse_args()
     main(
+        dataset=args.dataset,
         preprune_epochs=args.preprune_epochs,
         postprune_epochs=args.postprune_epochs,
         lr_drops=sorted(args.lr_drop),
