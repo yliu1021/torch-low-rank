@@ -3,10 +3,7 @@ from torchvision import datasets
 from torchvision.transforms import ToTensor
 
 
-loaders = {
-    "cifar10": datasets.CIFAR10,
-    "cifar100": datasets.CIFAR100
-}
+loaders = {"cifar10": datasets.CIFAR10, "cifar100": datasets.CIFAR100}
 
 
 def get_data(name: str, batch_size: int = 128):
