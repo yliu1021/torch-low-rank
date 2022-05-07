@@ -66,7 +66,9 @@ if __name__ == "__main__":
         description="Runs a training session where a model is trained for some epochs, pruned, "
         "then trained for some more epochs"
     )
-    parser.add_argument("--dataset", type=str, choices=data_loader.loaders.keys(), required=True)
+    parser.add_argument(
+        "--dataset", type=str, choices=data_loader.loaders.keys(), required=True
+    )
     parser.add_argument("--preprune_epochs", type=int)
     parser.add_argument("--postprune_epochs", type=int)
     parser.add_argument("--lr_drop", type=int, action="append")
