@@ -22,7 +22,7 @@ class SnipPruner(AbstractPrunerBase):
         Intuition = if loss when masking out the singular vector is high,
         then the singular vector must be important.
         """
-        if self.data is None or self.loss is None:
+        if self.dataloader is None or self.loss is None:
             raise ValueError("Snip pruner requires data and loss function.")
         for layer in self.layers_to_prune:
             layer.mask = np.ones(layer.max_rank)

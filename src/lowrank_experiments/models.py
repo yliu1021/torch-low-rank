@@ -1,7 +1,7 @@
 from torch import nn
 from torchvision import models
 
-import lowrank
+from lowrank.low_rank_layer import LowRankLayer
 
 pytorch = models
 
@@ -24,19 +24,21 @@ class BasicNet(nn.Module):
         return logits
 
 
-def convert_module(module: nn.Module):
+def convert_module_to_lr(module: nn.Module):
     """
     Recursively modifies a module in place to replace instances of conv2d and linear modules into
     low rank alternatives
     :param module: the module to convert
-    :return:
+    :return: the converted module
     """
     for attr_name in dir(module):
         attr = getattr(module, attr_name)
         if isinstance(attr, (nn.Linear, nn.Conv2d)):
-            setattr(module, attr_name, lowrank.LowRankLayer(attr))
+            setattr(module, attr_name, LowRankLayer(attr))
         elif isinstance(attr, nn.Module):
-            convert_module(attr)
+            convert_module_to_lr(attr)
         elif isinstance(attr, list):
-            attr = [convert_module(a) for a in attr]
+            attr = [convert_module_to_lr(a) for a in attr]
             setattr(module, attr_name, attr)
+    
+    return module

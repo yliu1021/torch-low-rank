@@ -30,7 +30,7 @@ class AbstractPrunerBase:
         model: nn.Module,
         scope: PruningScope,
         sparsity: float,
-        data: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+        dataloader = None,
         batch_size: int = 64,
         loss= None,
         prune_iterations=1,
@@ -40,13 +40,11 @@ class AbstractPrunerBase:
         if sparsity < 0 or sparsity > 1:
             raise ValueError("Sparsity must be in the range [0, 1]")
         self.sparsity = sparsity
-        self.data = data
-        if self.data is not None:
-            self.data_x, self.data_y = data
+        self.dataloader = dataloader
         self.batch_size = batch_size
         self.loss = loss
         self.layers_to_prune: List[LowRankLayer] = list(
-            filter(lambda x: isinstance(x, LowRankLayer), self.model.layers)
+            filter(lambda x: isinstance(x, LowRankLayer), list(self.model.modules()))
         )
         self.prune_iterations = prune_iterations
 

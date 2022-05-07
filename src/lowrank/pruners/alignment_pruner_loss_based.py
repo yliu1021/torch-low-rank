@@ -21,7 +21,7 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
         Intuition = the singular vectors that change the output vector the most from baseline
         activation are the most important
         """
-        assert self.data_x is not None, "Data x is none, cannot infer input shape"
+        assert self.dataloader is not None, "No data loader provided"
         
         # Sets mask to all ones to trigger svd
         print("Setting mask to trigger SVD (if needed)")
@@ -30,11 +30,11 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
                 layer.mask = np.ones(layer.max_rank, dtype=float)
 
         scores = []
-        data_ind = np.random.choice(len(self.data_x), 64, replace=False)
-        data_x = self.data_x[data_ind]
 
+        # Baseline Output
         print("Getting baseline output")
-        baseline_output = self.model(data_x)
+        X, _ = next(iter(self.dataloader))
+        baseline_output = self.model(X.to('cuda'))
 
         for layer_ind, layer in enumerate(self.layers_to_prune):
             print(f"Pruning low rank layer {layer_ind}")
@@ -50,7 +50,7 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
                 layer.additional_mask = additional_mask
 
                 # Compute network output -> determine score
-                new_output = self.model(data_x)
+                new_output = self.model(X)
                 layer_scores.append(
                     torch.norm(torch.subtract(baseline_output, new_output))
                 )
