@@ -94,7 +94,11 @@ if __name__ == "__main__":
     parser.add_argument("--momentum", type=float)
     parser.add_argument("--weight_decay", type=float)
     parser.add_argument("--batch_size", type=int)
-    parser.add_argument("--device", choices=["cpu"] + ["cuda:" + str(i) for i in range(torch.cuda.device_count())], default="cpu")
+    parser.add_argument(
+        "--device",
+        choices=["cpu"] + ["cuda:" + str(i) for i in range(torch.cuda.device_count())],
+        default="cpu",
+    )
     args = parser.parse_args()
     main(
         model_name=args.model,
