@@ -103,15 +103,15 @@ class LowRankLayer(nn.Module):
             assert new_mask.shape == self.kernel_w.shape, "Invalid shape for mask"
 
         # Reset additional mask if base mask changed
-        self._additional_mask = None 
+        self._additional_mask = None
 
         self._mask = new_mask
 
         self.recompute_eff_weights()
-        
+
     @property
     def additional_mask(self) -> Optional[TensorType]:
-        """ Additional mask property, used to set mask while computing scores.
+        """Additional mask property, used to set mask while computing scores.
         New property needed to allow preserving current mask to enable iterative pruning.
         """
         return self._additional_mask
@@ -119,22 +119,22 @@ class LowRankLayer(nn.Module):
     @additional_mask.setter
     def additional_mask(self, new_additional_mask: Optional[TensorType]):
         """
-        Additional Mask Setter -> Validates that a mask already exists and 
+        Additional Mask Setter -> Validates that a mask already exists and
         that the new additional mask is of the same shape as the current mask
         """
         if new_additional_mask is None:
             self._additional_mask = None
         elif self._mask is None:
             raise ValueError("Cannot set additional mask with self.mask = None")
-        elif new_additional_mask.shape != self._mask.shape:   
+        elif new_additional_mask.shape != self._mask.shape:
             raise ValueError("Additional mask must have same shape as mask")
-        
+
         self._additional_mask = new_additional_mask
 
         self.recompute_eff_weights()
 
     def recompute_eff_weights(self):
-        # Determine final mask 
+        # Determine final mask
         if self._additional_mask is not None:
             mask = torch.mul(self._mask, self._additional_mask)
         else:

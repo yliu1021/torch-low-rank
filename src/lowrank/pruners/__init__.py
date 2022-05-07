@@ -30,9 +30,9 @@ class AbstractPrunerBase:
         model: nn.Module,
         scope: PruningScope,
         sparsity: float,
-        dataloader = None,
+        dataloader=None,
         batch_size: int = 64,
-        loss= None,
+        loss=None,
         prune_iterations=1,
     ):
         self.model = model
@@ -77,7 +77,7 @@ class AbstractPrunerBase:
             if len(masks) != len(self.layers_to_prune):
                 raise ValueError("Computed mask does not match length of model layers")
             for mask, layer in zip(masks, self.layers_to_prune):
-                layer.mask = mask 
+                layer.mask = mask
 
     def _compute_masks(self):
         """
@@ -106,8 +106,11 @@ class AbstractPrunerBase:
             )
         else:
             raise NotImplementedError(f"{self.scope} is not supported yet.")
-        masks = [float(score >= threshold) for score, threshold in zip(scores, thresholds)]
+        masks = [
+            float(score >= threshold) for score, threshold in zip(scores, thresholds)
+        ]
         return masks
+
 
 def create_mask(
     length: int,

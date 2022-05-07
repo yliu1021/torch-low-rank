@@ -26,9 +26,7 @@ def train(
         loss.backward()
         optimizer.step()
         loss, current = loss.item(), batch * len(X)
-        acc = (1 - gamma) * acc + gamma * calc_num_correct(pred, y) / len(
-            y
-        )  # running avg
+        acc = (1 - gamma) * acc + gamma * calc_num_correct(pred, y) / len(y)
         print(
             f"\rLoss: {loss:>7f} Accuracy: {100*acc:>0.1f}% [{current:>5d}/{size:>5d}]",
             end="",

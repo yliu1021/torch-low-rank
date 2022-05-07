@@ -10,6 +10,7 @@ from torch.optim import lr_scheduler
 
 from lowrank.pruners.alignment_pruner_loss_based import AlignmentPrunerLossBased
 
+
 def main(
     dataset: str,
     preprune_epochs: int,
@@ -45,7 +46,7 @@ def main(
         sparsity=0.25,
         dataloader=train,
         loss=loss_fn,
-        prune_iterations=1
+        prune_iterations=1,
     )
     pruner.prune()
 

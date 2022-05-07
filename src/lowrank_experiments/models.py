@@ -6,7 +6,11 @@ import torch.nn as nn
 
 class VGG(nn.Module):
     def __init__(
-        self, features: nn.Module, num_classes: int = 1000, init_weights: bool = True, dropout: float = 0.5
+        self,
+        features: nn.Module,
+        num_classes: int = 1000,
+        init_weights: bool = True,
+        dropout: float = 0.5,
     ) -> None:
         super().__init__()
         self.features = features
@@ -23,7 +27,9 @@ class VGG(nn.Module):
         if init_weights:
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):
-                    nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
+                    nn.init.kaiming_normal_(
+                        m.weight, mode="fan_out", nonlinearity="relu"
+                    )
                     if m.bias is not None:
                         nn.init.constant_(m.bias, 0)
                 elif isinstance(m, nn.BatchNorm2d):
@@ -61,8 +67,49 @@ def make_layers(cfg: List[Union[str, int]], batch_norm: bool = False) -> nn.Sequ
 cfgs: Dict[str, List[Union[str, int]]] = {
     "A": [64, "M", 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
     "B": [64, 64, "M", 128, 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
-    "D": [64, 64, "M", 128, 128, "M", 256, 256, 256, "M", 512, 512, 512, "M", 512, 512, 512, "M"],
-    "E": [64, 64, "M", 128, 128, "M", 256, 256, 256, 256, "M", 512, 512, 512, 512, "M", 512, 512, 512, 512, "M"],
+    "D": [
+        64,
+        64,
+        "M",
+        128,
+        128,
+        "M",
+        256,
+        256,
+        256,
+        "M",
+        512,
+        512,
+        512,
+        "M",
+        512,
+        512,
+        512,
+        "M",
+    ],
+    "E": [
+        64,
+        64,
+        "M",
+        128,
+        128,
+        "M",
+        256,
+        256,
+        256,
+        256,
+        "M",
+        512,
+        512,
+        512,
+        512,
+        "M",
+        512,
+        512,
+        512,
+        512,
+        "M",
+    ],
 }
 
 
@@ -127,7 +174,11 @@ def convert_model_to_lr(model: nn.Module):
             continue
         setattr(model, attr_name, attr)
 
-    assert not any([isinstance(layer, nn.Conv2d) or isinstance(layer, nn.Linear) for layer in
-                    model.modules()]), "Convert to lr model failed."
+    assert not any(
+        [
+            isinstance(layer, nn.Conv2d) or isinstance(layer, nn.Linear)
+            for layer in model.modules()
+        ]
+    ), "Convert to lr model failed."
 
     return model
