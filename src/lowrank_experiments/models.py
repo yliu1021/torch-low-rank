@@ -16,16 +16,19 @@ class VGG(nn.Module):
     ) -> None:
         super().__init__()
         self.features = features
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.classifier = nn.Sequential(
-            nn.Linear(512 * 1 * 1, 4096),
-            nn.ReLU(True),
-            nn.Dropout(p=dropout),
-            nn.Linear(4096, 4096),
-            nn.ReLU(True),
-            nn.Dropout(p=dropout),
-            nn.Linear(4096, num_classes),
-        )
+        # CIFAR VGG uses a simpler classifier than ImageNet VGG
+        # TODO: switch between the two types of classifiers based dataset
+        self.classifier = nn.Linear(512, num_classes)
+        # self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        # self.classifier = nn.Sequential(
+        #     nn.Linear(512 * 1 * 1, 4096),
+        #     nn.ReLU(True),
+        #     nn.Dropout(p=dropout),
+        #     nn.Linear(4096, 4096),
+        #     nn.ReLU(True),
+        #     nn.Dropout(p=dropout),
+        #     nn.Linear(4096, num_classes),
+        # )
         if init_weights:
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):
@@ -43,7 +46,7 @@ class VGG(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.features(x)
-        x = self.avgpool(x)
+        # x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.classifier(x)
         return x

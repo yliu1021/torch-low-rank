@@ -31,7 +31,7 @@ def train(
             f"\rLoss: {loss:>7f} Accuracy: {100*acc:>0.1f}% [{current:>5d}/{size:>5d}]",
             end="",
         )
-    print()
+    print(f"\rLoss: {loss:>7f} Accuracy: {100*acc:>0.1f}% [{size:>5d}/{size:>5d}]")
 
 
 def test(model: nn.Module, test: DataLoader, loss_fn, device):

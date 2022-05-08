@@ -1,6 +1,7 @@
 import argparse
 import pathlib
 import os
+import time
 
 import torch
 from torch import nn, optim
@@ -19,7 +20,7 @@ def main(
     model_name: str,
     preprune_epochs: int,
     postprune_epochs: int,
-    lr_drops: list[int],
+    lr_step_size: int,
     lr: float,
     momentum: float,
     weight_decay: float,
@@ -28,21 +29,22 @@ def main(
 ):
     device = torch.device(device)
 
+    # create dataset, model, loss function, and optimizer
     train, test, num_classes = data_loader.get_data(dataset, batch_size=batch_size)
     model = models.all_models[model_name](batch_norm=True, num_classes=num_classes)
     model = model.to(device=device)
-
     loss_fn = nn.CrossEntropyLoss()
     opt = optim.SGD(
         model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay
     )
-    lr_schedule = lr_scheduler.MultiStepLR(opt, milestones=lr_drops, gamma=0.1)
+    lr_schedule = lr_scheduler.StepLR(opt, step_size=lr_step_size, gamma=0.5)
 
+    # check if model is saved (and load from save if necessary)
     checkpoint_dir = pathlib.Path("./checkpoints")
     if not checkpoint_dir.exists():
         os.makedirs(checkpoint_dir)
-
-    checkpoint_model = checkpoint_dir / model_name
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    checkpoint_model = checkpoint_dir / f"{model_name}_{timestr}"
     if checkpoint_model.exists():
         print("Model found. Loading from checkpoint.")
         model.load_state_dict(torch.load(checkpoint_model))
@@ -58,7 +60,7 @@ def main(
         print("Saving model")
         torch.save(model.state_dict(), checkpoint_model)
 
-    # Prune
+    # prune
     pruner = AlignmentPrunerLossBased(
         device=device,
         model=models.convert_model_to_lr(model),
@@ -75,6 +77,7 @@ def main(
     for g in opt.param_groups:
         g["lr"] /= 2
 
+    # fine tune
     for epoch in range(postprune_epochs):
         print(f"Post-prune epoch {epoch+1} / {postprune_epochs}")
         trainer.train(model, train, loss_fn, opt, device=device)
@@ -95,7 +98,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--preprune_epochs", type=int)
     parser.add_argument("--postprune_epochs", type=int)
-    parser.add_argument("--lr_drop", type=int, action="append")
+    parser.add_argument("--lr_step_size", type=int)
     parser.add_argument("--lr", type=float)
     parser.add_argument("--momentum", type=float)
     parser.add_argument("--weight_decay", type=float)
@@ -111,7 +114,7 @@ if __name__ == "__main__":
         dataset=args.dataset,
         preprune_epochs=args.preprune_epochs,
         postprune_epochs=args.postprune_epochs,
-        lr_drops=sorted(args.lr_drop),
+        lr_step_size=args.lr_step_size,
         lr=args.lr,
         momentum=args.momentum,
         weight_decay=args.weight_decay,
