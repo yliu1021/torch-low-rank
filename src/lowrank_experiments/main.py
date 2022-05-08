@@ -1,4 +1,5 @@
 import argparse
+from json import load
 import pathlib
 import os
 import time
@@ -26,6 +27,7 @@ def main(
     weight_decay: float,
     batch_size: int,
     device,
+    load_saved_model: bool
 ):
     device = torch.device(device)
 
@@ -45,13 +47,13 @@ def main(
         os.makedirs(checkpoint_dir)
     timestr = time.strftime("%Y%m%d-%H%M%S")
     checkpoint_model = checkpoint_dir / f"{model_name}_{timestr}"
-    if checkpoint_model.exists():
+    if checkpoint_model.exists() and load_saved_model:
         print("Model found. Loading from checkpoint.")
         model.load_state_dict(torch.load(checkpoint_model))
         # sanity check by testing model performance
         trainer.test(model, test, loss_fn, device=device)
     else:
-        print("Model NOT FOUND. Retraining.")
+        print("Training from scratch. Model not found or --load_saved_model not passed.")
         for epoch in range(preprune_epochs):
             print(f"Pre-prune epoch {epoch+1} / {preprune_epochs}")
             trainer.train(model, train, loss_fn, opt, device=device)
@@ -91,10 +93,10 @@ if __name__ == "__main__":
         "then trained for some more epochs"
     )
     parser.add_argument(
-        "--model", type=str, choices=models.all_models.keys(), required=True
+        "--model", type=str, choices=list(models.all_models.keys()), required=True
     )
     parser.add_argument(
-        "--dataset", type=str, choices=data_loader.loaders.keys(), required=True
+        "--dataset", type=str, choices=list(data_loader.loaders.keys()), required=True
     )
     parser.add_argument("--preprune_epochs", type=int)
     parser.add_argument("--postprune_epochs", type=int)
@@ -103,6 +105,7 @@ if __name__ == "__main__":
     parser.add_argument("--momentum", type=float)
     parser.add_argument("--weight_decay", type=float)
     parser.add_argument("--batch_size", type=int)
+    parser.add_argument("--load_saved_model", action='store_true')
     parser.add_argument(
         "--device",
         choices=["cpu"] + ["cuda:" + str(i) for i in range(torch.cuda.device_count())],
@@ -120,4 +123,5 @@ if __name__ == "__main__":
         weight_decay=args.weight_decay,
         batch_size=args.batch_size,
         device=args.device,
+        load_saved_model=args.load_saved_model
     )

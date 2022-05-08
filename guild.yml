@@ -1,38 +1,28 @@
-set_rank:
-  description: Experiment to evaluate various singular vector ranking methods
-  main: src/lowrank_experiments/experiments/set_rank
+main:
+  description:
+  main: src/lowrank_experiments/main
   sourcecode:
     - exclude: '*.json'
   flags:
+    model: 
+      default: vgg16
     dataset:
       default: cifar10
-    pruner:
-      default: Magnitude
-    prune_epoch:
-      default: 1
-    total_epochs:
-      default: 128
-    batch_size:
-      default: 128
-    sparsity:
-      default: 0.5
-    pruning_scope:
-      default: local
+    preprune_epochs: 
+      default: 160
+    postprune_epochs:
+      default: 160
+    lr_step_size:
+      default: 30
     lr:
       default: 0.05
-    fast:
-      default: False
-    no_gpu:
-      default: False
-    model:
-      default: 'default'
-    gpu:
-      description: "GPU to use"
-    l2:
-      description: "weight decay"
-    post_prune_lr_multiplier:
-      default: 0.25
-    rewind_lr:
+    momentum: 
+      default: 0.9
+    weight_decay:
+      default: 5e-4
+    batch_size:
+      default: 256
+    device:
+      default: cuda:0
+    load_saved_model:
       default: True
-    lr_scheduler_step_size:
-      default: 30
