@@ -61,8 +61,8 @@ def main(
         print("Model found. Loading from checkpoint.")
         model.load_state_dict(torch.load(checkpoint_model))
     else:
+        print(f"Training from scratch. Model not found at {checkpoint_model} or --load_saved_model not passed.")
         checkpoint_model = checkpoint_dir / f"{model_name}_{timestr}.pt"
-        print("Training from scratch. Model not found or --load_saved_model not passed.")
         for epoch in range(preprune_epochs):
             print(f"Pre-prune epoch {epoch+1} / {preprune_epochs}")
             trainer.train(model, train, loss_fn, opt, tb_writer=tb_writer, device=device, epoch=epoch)
