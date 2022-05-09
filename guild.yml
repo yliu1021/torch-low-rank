@@ -34,6 +34,6 @@
         load_saved_model:
           default: True
         data_path:
-          default: data
+          default: ~/tensorflow-low-rank/data
         checkpoints_path:
-          default: checkpoints
+          default: ~/tensorflow-low-rank/checkpoints
