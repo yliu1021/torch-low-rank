@@ -46,13 +46,14 @@ def main(
     if not checkpoint_dir.exists():
         os.makedirs(checkpoint_dir)
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    checkpoint_model = checkpoint_dir / f"{model_name}_{timestr}"
+    checkpoint_model = checkpoint_dir / f"{model_name}"
     if checkpoint_model.exists() and load_saved_model:
         print("Model found. Loading from checkpoint.")
         model.load_state_dict(torch.load(checkpoint_model))
         # sanity check by testing model performance
         trainer.test(model, test, loss_fn, device=device)
     else:
+        checkpoint_model = checkpoint_dir / f"{model_name}"
         print("Training from scratch. Model not found or --load_saved_model not passed.")
         for epoch in range(preprune_epochs):
             print(f"Pre-prune epoch {epoch+1} / {preprune_epochs}")
