@@ -4,6 +4,7 @@ import pathlib
 import os
 import time
 
+import numpy as np
 import torch
 from torch import nn, optim
 from torch.optim import lr_scheduler
@@ -57,8 +58,6 @@ def main(
     if checkpoint_model.exists() and load_saved_model:
         print("Model found. Loading from checkpoint.")
         model.load_state_dict(torch.load(checkpoint_model))
-        # sanity check by testing model performance
-        trainer.test(model, test, loss_fn, device=device)
     else:
         checkpoint_model = checkpoint_dir / f"{model_name}_{timestr}.pt"
         print("Training from scratch. Model not found or --load_saved_model not passed.")
@@ -70,18 +69,34 @@ def main(
         print("Saving model")
         torch.save(model.state_dict(), checkpoint_model)
 
+    # pre prune evaluate and log
+    pre_prune_acc, pre_prune_loss = trainer.test(model, test, loss_fn, device=device)
+    print(f"Pre-Prune Accuracy: {(pre_prune_acc):>0.1f}%")
+    print(f"Pre-Prune Loss: {pre_prune_loss:>8f}")
+
+
     # prune
+    model = models.convert_model_to_lr(model)
     pruner = PRUNERS[pruner_type](
         device=device,
-        model=models.convert_model_to_lr(model),
+        model=model,
         scope=PruningScope.GLOBAL,
         sparsity=sparsity,
         dataloader=train,
         loss=loss_fn,
         prune_iterations=prune_iterations,
     )
+    pre_prune_model_size = np.sum([torch.numel(layer.kernel_w) for layer in pruner.layers_to_prune])
     pruner.prune()
+    post_prune_model_size = np.sum([(torch.sum(layer.mask) / torch.numel(layer.mask)) * (torch.numel(layer.kernel_u) + torch.numel(layer.kernel_v)) for layer in pruner.layers_to_prune])
     model = model.to(device=device)
+    effective_sparsity = (pre_prune_model_size - post_prune_model_size) / pre_prune_model_size
+    
+    # post prune evaluate and log
+    post_prune_acc, post_prune_loss =  trainer.test(model, test, loss_fn, device=device)
+    print(f"Post-Prune Accuracy: {(post_prune_acc):>0.1f}%")
+    print(f"Post-Prune Loss: {post_prune_loss:>8f}")
+    print(f"Effective Sparsity: {(effective_sparsity):>0.1f}%")
 
     # reduce LR by 2 post prune
     for g in opt.param_groups:

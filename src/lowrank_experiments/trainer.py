@@ -48,3 +48,4 @@ def test(model: nn.Module, test: DataLoader, loss_fn, device):
     test_loss /= num_batches
     correct /= size
     print(f"Test Error: Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f}")
+    return 100*correct, test_loss
