@@ -3,10 +3,6 @@
     main:
       description:
       main: src/lowrank_experiments/main
-      sourcecode:
-        dest: .
-        select:
-          - include: '*.pt'
 
       flags:
         model: 
@@ -37,3 +33,7 @@
           default: cuda:0
         load_saved_model:
           default: True
+        data_path:
+          default: data
+        checkpoints_path:
+          default: checkpoints

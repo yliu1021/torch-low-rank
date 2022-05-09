@@ -19,13 +19,13 @@ loaders = {
 }
 
 
-def get_data(name: str, batch_size: int = 128):
+def get_data(name: str, batch_size: int = 128, data_path: str = "data"):
     if name not in loaders:
         raise ValueError(f"Invalid dataset {name}")
     data, num_classes, mean, std = loaders[name]
     normalize = transforms.Normalize(mean=mean, std=std)
     train = data(
-        root=f"data",
+        root=data_path,
         train=True,
         transform=transforms.Compose(
             [
@@ -38,7 +38,7 @@ def get_data(name: str, batch_size: int = 128):
         download=True,
     )
     test = data(
-        root=f"data",
+        root=data_path,
         train=False,
         transform=transforms.Compose(
             [

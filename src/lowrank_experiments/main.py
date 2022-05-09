@@ -33,11 +33,13 @@ def main(
     device,
     load_saved_model: bool,
     prune_iterations: int = 1,
+    data_path = "data",
+    checkpoints_path = "checkpoints"
 ):
     device = torch.device(device)
 
     # create dataset, model, loss function, and optimizer
-    train, test, num_classes = data_loader.get_data(dataset, batch_size=batch_size)
+    train, test, num_classes = data_loader.get_data(dataset, batch_size=batch_size, data_path=data_path)
     model = models.all_models[model_name](batch_norm=True, num_classes=num_classes)
     model = model.to(device=device)
     loss_fn = nn.CrossEntropyLoss()
@@ -47,7 +49,7 @@ def main(
     lr_schedule = lr_scheduler.StepLR(opt, step_size=lr_step_size, gamma=0.5)
 
     # check if model is saved (and load from save if necessary)
-    checkpoint_dir = pathlib.Path("./checkpoints")
+    checkpoint_dir = pathlib.Path(checkpoints_path)
     if not checkpoint_dir.exists():
         os.makedirs(checkpoint_dir)
     timestr = time.strftime("%Y%m%d-%H%M%S")
@@ -117,6 +119,8 @@ if __name__ == "__main__":
     parser.add_argument("--weight_decay", type=float)
     parser.add_argument("--batch_size", type=int)
     parser.add_argument("--load_saved_model", action='store_true')
+    parser.add_argument("--data_path", type=str)
+    parser.add_argument("--checkpoints_path", type=str)
     parser.add_argument(
         "--device",
         choices=["cpu"] + ["cuda:" + str(i) for i in range(torch.cuda.device_count())],
@@ -137,5 +141,7 @@ if __name__ == "__main__":
         batch_size=args.batch_size,
         device=args.device,
         load_saved_model=args.load_saved_model,
-        prune_iterations=args.prune_iterations
+        prune_iterations=args.prune_iterations,
+        data_path=args.data_path,
+        checkpoints_path=args.checkpoints_path
     )
