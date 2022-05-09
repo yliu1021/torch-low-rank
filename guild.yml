@@ -36,4 +36,4 @@
         data_path:
           default: ~/tensorflow-low-rank/data
         checkpoints_path:
-          default: ~/tensorflow-low-rank/checkpoints
+          default: /home/sjoshi/tensorflow-low-rank/checkpoints

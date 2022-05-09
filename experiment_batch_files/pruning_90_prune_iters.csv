@@ -1,4 +1,4 @@
-sparsity,post_prune_epochs,lr,prune_iterations,device
+sparsity,postprune_epochs,lr,prune_iterations,device
 0.9,160,0.005,5,cuda:0
 0.9,160,0.005,10,cuda:1
 0.9,160,0.005,20,cuda:0
