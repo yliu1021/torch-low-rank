@@ -8,6 +8,7 @@ import numpy as np
 import torch
 from torch import nn, optim
 from torch.optim import lr_scheduler
+from torch.utils.tensorboard import SummaryWriter
 
 from lowrank.pruners import PruningScope
 from lowrank.pruners.alignment_pruner_gradient_based import AlignmentPrunerGradientBased
@@ -38,6 +39,7 @@ def main(
     checkpoints_path = "checkpoints"
 ):
     device = torch.device(device)
+    tb_writer = SummaryWriter()
 
     # create dataset, model, loss function, and optimizer
     train, test, num_classes = data_loader.get_data(dataset, batch_size=batch_size, data_path=data_path)
@@ -63,16 +65,16 @@ def main(
         print("Training from scratch. Model not found or --load_saved_model not passed.")
         for epoch in range(preprune_epochs):
             print(f"Pre-prune epoch {epoch+1} / {preprune_epochs}")
-            trainer.train(model, train, loss_fn, opt, device=device)
-            trainer.test(model, test, loss_fn, device=device)
+            trainer.train(model, train, loss_fn, opt, tb_writer=tb_writer, device=device, epoch=epoch)
+            trainer.test(model, test, loss_fn, tb_writer=tb_writer, device=device, epoch=epoch)
             lr_schedule.step()
         print("Saving model")
         torch.save(model.state_dict(), checkpoint_model)
 
     # pre prune evaluate and log
-    pre_prune_acc, pre_prune_loss = trainer.test(model, test, loss_fn, device=device)
-    print(f"Pre-Prune Accuracy: {(pre_prune_acc):>0.1f}%")
-    print(f"Pre-Prune Loss: {pre_prune_loss:>8f}")
+    pre_prune_acc, pre_prune_loss = trainer.test(model, test, loss_fn, tb_writer=tb_writer, device=device)
+    tb_writer.add_scalar("pre_prune_acc", pre_prune_acc)
+    tb_writer.add_scalar("pre_prune_loss", pre_prune_loss)
 
 
     # prune
@@ -91,12 +93,12 @@ def main(
     post_prune_model_size = np.sum([(torch.sum(layer.mask) / torch.numel(layer.mask)) * (torch.numel(layer.kernel_u) + torch.numel(layer.kernel_v)) for layer in pruner.layers_to_prune])
     model = model.to(device=device)
     effective_sparsity = (pre_prune_model_size - post_prune_model_size) / pre_prune_model_size
-    
+    tb_writer.add_scalar("effective_sparsity", effective_sparsity)
+
     # post prune evaluate and log
-    post_prune_acc, post_prune_loss =  trainer.test(model, test, loss_fn, device=device)
-    print(f"Post-Prune Accuracy: {(post_prune_acc):>0.1f}%")
-    print(f"Post-Prune Loss: {post_prune_loss:>8f}")
-    print(f"Effective Sparsity: {(effective_sparsity):>0.1f}%")
+    post_prune_acc, post_prune_loss =  trainer.test(model, test, loss_fn, tb_writer=tb_writer, device=device)
+    tb_writer.add_scalar("post_prune_acc", post_prune_acc)
+    tb_writer.add_scalar("post_prune_loss", post_prune_loss)
 
     # reduce LR by 2 post prune
     for g in opt.param_groups:
@@ -104,9 +106,10 @@ def main(
 
     # fine tune
     for epoch in range(postprune_epochs):
-        print(f"Post-prune epoch {epoch+1} / {postprune_epochs}")
-        trainer.train(model, train, loss_fn, opt, device=device)
-        trainer.test(model, test, loss_fn, device=device)
+        epoch += preprune_epochs
+        print(f"Post-prune epoch {epoch+1} / {postprune_epochs+preprune_epochs}")
+        trainer.train(model, train, loss_fn, opt, tb_writer=tb_writer, device=device, epoch=epoch)
+        trainer.test(model, test, loss_fn, tb_writer=tb_writer, device=device, epoch=epoch)
         lr_schedule.step()
 
 
