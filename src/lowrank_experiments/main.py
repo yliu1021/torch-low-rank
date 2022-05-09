@@ -19,6 +19,7 @@ import trainer
 def main(
     dataset: str,
     model_name: str,
+    sparsity: float,
     preprune_epochs: int,
     postprune_epochs: int,
     lr_step_size: int,
@@ -27,7 +28,8 @@ def main(
     weight_decay: float,
     batch_size: int,
     device,
-    load_saved_model: bool
+    load_saved_model: bool,
+    prune_iterations: int = 1,
 ):
     device = torch.device(device)
 
@@ -46,14 +48,14 @@ def main(
     if not checkpoint_dir.exists():
         os.makedirs(checkpoint_dir)
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    checkpoint_model = checkpoint_dir / f"{model_name}"
+    checkpoint_model = checkpoint_dir / f"{model_name}.pt"
     if checkpoint_model.exists() and load_saved_model:
         print("Model found. Loading from checkpoint.")
         model.load_state_dict(torch.load(checkpoint_model))
         # sanity check by testing model performance
         trainer.test(model, test, loss_fn, device=device)
     else:
-        checkpoint_model = checkpoint_dir / f"{model_name}"
+        checkpoint_model = checkpoint_dir / f"{model_name}_{timestr}.pt"
         print("Training from scratch. Model not found or --load_saved_model not passed.")
         for epoch in range(preprune_epochs):
             print(f"Pre-prune epoch {epoch+1} / {preprune_epochs}")
@@ -68,10 +70,10 @@ def main(
         device=device,
         model=models.convert_model_to_lr(model),
         scope=PruningScope.GLOBAL,
-        sparsity=0.75,
+        sparsity=sparsity,
         dataloader=train,
         loss=loss_fn,
-        prune_iterations=1,
+        prune_iterations=prune_iterations,
     )
     pruner.prune()
     model = model.to(device=device)
@@ -99,8 +101,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset", type=str, choices=list(data_loader.loaders.keys()), required=True
     )
+    parser.add_argument("--sparsity", type=float)
     parser.add_argument("--preprune_epochs", type=int)
     parser.add_argument("--postprune_epochs", type=int)
+    parser.add_argument("--prune_iterations", type=int)
     parser.add_argument("--lr_step_size", type=int)
     parser.add_argument("--lr", type=float)
     parser.add_argument("--momentum", type=float)
@@ -116,6 +120,7 @@ if __name__ == "__main__":
     main(
         model_name=args.model,
         dataset=args.dataset,
+        sparsity=args.sparsity,
         preprune_epochs=args.preprune_epochs,
         postprune_epochs=args.postprune_epochs,
         lr_step_size=args.lr_step_size,
@@ -124,5 +129,6 @@ if __name__ == "__main__":
         weight_decay=args.weight_decay,
         batch_size=args.batch_size,
         device=args.device,
-        load_saved_model=args.load_saved_model
+        load_saved_model=args.load_saved_model,
+        prune_iterations=args.prune_iterations
     )

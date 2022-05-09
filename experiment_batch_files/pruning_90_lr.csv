@@ -1,0 +1,6 @@
+sparsity,lr,device
+0.9,0.05,cuda:0
+0.9,0.01,cuda:0
+0.9,0.005,cuda:1
+0.9,0.001,cuda:1
+0.9,0.0005,cuda:1
