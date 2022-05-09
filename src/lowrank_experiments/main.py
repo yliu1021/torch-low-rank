@@ -88,9 +88,9 @@ def main(
         loss=loss_fn,
         prune_iterations=prune_iterations,
     )
-    pre_prune_model_size = np.sum([torch.numel(layer.kernel_w) for layer in pruner.layers_to_prune])
+    pre_prune_model_size = sum([int(torch.numel(layer.kernel_w)) for layer in pruner.layers_to_prune])
     pruner.prune()
-    post_prune_model_size = np.sum([(torch.sum(layer.mask) / torch.numel(layer.mask)) * (torch.numel(layer.kernel_u) + torch.numel(layer.kernel_v)) for layer in pruner.layers_to_prune])
+    post_prune_model_size = sum([int((torch.sum(layer.mask).cpu() / torch.numel(layer.mask)) * (torch.numel(layer.kernel_u) + torch.numel(layer.kernel_v))) for layer in pruner.layers_to_prune])
     model = model.to(device=device)
     effective_sparsity = (pre_prune_model_size - post_prune_model_size) / pre_prune_model_size
     tb_writer.add_scalar("effective_sparsity", effective_sparsity)
@@ -99,10 +99,6 @@ def main(
     post_prune_acc, post_prune_loss =  trainer.test(model, test, loss_fn, tb_writer=tb_writer, device=device)
     tb_writer.add_scalar("post_prune_acc", post_prune_acc)
     tb_writer.add_scalar("post_prune_loss", post_prune_loss)
-
-    # reduce LR by 2 post prune
-    for g in opt.param_groups:
-        g["lr"] /= 2
 
     # fine tune
     for epoch in range(postprune_epochs):
