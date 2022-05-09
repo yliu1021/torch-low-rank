@@ -13,6 +13,8 @@
           default: vgg16
         dataset:
           default: cifar10
+        pruner:
+          default: alignment_loss
         sparsity:
           default: 0.9
         preprune_epochs: 

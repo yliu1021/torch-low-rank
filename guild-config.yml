@@ -1,0 +1,7 @@
+remotes: 
+  turing1:
+    type: ssh
+    host: turing1.cs.ucla.edu
+    user: sjoshi
+    conda-env: pytorch-low-rank
+    guild-home: ~/anaconda3/envs/pytorch-low-rank/.guild

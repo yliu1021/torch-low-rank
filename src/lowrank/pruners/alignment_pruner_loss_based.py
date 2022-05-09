@@ -23,8 +23,6 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
         Intuition = the singular vectors that change the output vector the most from baseline
         activation are the most important
         """
-        assert self.dataloader is not None, "No data loader provided"
-
         # Sets mask to all ones to trigger svd
         print("Setting mask to trigger SVD (if needed)")
         for layer in self.layers_to_prune:

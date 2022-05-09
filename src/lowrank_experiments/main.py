@@ -9,16 +9,19 @@ from torch import nn, optim
 from torch.optim import lr_scheduler
 
 from lowrank.pruners import PruningScope
+from lowrank.pruners.alignment_pruner_gradient_based import AlignmentPrunerGradientBased
 from lowrank.pruners.alignment_pruner_loss_based import AlignmentPrunerLossBased
 
 import data_loader
 import models
 import trainer
 
+PRUNERS = {"alignment_loss": AlignmentPrunerLossBased, "alignment_gradient": AlignmentPrunerGradientBased}
 
 def main(
     dataset: str,
     model_name: str,
+    pruner_type: str,
     sparsity: float,
     preprune_epochs: int,
     postprune_epochs: int,
@@ -66,7 +69,7 @@ def main(
         torch.save(model.state_dict(), checkpoint_model)
 
     # prune
-    pruner = AlignmentPrunerLossBased(
+    pruner = PRUNERS[pruner_type](
         device=device,
         model=models.convert_model_to_lr(model),
         scope=PruningScope.GLOBAL,
@@ -101,6 +104,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset", type=str, choices=list(data_loader.loaders.keys()), required=True
     )
+    parser.add_argument(
+        "--pruner", type=str, choices=list(PRUNERS.keys()), required=True
+    )
     parser.add_argument("--sparsity", type=float)
     parser.add_argument("--preprune_epochs", type=int)
     parser.add_argument("--postprune_epochs", type=int)
@@ -120,6 +126,7 @@ if __name__ == "__main__":
     main(
         model_name=args.model,
         dataset=args.dataset,
+        pruner_type=args.pruner,
         sparsity=args.sparsity,
         preprune_epochs=args.preprune_epochs,
         postprune_epochs=args.postprune_epochs,
