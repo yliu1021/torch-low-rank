@@ -1,0 +1,7 @@
+post_prune_epochs,lr,preprune_epochs,device,pruner,load_saved_model
+160,0.005,5,cuda:1,alignment_gradient,False
+160,0.005,10,cuda:0,alignment_gradient,False
+160,0.005,20,cuda:1,alignment_gradient,False
+160,0.005,50,cuda:0,alignment_gradient,False
+160,0.005,100,cuda:1,alignment_gradient,False
+160,0.005,150,cuda:0,alignment_gradient,False
