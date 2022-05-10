@@ -6,9 +6,11 @@ from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import torch
-from torch import nn
+from torch import nn, optim
 
 from lowrank.low_rank_layer import LowRankLayer
+
+import trainer
 
 
 class PruningScope(enum.Enum):
@@ -66,22 +68,26 @@ class AbstractPrunerBase:
         """
 
         # Iterative pruning done by increasing desired sparsity every iteration
-        sparsity_per_iteration = np.cumsum(
-            [self.sparsity / self.prune_iterations] * self.prune_iterations
+        # sparsity_per_iteration = np.cumsum(
+        #     [self.sparsity / self.prune_iterations] * self.prune_iterations
+        # )
+        loss_fn = nn.CrossEntropyLoss()
+        p = 15
+        sparsities = np.linspace(0 ** p, self.sparsity ** p, num=self.prune_iterations+1)[1:] ** (1/p)
+        print(sparsities)
+        opt = optim.SGD(
+            self.model.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4
         )
-        for prune_iteration in range(self.prune_iterations):
-            print(
-                "Prune Iteration: "
-                + str(prune_iteration + 1)
-                + "/"
-                + str(self.prune_iterations)
-            )
-            self.sparsity = sparsity_per_iteration[prune_iteration]
+        for prune_iteration, sparsity in enumerate(sparsities):
+            print(f"Prune iteration {prune_iteration+1} / {self.prune_iterations}")
+            self.sparsity = sparsity
             masks = self._compute_masks()
             if len(masks) != len(self.layers_to_prune):
                 raise ValueError("Computed mask does not match length of model layers")
             for mask, layer in zip(masks, self.layers_to_prune):
                 layer.mask = mask
+            print(f"sparsity: {sparsity:.2f}")
+            trainer.train(self.model, self.dataloader, loss_fn, opt, device=self.device)
 
     def _compute_masks(self):
         """

@@ -40,19 +40,15 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
         baseline_output = self.model(X)
 
         for layer_ind, layer in enumerate(self.layers_to_prune):
-            print(f"Pruning low rank layer {layer_ind}")
-
             layer_scores = []
             for sv_ind in range(layer.max_rank()):
                 # For each singular vector, mask it out and compute new output
-                print(f"\rEvaluting singular value {sv_ind}", end="", flush=True)
-
+                print(f"\rPruning low rank layer {layer_ind}: Evaluting singular value {sv_ind}", end="", flush=True)
                 if layer.mask[sv_ind] != 0:
                     # Compute and apply additional mask
                     additional_mask = torch.ones(layer.max_rank()).to(self.device)
                     additional_mask[sv_ind] = 0
                     layer.additional_mask = additional_mask
-
                     # Compute network output -> determine score
                     new_output = self.model(X)
                     layer_scores.append(
@@ -60,13 +56,11 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
                             torch.subtract(baseline_output, new_output).detach().cpu()
                         )
                     )
-
                     # Clean up additional mask
                     layer.additional_mask = None
                 else: # already masked out
                     layer_scores.append(0)
-            print()
-
             scores.append(np.array(layer_scores))
+        print()
 
         return scores

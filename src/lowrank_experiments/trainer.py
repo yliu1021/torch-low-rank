@@ -1,3 +1,5 @@
+from typing import Optional
+
 import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader
@@ -13,14 +15,14 @@ def train(
     train: DataLoader,
     loss_fn,
     optimizer: optim.Optimizer,
-    tb_writer: SummaryWriter,
     device,
+    tb_writer: Optional[SummaryWriter] = None,
     epoch: int = None
 ):
     size = len(train.dataset)
     model.train()
     acc = 0
-    gamma = 0.75
+    gamma = 0.6
     for batch, (X, y) in enumerate(train):
         X, y = X.to(device), y.to(device)
         pred = model(X)
@@ -35,14 +37,14 @@ def train(
             end="",
         )
     
-    if epoch != None:
+    if tb_writer and epoch is not None:
         tb_writer.add_scalar('train_acc', 100*acc, epoch)
         tb_writer.add_scalar('train_loss', loss, epoch)
         
     print(f"\rLoss: {loss:>7f} Accuracy: {100*acc:>0.1f}% [{size:>5d}/{size:>5d}]")
 
 
-def test(model: nn.Module, test: DataLoader, loss_fn, tb_writer: SummaryWriter, device, epoch: int = None):
+def test(model: nn.Module, test: DataLoader, loss_fn, device, tb_writer: Optional[SummaryWriter] = None, epoch: int = None):
     size = len(test.dataset)
     num_batches = len(test)
     model.eval()
@@ -56,7 +58,7 @@ def test(model: nn.Module, test: DataLoader, loss_fn, tb_writer: SummaryWriter, 
     test_loss /= num_batches
     correct /= size
 
-    if epoch != None:
+    if tb_writer and epoch is not None:
         tb_writer.add_scalar('test_acc', 100*correct, epoch)
         tb_writer.add_scalar('test_loss', test_loss, epoch)
 
