@@ -91,8 +91,10 @@ def main(
     pre_prune_layer_sizes = [int(torch.numel(layer.kernel_w)) for layer in pruner.layers_to_prune]
     pruner.prune()
     post_prune_layer_sizes = [int((torch.sum(layer.mask).cpu() / torch.numel(layer.mask)) * (torch.numel(layer.kernel_u) + torch.numel(layer.kernel_v))) for layer in pruner.layers_to_prune]
+    for i, _ in enumerate(pruner.layers_to_prune):
+        tb_writer.add_scalar("effective_sparsity_per_layer", 1 - (post_prune_layer_sizes[i] / pre_prune_layer_sizes[i]), i)
     model = model.to(device=device)
-    effective_sparsity = (sum(pre_prune_layer_sizes) - sum(post_prune_layer_sizes)) / sum(pre_prune_layer_sizes)
+    effective_sparsity = 1 - (sum(post_prune_layer_sizes) / sum(pre_prune_layer_sizes))
     tb_writer.add_scalar("effective_sparsity", effective_sparsity)
 
     # post prune evaluate and log
