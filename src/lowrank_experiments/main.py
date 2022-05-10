@@ -19,6 +19,7 @@ import models
 import trainer
 
 PRUNERS = {"alignment_loss": AlignmentPrunerLossBased, "alignment_gradient": AlignmentPrunerGradientBased}
+PRUNING_SCOPES = {"global": PruningScope.GLOBAL, "local": PruningScope.LOCAL}
 
 def main(
     dataset: str,
@@ -33,6 +34,7 @@ def main(
     weight_decay: float,
     batch_size: int,
     device,
+    pruning_scope: str,
     load_saved_model: bool,
     prune_iterations: int = 1,
     data_path = "data",
@@ -82,7 +84,7 @@ def main(
     pruner = PRUNERS[pruner_type](
         device=device,
         model=model,
-        scope=PruningScope.GLOBAL,
+        scope=PRUNING_SCOPES[pruning_scope],
         sparsity=sparsity,
         dataloader=train,
         loss=loss_fn,
@@ -134,6 +136,7 @@ if __name__ == "__main__":
     parser.add_argument("--momentum", type=float)
     parser.add_argument("--weight_decay", type=float)
     parser.add_argument("--batch_size", type=int)
+    parser.add_argument("--pruning_scope", choices=list(PRUNING_SCOPES.keys()))
     parser.add_argument("--load_saved_model", action='store_true')
     parser.add_argument("--data_path", type=str)
     parser.add_argument("--checkpoints_path", type=str)
@@ -156,6 +159,7 @@ if __name__ == "__main__":
         weight_decay=args.weight_decay,
         batch_size=args.batch_size,
         device=args.device,
+        pruning_scope=args.pruning_scope,
         load_saved_model=args.load_saved_model,
         prune_iterations=args.prune_iterations,
         data_path=args.data_path,

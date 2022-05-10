@@ -31,6 +31,8 @@
           default: 256
         device:
           default: cuda:0
+        pruning_scope:
+          default: global
         load_saved_model:
           default: True
         data_path:
