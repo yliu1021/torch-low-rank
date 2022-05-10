@@ -64,7 +64,8 @@ class AlignmentPrunerGradientBased(AbstractPrunerBase):
                 layer_scores.append(
                     torch.norm(
                        torch.subtract(new_gradient, baseline_gradients[layer_ind]).detach().cpu()
-                    )
+                    ) /
+                    torch.norm(baseline_gradients[layer_ind].detach().cpu())
                 )
 
             print()
