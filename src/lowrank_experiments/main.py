@@ -20,6 +20,7 @@ import trainer
 
 PRUNERS = {"alignment_loss": AlignmentPrunerLossBased, "alignment_gradient": AlignmentPrunerGradientBased}
 PRUNING_SCOPES = {"global": PruningScope.GLOBAL, "local": PruningScope.LOCAL}
+MAX_EPOCHS = 160 
 
 def main(
     dataset: str,
@@ -59,13 +60,17 @@ def main(
     if not checkpoint_dir.exists():
         os.makedirs(checkpoint_dir)
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    checkpoint_model = checkpoint_dir / f"{model_name}.pt"
+    
+    if pre_prune_epochs >= MAX_EPOCHS:
+        checkpoint_model = checkpoint_dir / f"{model_name}.pt"
+    else:
+        checkpoint_model = checkpoint_dir / f"{model_name}_{str(pre_prune_epochs)}.pt"
+
     if checkpoint_model.exists() and load_saved_model:
-        print("Model found. Loading from checkpoint.")
+        print(f"Model found at {checkpoint_model}. Loading from checkpoint.")
         model.load_state_dict(torch.load(checkpoint_model))
     else:
         print(f"Training from scratch. Model not found at {checkpoint_model} or --load_saved_model not passed.")
-        checkpoint_model = checkpoint_dir / f"{model_name}_{timestr}.pt"
         for epoch in range(pre_prune_epochs):
             print(f"Pre-prune epoch {epoch+1} / {pre_prune_epochs}")
             trainer.train(model, train, loss_fn, opt, tb_writer=tb_writer, device=device, epoch=epoch)
