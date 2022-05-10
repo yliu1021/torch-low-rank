@@ -30,6 +30,7 @@ def main(
     post_prune_epochs: int,
     lr_step_size: int,
     lr: float,
+    scale_down_pruned_lr: float,
     momentum: float,
     weight_decay: float,
     batch_size: int,
@@ -78,7 +79,6 @@ def main(
     tb_writer.add_scalar("pre_prune_acc", pre_prune_acc)
     tb_writer.add_scalar("pre_prune_loss", pre_prune_loss)
 
-
     # prune
     model = models.convert_model_to_lr(model)
     pruner = PRUNERS[pruner_type](
@@ -105,6 +105,9 @@ def main(
     tb_writer.add_scalar("post_prune_loss", post_prune_loss)
 
     # fine tune
+    for g in opt.param_groups:
+        g["lr"] /= scale_down_pruned_lr
+        
     for epoch in range(post_prune_epochs):
         epoch += pre_prune_epochs
         print(f"Post-prune epoch {epoch+1} / {post_prune_epochs+pre_prune_epochs}")
@@ -133,6 +136,7 @@ if __name__ == "__main__":
     parser.add_argument("--prune_iterations", type=int)
     parser.add_argument("--lr_step_size", type=int)
     parser.add_argument("--lr", type=float)
+    parser.add_argument("--scale_down_pruned_lr", type=float)
     parser.add_argument("--momentum", type=float)
     parser.add_argument("--weight_decay", type=float)
     parser.add_argument("--batch_size", type=int)
@@ -155,6 +159,7 @@ if __name__ == "__main__":
         post_prune_epochs=args.post_prune_epochs,
         lr_step_size=args.lr_step_size,
         lr=args.lr,
+        scale_down_pruned_lr=args.scale_down_pruned_lr,
         momentum=args.momentum,
         weight_decay=args.weight_decay,
         batch_size=args.batch_size,

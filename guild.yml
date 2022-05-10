@@ -23,6 +23,8 @@
           default: 30
         lr:
           default: 0.05
+        scale_down_pruned_lr:
+          default: 1
         momentum: 
           default: 0.9
         weight_decay:
