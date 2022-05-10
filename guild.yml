@@ -13,9 +13,9 @@
           default: alignment_loss
         sparsity:
           default: 0.9
-        preprune_epochs: 
+        pre_prune_epochs: 
           default: 160
-        postprune_epochs:
+        post_prune_epochs:
           default: 160
         prune_iterations: 
           default: 1

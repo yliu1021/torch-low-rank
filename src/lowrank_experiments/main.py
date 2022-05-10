@@ -25,8 +25,8 @@ def main(
     model_name: str,
     pruner_type: str,
     sparsity: float,
-    preprune_epochs: int,
-    postprune_epochs: int,
+    pre_prune_epochs: int,
+    post_prune_epochs: int,
     lr_step_size: int,
     lr: float,
     momentum: float,
@@ -63,8 +63,8 @@ def main(
     else:
         print(f"Training from scratch. Model not found at {checkpoint_model} or --load_saved_model not passed.")
         checkpoint_model = checkpoint_dir / f"{model_name}_{timestr}.pt"
-        for epoch in range(preprune_epochs):
-            print(f"Pre-prune epoch {epoch+1} / {preprune_epochs}")
+        for epoch in range(pre_prune_epochs):
+            print(f"Pre-prune epoch {epoch+1} / {pre_prune_epochs}")
             trainer.train(model, train, loss_fn, opt, tb_writer=tb_writer, device=device, epoch=epoch)
             trainer.test(model, test, loss_fn, tb_writer=tb_writer, device=device, epoch=epoch)
             lr_schedule.step()
@@ -88,11 +88,11 @@ def main(
         loss=loss_fn,
         prune_iterations=prune_iterations,
     )
-    pre_prune_model_size = sum([int(torch.numel(layer.kernel_w)) for layer in pruner.layers_to_prune])
+    pre_prune_layer_sizes = [int(torch.numel(layer.kernel_w)) for layer in pruner.layers_to_prune]
     pruner.prune()
-    post_prune_model_size = sum([int((torch.sum(layer.mask).cpu() / torch.numel(layer.mask)) * (torch.numel(layer.kernel_u) + torch.numel(layer.kernel_v))) for layer in pruner.layers_to_prune])
+    post_prune_layer_sizes = [int((torch.sum(layer.mask).cpu() / torch.numel(layer.mask)) * (torch.numel(layer.kernel_u) + torch.numel(layer.kernel_v))) for layer in pruner.layers_to_prune]
     model = model.to(device=device)
-    effective_sparsity = (pre_prune_model_size - post_prune_model_size) / pre_prune_model_size
+    effective_sparsity = (sum(pre_prune_layer_sizes) - sum(post_prune_layer_sizes)) / sum(pre_prune_layer_sizes)
     tb_writer.add_scalar("effective_sparsity", effective_sparsity)
 
     # post prune evaluate and log
@@ -101,9 +101,9 @@ def main(
     tb_writer.add_scalar("post_prune_loss", post_prune_loss)
 
     # fine tune
-    for epoch in range(postprune_epochs):
-        epoch += preprune_epochs
-        print(f"Post-prune epoch {epoch+1} / {postprune_epochs+preprune_epochs}")
+    for epoch in range(post_prune_epochs):
+        epoch += pre_prune_epochs
+        print(f"Post-prune epoch {epoch+1} / {post_prune_epochs+pre_prune_epochs}")
         trainer.train(model, train, loss_fn, opt, tb_writer=tb_writer, device=device, epoch=epoch)
         trainer.test(model, test, loss_fn, tb_writer=tb_writer, device=device, epoch=epoch)
         lr_schedule.step()
@@ -124,8 +124,8 @@ if __name__ == "__main__":
         "--pruner", type=str, choices=list(PRUNERS.keys()), required=True
     )
     parser.add_argument("--sparsity", type=float)
-    parser.add_argument("--preprune_epochs", type=int)
-    parser.add_argument("--postprune_epochs", type=int)
+    parser.add_argument("--pre_prune_epochs", type=int)
+    parser.add_argument("--post_prune_epochs", type=int)
     parser.add_argument("--prune_iterations", type=int)
     parser.add_argument("--lr_step_size", type=int)
     parser.add_argument("--lr", type=float)
@@ -146,8 +146,8 @@ if __name__ == "__main__":
         dataset=args.dataset,
         pruner_type=args.pruner,
         sparsity=args.sparsity,
-        preprune_epochs=args.preprune_epochs,
-        postprune_epochs=args.postprune_epochs,
+        pre_prune_epochs=args.pre_prune_epochs,
+        post_prune_epochs=args.post_prune_epochs,
         lr_step_size=args.lr_step_size,
         lr=args.lr,
         momentum=args.momentum,
