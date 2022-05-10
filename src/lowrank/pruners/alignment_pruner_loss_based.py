@@ -47,21 +47,24 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
                 # For each singular vector, mask it out and compute new output
                 print(f"\rEvaluting singular value {sv_ind}", end="", flush=True)
 
-                # Compute and apply additional mask
-                additional_mask = torch.ones(layer.max_rank()).to(self.device)
-                additional_mask[sv_ind] = 0
-                layer.additional_mask = additional_mask
+                if layer.mask[sv_ind] != 0:
+                    # Compute and apply additional mask
+                    additional_mask = torch.ones(layer.max_rank()).to(self.device)
+                    additional_mask[sv_ind] = 0
+                    layer.additional_mask = additional_mask
 
-                # Compute network output -> determine score
-                new_output = self.model(X)
-                layer_scores.append(
-                    torch.norm(
-                        torch.subtract(baseline_output, new_output).detach().cpu()
+                    # Compute network output -> determine score
+                    new_output = self.model(X)
+                    layer_scores.append(
+                        torch.norm(
+                            torch.subtract(baseline_output, new_output).detach().cpu()
+                        )
                     )
-                )
 
-                # Clean up additional mask
-                layer.additional_mask = None
+                    # Clean up additional mask
+                    layer.additional_mask = None
+                else: # already masked out
+                    layer_scores.append(0)
             print()
 
             scores.append(np.array(layer_scores))
