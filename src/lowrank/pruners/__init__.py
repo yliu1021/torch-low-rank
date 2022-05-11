@@ -100,7 +100,7 @@ class AbstractPrunerBase:
         print("Retrain batch norm")
         batch_norm_mode(self.model, True)
         for _ in range(2):
-            trainer.train(self.model, self.dataloader, loss_fn, opt, device=self.device)
+            trainer.train(self.model, self.dataloader, loss_fn, self.opt, device=self.device)
         batch_norm_mode(self.model, False)
 
     def _compute_masks(self):

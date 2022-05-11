@@ -13,12 +13,13 @@ from torch.utils.tensorboard import SummaryWriter
 from lowrank.pruners import PruningScope
 from lowrank.pruners.alignment_pruner_gradient_based import AlignmentPrunerGradientBased
 from lowrank.pruners.alignment_pruner_loss_based import AlignmentPrunerLossBased
+from lowrank.pruners.hybrid_pruner import HybridPruner
 
 import data_loader
 import models
 import trainer
 
-PRUNERS = {"alignment_loss": AlignmentPrunerLossBased, "alignment_gradient": AlignmentPrunerGradientBased}
+PRUNERS = {"alignment_loss": AlignmentPrunerLossBased, "alignment_gradient": AlignmentPrunerGradientBased, "hybrid": HybridPruner}
 PRUNING_SCOPES = {"global": PruningScope.GLOBAL, "local": PruningScope.LOCAL}
 MAX_EPOCHS = 160 
 
@@ -88,16 +89,34 @@ def main(
     for g in opt.param_groups:
         g["lr"] /= scale_down_pruned_lr
     model = models.convert_model_to_lr(model)
-    pruner = PRUNERS[pruner_type](
-        device=device,
-        model=model,
-        scope=PRUNING_SCOPES[pruning_scope],
-        sparsity=sparsity,
-        dataloader=train,
-        loss=loss_fn,
-        optimizer=opt,
-        prune_iterations=prune_iterations,
-    )
+    pruners = {}
+    for supported_pruner_type in PRUNERS.keys():
+        if supported_pruner_type != "hybrid":
+            pruners[supported_pruner_type] = PRUNERS[supported_pruner_type](
+                device=device,
+                model=model,
+                scope=PRUNING_SCOPES[pruning_scope],
+                sparsity=sparsity,
+                dataloader=train,
+                loss=loss_fn,
+                opt=opt,
+                prune_iterations=prune_iterations,
+            )
+    pruner = None
+    if pruner_type == "hybrid":
+        pruner = HybridPruner(
+            pruners=list(pruners.values()),
+            device=device,
+            model=model,
+            scope=PRUNING_SCOPES[pruning_scope],
+            sparsity=sparsity,
+            dataloader=train,
+            loss=loss_fn,
+            opt=opt,
+            prune_iterations=prune_iterations,
+        )
+    else:
+        pruner = pruners[pruner_type]
     pre_prune_layer_sizes = [int(torch.numel(layer.kernel_w)) for layer in pruner.layers_to_prune]
     pruner.prune()
     post_prune_layer_sizes = [int((torch.sum(layer.mask).cpu() / torch.numel(layer.mask)) * (torch.numel(layer.kernel_u) + torch.numel(layer.kernel_v))) for layer in pruner.layers_to_prune]
