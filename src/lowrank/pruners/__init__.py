@@ -36,6 +36,7 @@ class AbstractPrunerBase:
         scope: PruningScope,
         sparsity: float,
         dataloader=None,
+        opt=None,
         batch_size: int = 64,
         loss=None,
         prune_iterations=1,
@@ -53,6 +54,7 @@ class AbstractPrunerBase:
             filter(lambda x: isinstance(x, LowRankLayer), list(self.model.modules()))
         )
         self.prune_iterations = prune_iterations
+        self.opt = opt
 
     def compute_scores(self) -> List[np.ndarray]:
         """
@@ -74,10 +76,7 @@ class AbstractPrunerBase:
         loss_fn = nn.CrossEntropyLoss()
         p = 15
         sparsities = np.linspace(0 ** p, self.sparsity ** p, num=self.prune_iterations+1)[1:] ** (1/p)
-        print(sparsities)
-        opt = optim.SGD(
-            self.model.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4
-        )
+        print("sparsities", sparsities)
         for prune_iteration, sparsity in enumerate(sparsities):
             print(f"Prune iteration {prune_iteration+1} / {self.prune_iterations}")
             self.sparsity = sparsity
@@ -87,7 +86,22 @@ class AbstractPrunerBase:
             for mask, layer in zip(masks, self.layers_to_prune):
                 layer.mask = mask
             print(f"sparsity: {sparsity:.2f}")
+            trainer.train(self.model, self.dataloader, loss_fn, self.opt, device=self.device)
+
+        # retrain batch norm 
+        def batch_norm_mode(parent_model: nn.Module, turn_on: bool):
+            for child in parent_model.children():
+                if len(list(child.children())) == 0:
+                    if not isinstance(child, nn.BatchNorm2d):
+                        for param in child.parameters():
+                            param.requires_grad = not turn_on
+                else:
+                    batch_norm_mode(child, turn_on)
+        print("Retrain batch norm")
+        batch_norm_mode(self.model, True)
+        for _ in range(2):
             trainer.train(self.model, self.dataloader, loss_fn, opt, device=self.device)
+        batch_norm_mode(self.model, False)
 
     def _compute_masks(self):
         """

@@ -85,6 +85,8 @@ def main(
     tb_writer.add_scalar("pre_prune_loss", pre_prune_loss)
 
     # prune
+    for g in opt.param_groups:
+        g["lr"] /= scale_down_pruned_lr
     model = models.convert_model_to_lr(model)
     pruner = PRUNERS[pruner_type](
         device=device,
@@ -93,6 +95,7 @@ def main(
         sparsity=sparsity,
         dataloader=train,
         loss=loss_fn,
+        optimizer=opt,
         prune_iterations=prune_iterations,
     )
     pre_prune_layer_sizes = [int(torch.numel(layer.kernel_w)) for layer in pruner.layers_to_prune]
@@ -110,9 +113,6 @@ def main(
     tb_writer.add_scalar("post_prune_loss", post_prune_loss)
 
     # fine tune
-    for g in opt.param_groups:
-        g["lr"] /= scale_down_pruned_lr
-        
     for epoch in range(post_prune_epochs):
         epoch += pre_prune_epochs
         print(f"Post-prune epoch {epoch+1} / {post_prune_epochs+pre_prune_epochs}")
