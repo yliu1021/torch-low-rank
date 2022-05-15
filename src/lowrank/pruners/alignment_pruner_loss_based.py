@@ -16,7 +16,7 @@ class AlignmentPrunerLossBased(AbstractPrunerBase):
     the baseline
     """
 
-    def compute_scores(self) -> List[np.ndarray]:
+    def compute_scores(self, target_sparsity=None) -> List[np.ndarray]:
         """
         Score = Magnitude of the vector difference between output of model when passed all 1s
         (with singular vector zeroed out and not)

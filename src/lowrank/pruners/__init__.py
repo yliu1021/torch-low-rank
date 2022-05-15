@@ -56,7 +56,7 @@ class AbstractPrunerBase:
         self.prune_iterations = prune_iterations
         self.opt = opt
 
-    def compute_scores(self) -> List[np.ndarray]:
+    def compute_scores(self, target_sparsity) -> List[np.ndarray]:
         """
         Computes and returns scores for the singular vectors in each layer.
         - High Score = Important Singular Vector
@@ -135,7 +135,35 @@ class AbstractPrunerBase:
             for score, threshold in zip(scores, thresholds)
         ]
         return masks
+    
+    def effective_sparsity(self):
+        return self.num_eff_params(self.model) / self.num_params_unpruned(self.model)
 
+    def num_params_unpruned(self, parent_module):
+        total_params = 0
+        if len(list(parent_module.children())) == 0:
+            if isinstance(parent_module, LowRankLayer):
+                total_params = parent_module.kernel_w.numel()
+            else:
+                total_params = 0
+                for param in parent_module.parameters():
+                    total_params += param.numel()
+        else:
+            total_params = sum([self.num_eff_params(module) for module in parent_module.children()])
+        return total_params
+
+    def num_eff_params(self, parent_module: nn.Module):
+        total_params = 0
+        if len(list(parent_module.children())) == 0:
+            if isinstance(parent_module, LowRankLayer):
+                total_params = parent_module.num_effective_params()
+            else:
+                total_params = 0
+                for param in parent_module.parameters():
+                    total_params += param.numel()
+        else:
+            total_params = sum([self.num_eff_params(module) for module in parent_module.children()])
+        return total_params
 
 def create_mask(
     length: int,

@@ -16,7 +16,7 @@ class AlignmentPrunerGradientBased(AbstractPrunerBase):
     to a given singular vector 
     """
 
-    def compute_scores(self) -> List[np.ndarray]:
+    def compute_scores(self, target_sparsity=None) -> List[np.ndarray]:
         """
         Score = Magnitude of difference of projected gradient with & without this change from actual
         gradients

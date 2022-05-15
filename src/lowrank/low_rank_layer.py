@@ -149,6 +149,18 @@ class LowRankLayer(nn.Module):
                 self.kernel_u @ torch.diag(mask) @ self.kernel_v
             )
 
+    def mask_cost(self):
+        for i, additional_mask_i in enumerate(self.additional_mask):
+            assert not(self.mask[i] == 0 and additional_mask_i != 0), "Gradient graph not set up correctly"
+            additional_mask_i = torch.abs(additional_mask_i)
+            if additional_mask_i > 1: # if mask activation > 1, then only count cost once
+                mask_cost += 1
+            else: # if mask_activation < 1, account for 'fractional' cost to smoother loss landscape
+                mask_cost += additional_mask_i
+
+    def num_effective_params(self):
+        return int(self.mask_cost() / torch.numel(self.mask)) * (torch.numel(self.kernel_u) + torch.numel(self.kernel_v))
+
     def forward(self, x):
         if self.eff_weights == None:
             self.recompute_eff_weights()
