@@ -137,7 +137,7 @@ class AbstractPrunerBase:
         return masks
     
     def effective_sparsity(self):
-        return self.num_eff_params(self.model) / self.num_params_unpruned(self.model)
+        return 1 - self.num_eff_params(self.model) / self.num_params_unpruned(self.model)
 
     def num_params_unpruned(self, parent_module):
         total_params = 0
