@@ -40,6 +40,7 @@ class AbstractPrunerBase:
         batch_size: int = 64,
         loss=None,
         prune_iterations=1,
+        sparsity_bonus=1,
     ):
         self.device = device
         self.model = model
@@ -55,6 +56,7 @@ class AbstractPrunerBase:
         )
         self.prune_iterations = prune_iterations
         self.opt = opt
+        self.sparsity_bonus = sparsity_bonus
 
     def compute_scores(self, target_sparsity) -> List[np.ndarray]:
         """

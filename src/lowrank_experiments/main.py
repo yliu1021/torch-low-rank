@@ -40,6 +40,7 @@ def main(
     pruning_scope: str,
     load_saved_model: bool,
     prune_iterations: int = 1,
+    sparsity_bonus=1,
     data_path = "data",
     checkpoints_path = "checkpoints"
 ):
@@ -101,6 +102,7 @@ def main(
                 loss=loss_fn,
                 opt=opt,
                 prune_iterations=prune_iterations,
+                sparsity_bonus=sparsity_bonus,
             )
     pruner = None
     if pruner_type == "hybrid":
@@ -114,6 +116,7 @@ def main(
             loss=loss_fn,
             opt=opt,
             prune_iterations=prune_iterations,
+            sparsity_bonus=sparsity_bonus,
         )
     else:
         pruner = pruners[pruner_type]
@@ -160,6 +163,7 @@ if __name__ == "__main__":
     parser.add_argument("--scale_down_pruned_lr", type=float)
     parser.add_argument("--momentum", type=float)
     parser.add_argument("--weight_decay", type=float)
+    parser.add_argument("--sparsity_bonus", type=float)
     parser.add_argument("--batch_size", type=int)
     parser.add_argument("--pruning_scope", choices=list(PRUNING_SCOPES.keys()))
     parser.add_argument("--load_saved_model", action='store_true')
@@ -188,6 +192,7 @@ if __name__ == "__main__":
         pruning_scope=args.pruning_scope,
         load_saved_model=args.load_saved_model,
         prune_iterations=args.prune_iterations,
+        sparsity_bonus=args.sparsity_bonus,
         data_path=args.data_path,
         checkpoints_path=args.checkpoints_path
     )

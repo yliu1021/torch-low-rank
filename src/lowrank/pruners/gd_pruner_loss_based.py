@@ -1,5 +1,5 @@
 """
-Gradient Descent Pruenr Loss Based
+Gradient Descent Pruner Loss Based
 """
 from typing import List
 
@@ -27,10 +27,7 @@ class GDPrunerLossBased(AbstractPrunerBase):
 
         # Define new loss function with regularization
         def new_loss(output, target):
-            loss = 0
-            for layer in self.layers_to_prune:
-                loss_+= layer.num_effective_params()
-            return self.loss(output, target) + 1e-6 * loss
+            return self.loss(output, target) - self.sparsity_bonus * self.effective_sparsity()
 
         for _ in range(100):
             trainer.train(self.model, self.dataloader, new_loss, self.opt, self.device, None, None)
