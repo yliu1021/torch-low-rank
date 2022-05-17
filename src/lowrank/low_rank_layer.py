@@ -166,7 +166,7 @@ class LowRankLayer(nn.Module):
         return mask_cost
 
     def num_effective_params(self):
-        return int(self.mask_cost() / torch.numel(self.mask)) * (torch.numel(self.kernel_u) + torch.numel(self.kernel_v))
+        return int(self.mask_cost()) / torch.numel(self.mask) * (torch.numel(self.kernel_u) + torch.numel(self.kernel_v))
 
     def forward(self, x):
         self.recompute_eff_weights()
