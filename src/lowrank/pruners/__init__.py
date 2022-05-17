@@ -161,7 +161,6 @@ class AbstractPrunerBase:
             if isinstance(parent_module, LowRankLayer):
                 total_params = parent_module.kernel_w.numel()
             else:
-                total_params = 0
                 for param in parent_module.parameters():
                     total_params += param.numel()
         else:
@@ -174,7 +173,6 @@ class AbstractPrunerBase:
             if isinstance(parent_module, LowRankLayer):
                 total_params = parent_module.num_effective_params()
             else:
-                total_params = 0
                 for param in parent_module.parameters():
                     total_params += param.numel()
         else:
