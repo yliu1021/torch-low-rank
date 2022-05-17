@@ -1,7 +1,7 @@
 {
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid 830387
     "version": "0.2.0",
     "configurations": [
         {
@@ -9,6 +9,45 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
+            "args": [
+                "--data_path", 
+                "/home/sid/Documents/research/tensorflow-low-rank/data",
+                "--checkpoints_path", 
+                "/home/sid/Documents/research/tensorflow-low-rank/checkpoints", 
+                "--pruner", 
+                "gd_loss", 
+                "--pre_prune_epochs",
+                "160", 
+                "--post_prune_epochs",
+                "0", 
+                "--sparsity", 
+                "0.9", 
+                "--dataset", 
+                "cifar10", 
+                "--model", 
+                "vgg16", 
+                "--prune_iterations", 
+                "1", 
+                "--lr_step_size",
+                "30", 
+                "--lr",
+                "0.1", 
+                "--scale_down_pruned_lr",
+                "8", 
+                "--momentum",
+                "0.9", 
+                "--weight_decay",
+                "5e-4", 
+                "--sparsity_bonus",
+                "20", 
+                "--batch_size",
+                "256", 
+                "--device",
+                "cuda:0",
+                "--load_saved_model",
+                "--pruning_scope",
+                "global"
+            ],             
             "console": "integratedTerminal",
             "justMyCode": true
         }

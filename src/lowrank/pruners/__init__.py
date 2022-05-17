@@ -36,7 +36,10 @@ class AbstractPrunerBase:
         scope: PruningScope,
         sparsity: float,
         dataloader=None,
-        opt=None,
+        lr=None,
+        momentum=0.9,
+        weight_decay=None,
+        scale_down_pruned_lr=1,
         batch_size: int = 64,
         loss=None,
         prune_iterations=1,
@@ -55,7 +58,10 @@ class AbstractPrunerBase:
             filter(lambda x: isinstance(x, LowRankLayer), list(self.model.modules()))
         )
         self.prune_iterations = prune_iterations
-        self.opt = opt
+        self.lr= lr
+        self.momentum = momentum
+        self.weight_decay = weight_decay
+        self.scale_down_pruned_lr = scale_down_pruned_lr
         self.sparsity_bonus = sparsity_bonus
 
     def compute_scores(self, target_sparsity) -> List[np.ndarray]:
@@ -79,6 +85,8 @@ class AbstractPrunerBase:
         p = 15
         sparsities = np.linspace(0 ** p, self.sparsity ** p, num=self.prune_iterations+1)[1:] ** (1/p)
         print("sparsities", sparsities)
+
+        
         for prune_iteration, sparsity in enumerate(sparsities):
             print(f"Prune iteration {prune_iteration+1} / {self.prune_iterations}")
             self.sparsity = sparsity
@@ -88,7 +96,10 @@ class AbstractPrunerBase:
             for mask, layer in zip(masks, self.layers_to_prune):
                 layer.mask = mask
             print(f"sparsity: {sparsity:.2f}")
-            trainer.train(self.model, self.dataloader, loss_fn, self.opt, device=self.device)
+            opt = optim.SGD(
+             self.model.parameters(), lr=self.lr / self.scale_down_pruned_lr, momentum=self.momentum, weight_decay=self.weight_decay
+            )
+            trainer.train(self.model, self.dataloader, loss_fn, opt, device=self.device)
 
         # retrain batch norm 
         def batch_norm_mode(parent_model: nn.Module, turn_on: bool):
@@ -101,8 +112,11 @@ class AbstractPrunerBase:
                     batch_norm_mode(child, turn_on)
         print("Retrain batch norm")
         batch_norm_mode(self.model, True)
+        opt = optim.SGD(
+             self.model.parameters(), lr=self.lr, momentum=self.momentum, weight_decay=self.weight_decay
+            )
         for _ in range(2):
-            trainer.train(self.model, self.dataloader, loss_fn, self.opt, device=self.device)
+            trainer.train(self.model, self.dataloader, loss_fn, opt, device=self.device)
         batch_norm_mode(self.model, False)
 
     def _compute_masks(self):

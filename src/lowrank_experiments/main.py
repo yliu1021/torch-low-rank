@@ -13,13 +13,14 @@ from torch.utils.tensorboard import SummaryWriter
 from lowrank.pruners import PruningScope
 from lowrank.pruners.alignment_pruner_gradient_based import AlignmentPrunerGradientBased
 from lowrank.pruners.alignment_pruner_loss_based import AlignmentPrunerLossBased
+from lowrank.pruners.gd_pruner_loss_based import GDPrunerLossBased
 from lowrank.pruners.hybrid_pruner import HybridPruner
 
 import data_loader
 import models
 import trainer
 
-PRUNERS = {"alignment_loss": AlignmentPrunerLossBased, "alignment_gradient": AlignmentPrunerGradientBased, "hybrid": HybridPruner}
+PRUNERS = {"alignment_loss": AlignmentPrunerLossBased, "alignment_gradient": AlignmentPrunerGradientBased, "gd_loss": GDPrunerLossBased, "hybrid": HybridPruner}
 PRUNING_SCOPES = {"global": PruningScope.GLOBAL, "local": PruningScope.LOCAL}
 MAX_EPOCHS = 160 
 
@@ -100,7 +101,10 @@ def main(
                 sparsity=sparsity,
                 dataloader=train,
                 loss=loss_fn,
-                opt=opt,
+                lr=lr,
+                momentum=momentum,
+                weight_decay=weight_decay,
+                scale_down_pruned_lr=scale_down_pruned_lr,
                 prune_iterations=prune_iterations,
                 sparsity_bonus=sparsity_bonus,
             )
@@ -114,7 +118,10 @@ def main(
             sparsity=sparsity,
             dataloader=train,
             loss=loss_fn,
-            opt=opt,
+            lr=lr,
+            momentum=momentum,
+            weight_decay=weight_decay,
+            scale_down_pruned_lr=scale_down_pruned_lr,
             prune_iterations=prune_iterations,
             sparsity_bonus=sparsity_bonus,
         )
@@ -122,7 +129,7 @@ def main(
         pruner = pruners[pruner_type]
     pruner.prune()
     for i, layer in enumerate(pruner.layers_to_prune):
-        tb_writer.add_scalar("effective_sparsity_per_layer", 1 - (layer.num_effective_params / layer.kernel_w.numel()), i)
+        tb_writer.add_scalar("effective_sparsity_per_layer", 1 - (layer.num_effective_params() / layer.kernel_w.numel()), i)
     model = model.to(device=device)
     tb_writer.add_scalar("effective_sparsity", pruner.effective_sparsity())
 
@@ -132,6 +139,10 @@ def main(
     tb_writer.add_scalar("post_prune_loss", post_prune_loss)
 
     # fine tune
+    # recreate opt to make sure kernel_u and kernel_v are included in parameter weights
+    opt = optim.SGD(
+        model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay
+    )
     for epoch in range(post_prune_epochs):
         epoch += pre_prune_epochs
         print(f"Post-prune epoch {epoch+1} / {post_prune_epochs+pre_prune_epochs}")

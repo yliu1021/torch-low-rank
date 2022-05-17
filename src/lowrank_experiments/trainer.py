@@ -26,8 +26,8 @@ def train(
     for batch, (X, y) in enumerate(train):
         X, y = X.to(device), y.to(device)
         pred = model(X)
-        loss = loss_fn(pred, y)
         optimizer.zero_grad()
+        loss = loss_fn(pred, y)
         loss.backward()
         optimizer.step()
         loss, current = loss.item(), batch * len(X)

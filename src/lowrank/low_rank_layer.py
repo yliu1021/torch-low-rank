@@ -32,15 +32,15 @@ class LowRankLayer(nn.Module):
         # Copy over weights
         self.original_weights_shape = deepcopy(layer.weight.shape)
         if len(self.original_weights_shape) > 2:
-            self.kernel_w = torch.reshape(
+            self.kernel_w = nn.Parameter(torch.reshape(
                 layer.weight,
                 (
                     self.in_channels * self.kernel_size[0] * self.kernel_size[1],
                     self.out_channels,
                 ),
-            )
+            ))
         else:
-            self.kernel_w = layer.weight
+            self.kernel_w = nn.Parameter(layer.weight)
         self.bias = nn.Parameter(layer.bias)
 
         # Initialize other member variables
@@ -96,15 +96,16 @@ class LowRankLayer(nn.Module):
             u, s, v = torch.linalg.svd(self.kernel_w, full_matrices=False)
             assert new_mask.shape == s.shape, "Invalid shape for mask"
             s_sqrt = torch.diag(torch.sqrt(s))
-            self.kernel_u = torch.matmul(u, s_sqrt)
-            self.kernel_v = torch.matmul(s_sqrt, v)
+            self.kernel_u = nn.Parameter(torch.matmul(u, s_sqrt))
+            self.kernel_v = nn.Parameter(torch.matmul(s_sqrt, v))
         elif len(self._mask.shape) == 2:
             assert new_mask.shape == self.kernel_w.shape, "Invalid shape for mask"
 
         # Reset additional mask if base mask changed
         self._additional_mask = None
 
-        self._mask = new_mask
+        self._mask = nn.Parameter(new_mask)
+        self._mask.requires_grad = False
 
         self.recompute_eff_weights()
 
@@ -128,7 +129,9 @@ class LowRankLayer(nn.Module):
         elif new_additional_mask.shape != self._mask.shape:
             raise ValueError("Additional mask must have same shape as mask")
 
-        self._additional_mask = new_additional_mask
+        # Ensure additional mask is a paramter but no gradient passes through it by default
+        self._additional_mask = nn.Parameter(new_additional_mask)
+        self._additional_mask.requires_grad = False
 
         self.recompute_eff_weights()
 
@@ -145,25 +148,28 @@ class LowRankLayer(nn.Module):
         elif self.weight_masking_mode:
             self.eff_weights = torch.mul(self.kernel_w, mask)
         else:
-            self.eff_weights = nn.Parameter(
-                self.kernel_u @ torch.diag(mask) @ self.kernel_v
-            )
+            self.eff_weights = self.kernel_u @ torch.diag(mask) @ self.kernel_v
+            
 
     def mask_cost(self):
-        for i, additional_mask_i in enumerate(self.additional_mask):
-            assert not(self.mask[i] == 0 and additional_mask_i != 0), "Gradient graph not set up correctly"
-            additional_mask_i = torch.abs(additional_mask_i)
-            if additional_mask_i > 1: # if mask activation > 1, then only count cost once
-                mask_cost += 1
-            else: # if mask_activation < 1, account for 'fractional' cost to smoother loss landscape
-                mask_cost += additional_mask_i
+        mask_cost = 0
+        if self.additional_mask != None: 
+            for i, additional_mask_i in enumerate(self.additional_mask):
+                assert not(self.mask[i] == 0 and additional_mask_i != 0), "Gradient graph not set up correctly"
+                additional_mask_i = torch.abs(additional_mask_i)
+                if additional_mask_i > 1: # if mask activation > 1, then only count cost once
+                    mask_cost += 1
+                else: # if mask_activation < 1, account for 'fractional' cost to smoother loss landscape
+                    mask_cost += additional_mask_i
+        else:
+            mask_cost = torch.sum(self.mask)
+        return mask_cost
 
     def num_effective_params(self):
         return int(self.mask_cost() / torch.numel(self.mask)) * (torch.numel(self.kernel_u) + torch.numel(self.kernel_v))
 
     def forward(self, x):
-        if self.eff_weights == None:
-            self.recompute_eff_weights()
+        self.recompute_eff_weights()
 
         # Do actual forward pass
         if self.layer_type is nn.Linear:
