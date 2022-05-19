@@ -164,7 +164,7 @@ class AbstractPrunerBase:
                 for param in parent_module.parameters():
                     total_params += param.numel()
         else:
-            total_params = sum([self.num_eff_params(module) for module in parent_module.children()])
+            total_params = sum([self.num_params_unpruned(module) for module in parent_module.children()])
         return total_params
 
     def num_eff_params(self, parent_module: nn.Module):
